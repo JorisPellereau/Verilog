@@ -1,0 +1,11 @@
+/*
+ *
+ *  interface.sv
+ * 
+ */
+
+interface intf (input logic clk, rst_n);
+   
+   
+endinterface //
+
