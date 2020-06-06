@@ -8,7 +8,7 @@ module max7219_emul
       input i_max7219_din,
       input i_max7219_load,
 
-      output i_max7219_dout  
+      output o_max7219_dout  
     );
 
 
@@ -36,14 +36,18 @@ module max7219_emul
 
    // INTERNAL WIRES
    logic    [15:0] s_max7219_data;
+   logic    [15:0] s_max7219_data_dout;
    logic    [3:0]  s_cnt_15;
 
    logic    s_max7219_clk; // Latch i_max7219_clk
    logic    s_cnt_15_done;
    logic    s_reg_updated; // REGISTER UPDATED FLAG
+   logic    s_max7219_dout;
    
 
    wire     s_max7219_clk_r_edge;
+   wire     s_max7219_clk_f_edge;
+   
 
    max7219_register_struct_t max7219_reg;
 
@@ -62,6 +66,9 @@ module max7219_emul
    // Rising Edge detection
    assign s_max7219_clk_r_edge = i_max7219_clk && ! s_max7219_clk;
 
+   // Falling Edge detection
+   assign s_max7219_clk_f_edge = ! i_max7219_clk && s_max7219_clk;
+   
 
 
 
@@ -78,14 +85,14 @@ module max7219_emul
 	
          // MSB FIRST 
 	 if(s_max7219_clk_r_edge) begin
-	    s_max7219_data[0]    <= i_max7219_data;
+	    s_max7219_data[0]    <= i_max7219_din;
 	    s_max7219_data[15:1] <= s_max7219_data[14:0];
 	    
 	    if(s_cnt_15 < 4'hF) begin
 	       s_cnt_15 <= s_cnt_15 + 1;
 	    end
 	    else begin
-	       s_cnt_15 <= 0;
+	       s_cnt_15      <= 0;
 	       s_cnt_15_done <= 1'b1;	       
 	    end	    	    
 	 end	 	 
@@ -100,21 +107,21 @@ module max7219_emul
    
    always @(posedge clk) begin
       if (!rst_n) begin
-	 max7219_reg.REG_NO_OP        = 8'h00;
-	 max7219_reg.REG_DIGIT_0      = 8'h00;
-	 max7219_reg.REG_DIGIT_1      = 8'h00;
-	 max7219_reg.REG_DIGIT_2      = 8'h00;
-	 max7219_reg.REG_DIGIT_3      = 8'h00;
-	 max7219_reg.REG_DIGIT_4      = 8'h00;
-	 max7219_reg.REG_DIGIT_5      = 8'h00;
-	 max7219_reg.REG_DIGIT_6      = 8'h00;
-	 max7219_reg.REG_DIGIT_7      = 8'h00;
-	 max7219_reg.REG_DECODE_MODE  = 8'h00;
-	 max7219_reg.REG_INTENSITY    = 8'h00;      
-	 max7219_reg.REG_SCAN_LIMIT   = 8'h00;
-	 max7219_reg.REG_SHUTDOWN     = 8'h00;
-	 max7219_reg.REG_DISPLAY_TEST = 8'h00;
-	 s_reg_updated                = 1'b0;
+	 max7219_reg.REG_NO_OP        <= 8'h00;
+	 max7219_reg.REG_DIGIT_0      <= 8'h00;
+	 max7219_reg.REG_DIGIT_1      <= 8'h00;
+	 max7219_reg.REG_DIGIT_2      <= 8'h00;
+	 max7219_reg.REG_DIGIT_3      <= 8'h00;
+	 max7219_reg.REG_DIGIT_4      <= 8'h00;
+	 max7219_reg.REG_DIGIT_5      <= 8'h00;
+	 max7219_reg.REG_DIGIT_6      <= 8'h00;
+	 max7219_reg.REG_DIGIT_7      <= 8'h00;
+	 max7219_reg.REG_DECODE_MODE  <= 8'h00;
+	 max7219_reg.REG_INTENSITY    <= 8'h00;      
+	 max7219_reg.REG_SCAN_LIMIT   <= 8'h00;
+	 max7219_reg.REG_SHUTDOWN     <= 8'h00;
+	 max7219_reg.REG_DISPLAY_TEST <= 8'h00;
+	 s_reg_updated                <= 1'b0;
 	 
       end
       else begin
@@ -124,30 +131,30 @@ module max7219_emul
 
 	    // DECODAGE
 	    case (s_max7219_data[11:8])
-	      4'h0 : max7219_reg.REG_NO_OP        = s_max7219_data[7:0]);
-	      4'h1 : max7219_reg.REG_DIGIT_0      = s_max7219_data[7:0]);
-              4'h2 : max7219_reg.REG_DIGIT_1      = s_max7219_data[7:0]);
-              4'h3 : max7219_reg.REG_DIGIT_2      = s_max7219_data[7:0]);
-              4'h4 : max7219_reg.REG_DIGIT_3      = s_max7219_data[7:0]);
-	      4'h5 : max7219_reg.REG_DIGIT_4      = s_max7219_data[7:0]);
-              4'h6 : max7219_reg.REG_DIGIT_5      = s_max7219_data[7:0]);
-	      4'h7 : max7219_reg.REG_DIGIT_6      = s_max7219_data[7:0]);
-              4'h8 : max7219_reg.REG_DIGIT_7      = s_max7219_data[7:0]);
-	      4'h9 : max7219_reg.REG_DECODE_MODE  = s_max7219_data[7:0]);
-	      4'hA : max7219_reg.REG_INTENSITY    = s_max7219_data[7:0]);
-	      4'hB : max7219_reg.REG_SCAN_LIMIT   = s_max7219_data[7:0]);
-	      4'hC : max7219_reg.REG_SHUTDOWN     = s_max7219_data[7:0]);
-	      4'hF : max7219_reg.REG_DISPLAY_TEST = s_max7219_data[7:0]);    
+	      4'h0 : max7219_reg.REG_NO_OP        <= s_max7219_data[7:0];
+	      4'h1 : max7219_reg.REG_DIGIT_0      <= s_max7219_data[7:0];
+              4'h2 : max7219_reg.REG_DIGIT_1      <= s_max7219_data[7:0];
+              4'h3 : max7219_reg.REG_DIGIT_2      <= s_max7219_data[7:0];
+              4'h4 : max7219_reg.REG_DIGIT_3      <= s_max7219_data[7:0];
+	      4'h5 : max7219_reg.REG_DIGIT_4      <= s_max7219_data[7:0];
+              4'h6 : max7219_reg.REG_DIGIT_5      <= s_max7219_data[7:0];
+	      4'h7 : max7219_reg.REG_DIGIT_6      <= s_max7219_data[7:0];
+              4'h8 : max7219_reg.REG_DIGIT_7      <= s_max7219_data[7:0];
+	      4'h9 : max7219_reg.REG_DECODE_MODE  <= s_max7219_data[7:0];
+	      4'hA : max7219_reg.REG_INTENSITY    <= s_max7219_data[7:0];
+	      4'hB : max7219_reg.REG_SCAN_LIMIT   <= s_max7219_data[7:0];
+	      4'hC : max7219_reg.REG_SHUTDOWN     <= s_max7219_data[7:0];
+	      4'hF : max7219_reg.REG_DISPLAY_TEST <= s_max7219_data[7:0];    
 	      default : $display("ERROR in Register @");
 	      
 	    endcase // case (s_max7219_data[11:8])
 	    s_reg_updated = 1'b1;
-	    
+	 end   
 	 else begin
 	   s_reg_updated = 1'b0; 
 	 end 
 	    
-       end   
+      
       end // else: !if(!rst_n)
    end // always @ (posedge clk)
    
@@ -159,6 +166,8 @@ module max7219_emul
        end
        else begin
 	  if(s_reg_updated) begin
+	     $display("REGISTER UPDATE !!!!!!!");
+	     $display("");
 	     $display("Register @0: No-Op        : %h" , max7219_reg.REG_NO_OP);
 	     $display("Register @1: Digit_0      : %h" , max7219_reg.REG_DIGIT_0);
              $display("Register @2: Digit_1      : %h" , max7219_reg.REG_DIGIT_1);
@@ -168,18 +177,45 @@ module max7219_emul
              $display("Register @6: Digit_5      : %h" , max7219_reg.REG_DIGIT_5);
 	     $display("Register @7: Digit_6      : %h" , max7219_reg.REG_DIGIT_6);
              $display("Register @8: Digit_7      : %h" , max7219_reg.REG_DIGIT_7);
-	     $display("Register @9: Decode_Mode  : %h" , max7219_reg.REG_DECOD_MODE);
+	     $display("Register @9: Decode_Mode  : %h" , max7219_reg.REG_DECODE_MODE);
 	     $display("Register @A: Intensity    : %h" , max7219_reg.REG_INTENSITY);
 	     $display("Register @B: Scan_Limit   : %h" , max7219_reg.REG_SCAN_LIMIT);
 	     $display("Register @C: Shutdown     : %h" , max7219_reg.REG_SHUTDOWN);
 	     $display("Register @F: Display_Test : %h" , max7219_reg.REG_DISPLAY_TEST);
+	     $display("");
+	     $display("");
 	  end	  
        end       
     end
    
 
+    // DOUT MNGT
+   always @(posedge clk) begin
+      if(!rst_n) begin
+	 s_max7219_data_dout <= 16'h0000;
+	 s_max7219_dout      <= 1'b0;
+	 
+      end
+      else begin
+	 if(s_cnt_15_done) begin
+	    s_max7219_data_dout <= s_max7219_data;	    
+	 end
 
+	 s_max7219_dout <= s_max7219_data_dout[15];
+	 if(s_max7219_clk_f_edge) begin
+	    //s_max7219_dout <= s_max7219_data_dout[15];
+            s_max7219_data_dout[15:1] <= s_max7219_data_dout[14:0];
+ 
+	 end
+	 
+      end
+      
+   end
+   
 
+   // OUTPUT AFFECTATION
+   assign o_max7219_dout = s_max7219_dout;
+   
    
    // =====================
 endmodule // max7219_emul
