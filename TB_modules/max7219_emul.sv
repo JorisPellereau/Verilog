@@ -1,21 +1,19 @@
 module max7219_emul
   #(
-    parameter G_MATRIX_I = 0
+    parameter G_MATRIX_I = 0,
+    parameter G_VERBOSE  = 1 
     )
    (
-      input clk,
-      input rst_n,
-      input i_max7219_clk,
-      input i_max7219_din,
-      input i_max7219_load,
-
-      output o_max7219_dout,
-      output [8*8 - 1 : 0] o_line_char,
-      output o_line_char_val
+      input 		   clk,
+      input 		   rst_n,
+      input 		   i_max7219_clk,
+      input 		   i_max7219_din,
+      input 		   i_max7219_load,
+      output 		   o_max7219_dout,
+    
+      output 		   o_matrix_char_val
     
     );
-
-
 
    // TYPES
    typedef struct packed
@@ -49,6 +47,7 @@ module max7219_emul
    logic    s_max7219_dout;
    logic    s_max7219_load; // LATCH MAX7219 LOAD
    
+   reg [8*8 - 1 : 0]   s_matrix_char [7:0];
    
 
    wire     s_max7219_clk_r_edge;
@@ -76,12 +75,10 @@ module max7219_emul
 
    // Rising Edge detection
    assign s_max7219_clk_r_edge  = i_max7219_clk  && ! s_max7219_clk;
-  
-   
+     
    // Falling Edge detection
    assign s_max7219_clk_f_edge  = ! i_max7219_clk  && s_max7219_clk;
    assign s_max7219_load_f_edge = ! i_max7219_load && s_max7219_load;
-
 
 
    // DIN LATCH
@@ -111,10 +108,7 @@ module max7219_emul
       end 
      
    end // always @ (posedge clk)
-   
-   
-   
-
+         
    // MAX7219 REGISTER UPDATE ON LOAD
    
    always @(posedge clk) begin
@@ -177,7 +171,7 @@ module max7219_emul
 	  
        end
        else begin
-	  if(s_reg_updated) begin
+	  if(s_reg_updated && G_VERBOSE) begin
 	     $display("REGISTER UPDATE - Matrix %d", G_MATRIX_I);
 	     $timeformat(-6, 2, " us", 20);
 	     $display("%t", $realtime);
@@ -209,7 +203,11 @@ module max7219_emul
    always @(posedge clk) begin
       if(!rst_n) begin	 
 	 line_char = "";
-	 
+	 for(int k = 0 ; k < 8 ; k++) begin
+	    s_matrix_char[k] = "";
+	    
+	 end
+
       end
       else begin
 	 if(s_reg_updated) begin
@@ -218,15 +216,15 @@ module max7219_emul
 	    for(int j = 7; j >=0 ; j--) begin
 	       line_char[63:32] = {max7219_reg.REG_DIGIT_7[j] ? "*" : " "  , max7219_reg.REG_DIGIT_6[j] ? "*" : " " , max7219_reg.REG_DIGIT_5[j] ? "*" : " ", max7219_reg.REG_DIGIT_4[j] ? "*" : " "};
 	       line_char[31:0]  = {max7219_reg.REG_DIGIT_3[j] ? "*" : " "  , max7219_reg.REG_DIGIT_2[j] ? "*" : " " , max7219_reg.REG_DIGIT_1[j] ? "*" : " ", max7219_reg.REG_DIGIT_0[j] ? "*" : " "};
-               $display("%s", line_char); 
-	    end
-	    
-	    
+	       s_matrix_char[j] = line_char;
+	       if(G_VERBOSE) begin
+                 $display("%s", line_char);
+	       end
+	    end	    	    
 	 end	 
       end      
    end
    
-
     // DOUT MNGT
    always @(posedge clk) begin
       if(!rst_n) begin
@@ -241,20 +239,15 @@ module max7219_emul
 
 	 s_max7219_dout <= s_max7219_data_dout[15];
 	 if(s_max7219_clk_r_edge) begin
-	    //s_max7219_dout <= s_max7219_data_dout[15];
             s_max7219_data_dout[15:1] <= s_max7219_data_dout[14:0];
- 
-	 end
-	 
-      end
-      
+	 end	 
+      end      
    end
    
 
    // OUTPUT AFFECTATION
-   assign o_max7219_dout  = s_max7219_dout;
-   assign o_line_char     = line_char;
-   assign o_line_char_val = s_reg_updated;
+   assign o_max7219_dout    = s_max7219_dout;
+   assign o_matrix_char_val = s_reg_updated;
    
    
    // =====================
