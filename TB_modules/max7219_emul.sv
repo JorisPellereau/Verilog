@@ -151,7 +151,9 @@ module max7219_emul
 	      4'hB : max7219_reg.REG_SCAN_LIMIT   <= s_max7219_data[7:0];
 	      4'hC : max7219_reg.REG_SHUTDOWN     <= s_max7219_data[7:0];
 	      4'hF : max7219_reg.REG_DISPLAY_TEST <= s_max7219_data[7:0];    
-	      default : $display("ERROR in Register @");
+	      default : if(G_VERBOSE) begin
+                          $display("ERROR in Register @");
+		        end
 	      
 	    endcase // case (s_max7219_data[11:8])
 	    s_reg_updated <= 1'b1;
@@ -211,7 +213,9 @@ module max7219_emul
       end
       else begin
 	 if(s_reg_updated) begin
-            $display("Matrix %d", G_MATRIX_I);
+	    if(G_VERBOSE) begin
+              $display("Matrix %d", G_MATRIX_I);
+	    end
 	    
 	    for(int j = 7; j >=0 ; j--) begin
 	       line_char[63:32] = {max7219_reg.REG_DIGIT_7[j] ? "*" : " "  , max7219_reg.REG_DIGIT_6[j] ? "*" : " " , max7219_reg.REG_DIGIT_5[j] ? "*" : " ", max7219_reg.REG_DIGIT_4[j] ? "*" : " "};
