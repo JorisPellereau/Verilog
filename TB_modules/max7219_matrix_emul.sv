@@ -46,6 +46,12 @@ module max7219_matrix_emul
 
    assign max7219_display_matrix.display_matrix_0 = max7219_emul_inst_0.s_matrix_char;
    assign max7219_display_matrix.display_matrix_1 = max7219_emul_inst_1.s_matrix_char;
+   assign max7219_display_matrix.display_matrix_2 = max7219_emul_inst_2.s_matrix_char;
+   assign max7219_display_matrix.display_matrix_3 = max7219_emul_inst_3.s_matrix_char;
+   assign max7219_display_matrix.display_matrix_4 = max7219_emul_inst_4.s_matrix_char;
+   assign max7219_display_matrix.display_matrix_5 = max7219_emul_inst_5.s_matrix_char;
+   assign max7219_display_matrix.display_matrix_6 = max7219_emul_inst_6.s_matrix_char;
+   assign max7219_display_matrix.display_matrix_7 = max7219_emul_inst_7.s_matrix_char;
 
      // == MATRIX 0 INST ==
      max7219_emul #(
