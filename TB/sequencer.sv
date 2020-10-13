@@ -9,83 +9,115 @@
 // Status          : Unknown, Use with caution!
 
 
-`timescale 1ns/1ns
+`timescale 1ps/1ps
 
 module sequencer
 
    (
     input 	  clk,
+    input 	  rst_n,    
     input 	  ack,
     
     output string args [5],
-    output args_valid
+    output reg	  args_valid
     
    );
+
+
+   // INTERNAL SIGNALS
+
+   reg 	   wait_ack;
+   reg 	   file_open;
+   reg 	   end_test;
+   reg 	   s_ack;
    
+    
    string line;
-   string arg1;
-   string arg2;
-   string arg3;
-   string arg4;
-   string arg5;
-   
+
    int file;
    int i;
    
 
-  initial begin
-
-
- 
+   // Latch Inputs 
+   always @(posedge clk) begin
+      if (!rst_n) begin
+	 s_ack <= 1'b0;	 
+      end
+      else begin
+	 s_ack <= ack;	 
+      end      
+   end
    
-   //forever begin
+  
+
+
+   always @(posedge clk) begin
+
+      if (!rst_n) begin
+
+	 wait_ack <= 1'b0;
+	 file_open <= 1'b0;
+	 args_valid <= 1'b0;
+	 end_test <= 1'b0;
+	 
+      end
+      else begin
+	 
+   
+       // Open File once
+	 if(file_open == 1'b0) begin
+	    $display("Beginning of sequencer");
+	    file = $fopen("/home/jorisp/GitHub/Verilog/test.txt", "r");
+	    file_open <= 1'b1;	
+	 end
+
+
+	 // WAIT ACK MNGT
+	 if(ack == 1'b1 && s_ack == 1'b0) begin
+	    wait_ack <= 1'b0;	    
+	 end
+	 
+
+	 if(end_test == 1'b1) begin
+	    $finish;
+            $fclose(file);
+            $display("End of sequencer");	
+	 end
+	 else if(wait_ack == 1'b0) begin
+	    $fgets(line, file); // GET ENTIRE LINE
+	    
+	    // RAZ ARGS
+	    for (i = 0; i < 5; i++) begin
+               args[i] = "";	   
+	    end
+
+	    $sscanf(line, "%s %s %s %s %s)", args[0], args[1], args[2], args[3], args[4]);
+	    $display("line : %s", line);
+	    args_valid <= 1'b1;
+	    
+	    // DISPLAY ARGS
+	    for (i = 0; i < 5; i++) begin
+               $display("argi : %s", args[i]);	   
+	    end
+
+	    wait_ack <= 1'b1;
+
+	    // Test of End of test
+	    if(args[0] == "END_TEST") begin
+	       end_test <= 1'b1;	   
+            end
+	    
+	 end
+	 else begin
+	    args_valid <= 1'b0;	
+	 end
+	 
+	 
+      end // else: !if(!rst_n)
       
-     $display("Beginning of sequencer");
-     file = $fopen("/home/jorisp/GitHub/Verilog/test.txt", "r");
+	 
+   end // always @ (posedge clk)
 
-     while(args[0] != "END_TEST") begin
-        $fgets(line, file); // GET ENTIRE LINE
-	
-//	$fscanf(file,"%s", line);
-	
-	// RAZ ARGS
-	for (i = 0; i < 5; i++) begin
-          args[i] = "";	   
-	end
-	
-	$sscanf(line, "%s %s %s %s %s)", args[0], args[1], args[2], args[3], args[4]);
-	$display("line : %s", line);
-	
-	//$fgets(line, file);
-
-        for (i = 0; i < 5; i++) begin
-          $display("argi : %s", args[i]);	   
-	end
-	
-	//while(ack != 1'b0) begin
-	   
-	//end
-
-	//#5;
-
-	// RAZ ARGS
-/* -----\/----- EXCLUDED -----\/-----
-	for (i = 0; i < 5; i++) begin
-          args[i] = "";	   
-	end
- -----/\----- EXCLUDED -----/\----- */
-	
-	
-     //end
-     end
-
-     
-     $fclose(file);
-
-     $display("End of sequencer");
-     
-     
-  end
    
 
   

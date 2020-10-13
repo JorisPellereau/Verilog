@@ -8,26 +8,8 @@
 // Update Count    : 0
 // Status          : Unknown, Use with caution!
 
-`timescale 1ns/1ns
+`timescale 1ps/1ps
 
-// MODULE to instantiate
-/* -----\/----- EXCLUDED -----\/-----
-module sequencer
-   (
-    input clk	 
-   );
-endmodule // sequencer
-
-
-module clk_gen
-   #(
-    parameter int G_CLK_HALF_PERIOD = 10
-   )
-   (
-    output clk_tb
-   );
-endmodule // clk_gen
- -----/\----- EXCLUDED -----/\----- */
 
 // TB TOP
 module tb_top;
@@ -36,7 +18,12 @@ module tb_top;
    // INTERNAL SIGNALS
    wire clk;
    wire ack;
-
+   wire rst_n;
+   
+  string s_args [5];
+   
+   wire	  s_args_valid;
+   
    reg 	s_ack;
    
    
@@ -47,7 +34,8 @@ module tb_top;
 	.G_CLK_HALF_PERIOD (10)
    )
    i_clk_gen (
-	      .clk_tb (clk)	      
+	      .clk_tb (clk),
+              .rst_n (rst_n)	      
    );
 
    
@@ -55,11 +43,27 @@ module tb_top;
 
    // SEQUENCER INST
    sequencer i_sequencer(
-       .clk (clk),
-       .ack (1'b0)
+       .clk         (clk),
+       .rst_n       (rst_n),
+       .ack         (1'b0),
+       .args        (s_args),
+       .args_valid  (s_args_valid)
    );
 
 
+   // DECODER INST
+   decoder i_decoder (
+       .clk         (clk),
+       .rst_n       (rst_n),
+       .i_args      (s_args),
+       .i_args_valid (s_args_valid),
+       .o_sel_set (),
+       .o_sel_wait (),
+       .o_sel_check (),
+       .o_ack ()
+		      
+   );
+   
 
    initial begin
 

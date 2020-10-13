@@ -129,6 +129,7 @@ libs:  prepare_libs create_libs
 # == V FILES LIST ==
 src_v=		$(SRC_DIR)/sequencer.sv \
 		$(SRC_DIR)/clk_gen.sv \
+		$(SRC_DIR)/decoder.sv \
 		$(SRC_DIR)/tb_top.sv \
 		#$(SRC_DIR)/file_3.v \
 		#$(SRC_DIR)/file_4.v
@@ -151,5 +152,5 @@ trans_test1=test_max7219_cmd_decod.txt
 wave_test1=wave_test_max7219_cmd_decod
 run_tb_test : clean libs compile_tb_v_files
 	cd $(WORK_DIR); \
-	$(vsim)  +nowarn3116 -novopt -t us $(LIB_TB_TOP).tb_top ;
+	$(vsim)  +nowarn3116 -novopt -t ps $(LIB_TB_TOP).tb_top ;
 # ===========
