@@ -52,7 +52,7 @@ module sequencer
 
 
    always @(posedge clk) begin
-
+ 
       if (!rst_n) begin
 
 	 wait_ack <= 1'b0;
@@ -73,7 +73,7 @@ module sequencer
 
 
 	 // WAIT ACK MNGT
-	 if(ack == 1'b1 && s_ack == 1'b0) begin
+	 if(ack == 1'b1) begin // && s_ack == 1'b0) begin
 	    wait_ack <= 1'b0;	    
 	 end
 	 
@@ -83,7 +83,8 @@ module sequencer
             $fclose(file);
             $display("End of sequencer");	
 	 end
-	 else if(wait_ack == 1'b0) begin
+	 //else if(wait_ack == 1'b0) begin
+	 else if(ack == 1'b1) begin
 	    $fgets(line, file); // GET ENTIRE LINE
 	    
 	    // RAZ ARGS
@@ -115,7 +116,8 @@ module sequencer
 	 
       end // else: !if(!rst_n)
       
-	 
+
+ 
    end // always @ (posedge clk)
 
    

@@ -130,6 +130,7 @@ libs:  prepare_libs create_libs
 src_v=		$(SRC_DIR)/sequencer.sv \
 		$(SRC_DIR)/clk_gen.sv \
 		$(SRC_DIR)/decoder.sv \
+		$(SRC_DIR)/set_injector.sv \
 		$(SRC_DIR)/tb_top.sv \
 		#$(SRC_DIR)/file_3.v \
 		#$(SRC_DIR)/file_4.v

@@ -24,7 +24,8 @@ module tb_top;
    
    wire	  s_args_valid;
    
-   reg 	s_ack;
+   wire 	s_ack;
+   wire 	s_sel_set;
    
    
    ///assign ack = s_ack;
@@ -45,7 +46,7 @@ module tb_top;
    sequencer i_sequencer(
        .clk         (clk),
        .rst_n       (rst_n),
-       .ack         (1'b0),
+       .ack         (s_ack),
        .args        (s_args),
        .args_valid  (s_args_valid)
    );
@@ -55,25 +56,46 @@ module tb_top;
    decoder i_decoder (
        .clk         (clk),
        .rst_n       (rst_n),
-       .i_args      (s_args),
-       .i_args_valid (s_args_valid),
-       .o_sel_set (),
+       .i_args        (s_args),
+       .i_args_valid  (s_args_valid),
+       .o_sel_set (s_sel_set),
        .o_sel_wait (),
        .o_sel_check (),
-       .o_ack ()
+       .o_ack (s_ack)
 		      
    );
+
+   string 	s_set_alias [5];
+
+   wire [31:0] 	s_set [5];
+   
+   assign s_set_alias[0] = "I0";
+   assign s_set_alias[1] = "I1";
+   assign s_set_alias[2] = "I2";
+   assign s_set_alias[3] = "I3";
+   assign s_set_alias[4] = "I4";
    
 
-   initial begin
+   // SET INJECTOR INST
 
-      s_ack = 1'b0;
-      //ack = 1'b0;
-      
-     
-  end
+   set_injector 
+   #(
+    .SET_SIZE (5),
+    .SET_WIDTH(32)
+    )
+   i_set_injector
+   (
+       .clk         (clk),
+       .rst_n       (rst_n),
+   
+       .i_set_alias  (s_set_alias),
+       .i_set_sel    (s_sel_set),
+    
+       .i_args_valid  (s_args_valid),
+       .i_args        (s_args),
 
+       .o_set (s_set)
 
-
+    );
  
 endmodule // tb_top

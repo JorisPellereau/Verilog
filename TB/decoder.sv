@@ -41,5 +41,10 @@ module decoder
    assign s_sel_wait  = (i_args[0] == "WTR" ? 1'b1 : i_args[0] == "WTF" ? 1'b1 : 1'b0);
    assign s_sel_check = (i_args[0] == "CHK" ? 1'b1 : 1'b0);
    
-//   assign o_ack =
+   assign o_ack = (i_args[0] == "WTR" ? 1'b0 : 1'b1);
+
+   // Outputs affectation
+   assign o_sel_set = s_sel_set;
+   
+   
 endmodule // decoder
