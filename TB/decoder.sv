@@ -12,11 +12,14 @@
 `timescale 1ps/1ps
 
 module decoder
+  #(
+    parameter ARGS_NB = 5
+  )
   (
    input 	clk,
    input 	rst_n,
 
-   input string i_args[5],
+   input string i_args[ARGS_NB],
    input 	i_args_valid,
 
    // SET I/F

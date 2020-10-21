@@ -11,7 +11,8 @@
 module set_injector
 
   #(
-    parameter SET_SIZE = 5,
+    parameter ARGS_NB   = 5,
+    parameter SET_SIZE  = 5,
     parameter SET_WIDTH = 32
     )
    (
@@ -22,7 +23,7 @@ module set_injector
     input 		       i_set_sel,
     
     input 		       i_args_valid, 
-    input string 	       i_args [5],
+    input string 	       i_args [ARGS_NB],
 
     output reg [SET_WIDTH - 1 : 0] o_set [SET_SIZE]
 
@@ -33,15 +34,9 @@ module set_injector
    // ASSOCIATIVE ARRAY
    int 	 s_alias_array [string];
 
-
-   // INIT ALIAS ARRAY
-   initial begin
-      for (int i = 0; i < SET_SIZE; i++) begin
-	 s_alias_array[i_set_alias[i]] = i;
-      end
-   end
-
-
+   string s_str;
+   int 	  s_str_len;
+   
    // DECOD
    always @(posedge clk) begin
       if (!rst_n) begin
@@ -50,25 +45,35 @@ module set_injector
 	    for(int k = 0 ; k < SET_SIZE ; k++) begin
 	       o_set [k][j] <= 0;
 	    end
-	 end	 	 
+	 end
+
+	 for (int i = 0; i < SET_SIZE; i++) begin
+	   s_alias_array[i_set_alias[i]] = i;
+         end
+	 
       end
       else begin
 	 if(i_set_sel) begin
 	    if(i_args_valid) begin
 
-	       // ADD SELECTION FROM FORMAT : HEX or DEC !!!!
-	       o_set[s_alias_array[i_args[1]]] <= i_args[2].atohex();
+	       // Case : 0x at the beginning of the Args
+	       if( {i_args[2].getc(0),  i_args[2].getc(1)} == "0x") begin
+		  
+		  s_str_len = i_args[2].len(); // Find Length		  
+		  s_str     = i_args[2].substr(2, s_str_len - 1); // Remove 0x
+		  		  
+	          o_set[s_alias_array[i_args[1]]] <= s_str.atohex(); // Set Correct Hex value
+	       end
+	       // Decimal args
+	       else begin
+                 o_set[s_alias_array[i_args[1]]] <= i_args[2].atoi();		  
+	       end
+	       
 	       	       	       
 	    end	    
 	 end	 	 
       end
-   end // always @ (posedge clk)
-   
-  
-  
-   
-   
-   
+   end // always @ (posedge clk)   
    
 endmodule // set_injector
 

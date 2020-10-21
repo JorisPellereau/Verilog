@@ -12,13 +12,16 @@
 `timescale 1ps/1ps
 
 module sequencer
-
+  
+   #(
+     parameter ARGS_NB = 5
+   )
    (
     input 	  clk,
     input 	  rst_n,    
     input 	  ack,
     
-    output string args [5],
+    output string args [ARGS_NB],
     output reg	  args_valid
     
    );
@@ -88,7 +91,7 @@ module sequencer
 	    $fgets(line, file); // GET ENTIRE LINE
 	    
 	    // RAZ ARGS
-	    for (i = 0; i < 5; i++) begin
+	    for (i = 0; i < ARGS_NB; i++) begin
                args[i] = "";	   
 	    end
 
@@ -97,7 +100,7 @@ module sequencer
 	    args_valid <= 1'b1;
 	    
 	    // DISPLAY ARGS
-	    for (i = 0; i < 5; i++) begin
+	    for (i = 0; i < ARGS_NB; i++) begin
                $display("argi : %s", args[i]);	   
 	    end
 

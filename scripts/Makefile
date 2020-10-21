@@ -127,10 +127,14 @@ libs:  prepare_libs create_libs
 
 
 # == V FILES LIST ==
-src_v=		$(SRC_DIR)/sequencer.sv \
+src_v=		$(SRC_DIR)/testbench_setup.sv \
+		$(SRC_DIR)/sequencer.sv \
 		$(SRC_DIR)/clk_gen.sv \
 		$(SRC_DIR)/decoder.sv \
 		$(SRC_DIR)/set_injector.sv \
+		$(SRC_DIR)/wait_event.sv \
+		$(SRC_DIR)/check_level.sv \
+		$(SRC_DIR)/tb_seq_wrapper.sv \
 		$(SRC_DIR)/tb_top.sv \
 		#$(SRC_DIR)/file_3.v \
 		#$(SRC_DIR)/file_4.v
