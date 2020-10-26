@@ -41,7 +41,7 @@ module set_injector
    always @(posedge clk) begin
       if (!rst_n) begin
 
-	 for(int j = 0 ; j < 32 ; j++) begin
+	 for(int j = 0 ; j < SET_WIDTH ; j++) begin
 	    for(int k = 0 ; k < SET_SIZE ; k++) begin
 	       o_set [k][j] <= 0;
 	    end
