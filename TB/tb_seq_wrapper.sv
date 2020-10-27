@@ -23,7 +23,8 @@ module tb_seq_wrapper
     parameter SET_WIDTH    = 32,
 
     parameter WAIT_SIZE    = 5,
-    parameter WAIT_WIDTH   = 1
+    parameter WAIT_WIDTH   = 1,
+    parameter CLK_PERIOD   = 2000
     
   )
   (
@@ -73,9 +74,14 @@ module tb_seq_wrapper
 	      
        .i_args        (s_args),
        .i_args_valid  (s_args_valid),
+	      
        .o_sel_set     (s_sel_set),
+
+       .i_wait_done   (s_wait_done),	      
        .o_sel_wait    (s_sel_wait),
+	      
        .o_sel_check   (),
+	      
        .o_ack         (s_ack)
 		      
    );
@@ -107,8 +113,10 @@ module tb_seq_wrapper
 
    // WAIT EVENT INST
    wait_event #(
+		.ARGS_NB    (ARGS_NB),		
 		.WAIT_SIZE  (WAIT_SIZE),
-		.WAIT_WIDTH (WAIT_WIDTH)
+		.WAIT_WIDTH (WAIT_WIDTH),
+		.CLK_PERIOD (CLK_PERIOD)
    )
    i_wait_event (
        .clk         (clk),

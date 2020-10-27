@@ -28,7 +28,7 @@ module wait_event
 
    input [WAIT_WIDTH - 1 : 0] i_wait [WAIT_SIZE],
 
-   output 		      o_wait_done
+   output reg		      o_wait_done
    
    );
 
@@ -41,13 +41,17 @@ module wait_event
    reg 			      s_timeout_en;
    
    reg 			      s_start_timeout;
+   reg 			      s_wtr_detected;
+   reg 			      s_wtf_detected;
    
+   reg 			      s_wait_done;
    
    
    string		      s_alias;
    string 		      s_unit; // ps - ns - us - ms
    
 
+   int s_alias_array [string];
    reg [31:0] s_timeout_cnt;
    reg [31:0] s_max_timeout_cnt;
    reg [31:0] s_timeout_value;
@@ -142,10 +146,54 @@ module wait_event
    end
    
 
-   // 
-      
-         
+   // Edge Detection
+   always @(posedge clk) begin
+      if(!rst_n) begin
+	 
+	 for (int i = 0; i < WAIT_SIZE; i++) begin
+	   s_alias_array[i_wait_alias[i]] = i;
+         end
+
+	 s_wtr_detected <= 1'b0;
+	 s_wtf_detected <= 1'b0;
+	 
+      end
+      else begin
+
+	 if(i_sel_wait == 1'b1) begin
+	   // WTR selected
+	   if(s_wtr_wtf_sel == 1'b0) begin
+	        if(i_wait[s_alias_array[i_args[1]]] == 1'b1 && s_wait[s_alias_array[i_args[1]]] == 1'b0) begin
+	           $display("Info: Rising Edge detected");
+	           s_wtr_detected <= 1'b1;
+	        end
+	        else begin
+		   s_wtr_detected <= 1'b0;
+	        end
+	      
+	   end
+	   else begin
+	        if(i_wait[s_alias_array[i_args[1]]] == 1'b0 && s_wait[s_alias_array[i_args[1]]] == 1'b1) begin
+	           $display("Info: Falling Edge detected");
+	           s_wtf_detected <= 1'b1;
+	        end
+	        else begin
+		   s_wtf_detected <= 1'b0;
+	        end	      
+	
+	    end // else: !if(s_wtr_wtf_sel == 1'b0)
+
+	 end // if (i_sel_wait == 1'b1)	 
+	 else begin
+	   s_wtr_detected <= 1'b0;
+	   s_wtf_detected <= 1'b0;
+	 end // else: !if(i_sel_wait == 1'b1)
+      end // else: !if(!rst_n)
+   end // always @ (posedge clk)
    
+
+   
+     
    // LATCH INPUTS
    always @(posedge clk) begin
       if(!rst_n) begin
@@ -153,18 +201,37 @@ module wait_event
 	    for(int j = 0 ; j < WAIT_SIZE ; j++) begin
 	      s_wait[j][i] <= 0;
 	    end	    
-	 end
-	 
+	 end	 
       end
       else begin
-
 	 for(int j = 0 ; j < WAIT_SIZE ; j++) begin
 	   s_wait[j] <= i_wait[j];
 	 end	 
-
       end      
    end
+
+
+   // WAIT DONE Management
+   always @(posedge clk) begin
+      if(!rst_n) begin
+	 o_wait_done <= 1'b0;
+      end
+      else begin
+	 
+	    if(s_wtr_detected == 1'b1 && s_wtr_wtf_sel == 1'b0) begin
+		 o_wait_done <= 1'b1;		 
+	    end
+	    else if(s_wtf_detected == 1'b1 && s_wtr_wtf_sel == 1'b1)  begin
+      	         o_wait_done <= 1'b1; 
+	    end
+	    else begin
+	      o_wait_done <= 1'b0; 
+	    end
+      end // else: !if(!rst_n)
+   end // always @ (posedge clk)
    
 
-   
+         
 endmodule // wait_event
+
+

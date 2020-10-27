@@ -79,13 +79,24 @@ module tb_top;
    assign s_check_lvl_alias[4] = "O4";
  -----/\----- EXCLUDED -----/\----- */
    // ========================
+
+   // == WAIT EVENT INPUTS ==
+   assign s_wait[0] = 1'b0;
+   assign s_wait[1] = 1'b0;
+   assign s_wait[2] = 1'b0;
+   assign s_wait[3] = 1'b0;
+   assign s_wait[4] = 1'b0;
+   // =======================
+
+   
    
    // Testbench Sequencer INST
    tb_seq_wrapper #(
     .ARGS_NB       (`C_CMD_ARGS_NB),
     .SET_ALIAS_NB  (`C_SET_ALIAS_NB),
     .SET_SIZE      (`C_SET_SIZE),
-    .SET_WIDTH     (`C_SET_WIDTH)
+    .SET_WIDTH     (`C_SET_WIDTH),
+    .CLK_PERIOD    (`C_TB_CLK_PERIOD)
    )
    i_tb_seq_wrapper_0 (
 		       

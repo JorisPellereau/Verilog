@@ -13,6 +13,7 @@
 // Clock and Reset Configuration
 `define C_TB_CLK_HALF_PERIOD 1000  // 1000 ps = 1 ns
 `define C_WAIT_RST           2000  // 2000 ps = 2 ns
+`define C_TB_CLK_PERIOD      2000
 
 // TESTBENCH SEQUENCER Configuration
 `define C_CMD_ARGS_NB 5

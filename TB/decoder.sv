@@ -23,31 +23,56 @@ module decoder
    input 	i_args_valid,
 
    // SET I/F
-
-   output o_sel_set,
-   // WAIT I/F
-
-   output o_sel_wait,
-   // CHECK I/F
-
-   output o_sel_check,
+   output 	o_sel_set,
    
-   output 	o_ack
+   // WAIT I/F
+   input 	i_wait_done, 
+   output 	o_sel_wait,
+   
+   // CHECK I/F
+   output 	o_sel_check,
+   
+   output reg 	o_ack
    );
    
 
    // INTERNAL SIGNALS
    wire 	s_sel_set;
 
+/* -----\/----- EXCLUDED -----\/-----
+   // ACK Management
+   always @(posedge clk) begin
+      if(!rst_n) begin
+	 o_ack <= 1'b1;	 
+      end
+      else begin
+
+	 // ADD selection
+	 if(i_args[0] == "WTR" || i_args[0] == "WTF") begin
+
+	   if(i_wait_done == 1'b1) begin
+	      o_ack <= 1'b1;
+	   end 
+	    o_ack <= 1'b0;
+	 end
+         else begin
+          o_ack <= 1'b1;
+	 end	 
+      end      
+   end
+ -----/\----- EXCLUDED -----/\----- */
+   
 
    assign s_sel_set   = (i_args[0] == "SET" ? 1'b1 : 1'b0);
    assign s_sel_wait  = (i_args[0] == "WTR" ? 1'b1 : i_args[0] == "WTF" ? 1'b1 : 1'b0);
    assign s_sel_check = (i_args[0] == "CHK" ? 1'b1 : 1'b0);
    
-   assign o_ack = (i_args[0] == "WTR" ? 1'b0 : 1'b1);
+   assign o_ack = (i_args[0] == "WTR" ? (i_wait_done == 1'b1 ? 1'b1 : 1'b0) :  (i_args[0] == "WTR" ? (i_wait_done == 1'b1 ? 1'b1 : 1'b0) : 1'b1)  );
 
    // Outputs affectation
-   assign o_sel_set = s_sel_set;
+   assign o_sel_set  = s_sel_set;
+   assign o_sel_wait = s_sel_wait;
+   
    
    
 endmodule // decoder
