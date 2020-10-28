@@ -52,9 +52,14 @@ module wait_event
    
 
    int s_alias_array [string];
+
+   
+   int s_max_timeout_cnt;
+   int s_timeout_value;
+   
    reg [31:0] s_timeout_cnt;
-   reg [31:0] s_max_timeout_cnt;
-   reg [31:0] s_timeout_value;
+   reg 	      s_timeout_done;
+   
    
    
 
@@ -64,8 +69,8 @@ module wait_event
       if(!rst_n) begin
 	 s_wtr_wtf_sel     <= 1'b0;
 	 //s_alias           <= "";
-	 s_max_timeout_cnt <= 32'h00000000;
-	 s_timeout_value   <= 32'h00000000;
+	 s_max_timeout_cnt <= 0;
+	 s_timeout_value   <= 0;
 	 s_valid <= 1'b0;
 	 s_timeout_en <= 1'b0;
 	 
@@ -108,22 +113,23 @@ module wait_event
 
 	       // Compute Timeout value
 	       if(s_timeout_en) begin
+		  
 		  case (s_unit) 
 		    "ps": begin
 		       s_max_timeout_cnt = s_timeout_value / CLK_PERIOD;		       
 		    end
 		    "ns": begin
-		       s_max_timeout_cnt = s_timeout_value / (1000 * CLK_PERIOD);
+		       s_max_timeout_cnt = (1000 * s_timeout_value) / (CLK_PERIOD);
 		    end
 		    "us": begin
-		       s_max_timeout_cnt = s_timeout_value / (1000000 * CLK_PERIOD);
+		       s_max_timeout_cnt = (1000000 * s_timeout_value) / (CLK_PERIOD);
 		    end
 		    "ms": begin
-		       s_max_timeout_cnt = s_timeout_value / (1000000000 * CLK_PERIOD);
+		       s_max_timeout_cnt = (1000000000 * s_timeout_value) / (CLK_PERIOD);
 		    end
 		    
 		    default: begin
-		       $display("Error: wrong s_unit");		       
+		       $display("Error: wrong unit format");		       
 		    end
 		    
 		  endcase // case (s_unit)
@@ -135,13 +141,20 @@ module wait_event
 	    end // if (i_args_valid)
 	    
             else begin
-              s_wtr_wtf_sel <= 1'b0; 
+              //s_wtr_wtf_sel <= 1'b0; 
 	      s_valid <= 1'b0; 
 	     end // else: !if(i_args_valid)	    	 	 
          end // if (i_sel_wait)
 	 else begin
-	   s_valid <= 1'b0; 
-	 end // else: !if(i_sel_wait)	 
+	   s_valid <= 1'b0;
+	   s_timeout_en <= 1'b0; 
+	 end // else: !if(i_sel_wait)
+	 
+ 	 if(s_wtr_detected == 1'b1 || s_wtf_detected == 1'b1) begin
+	    s_timeout_en <= 1'b0;
+	    
+	 end
+	 
       end      
    end
    
@@ -208,7 +221,36 @@ module wait_event
 	   s_wait[j] <= i_wait[j];
 	 end	 
       end      
+   end // always @ (posedge clk)
+
+   // Timeout Management
+   always @(posedge clk) begin
+      if(!rst_n) begin
+	 s_timeout_cnt <= 32'h00000000;
+	 s_timeout_done <= 1'b0;
+	 
+      end
+      else begin
+
+	 if(s_timeout_en) begin
+	    if(s_timeout_cnt < s_max_timeout_cnt) begin
+	       s_timeout_cnt <= s_timeout_cnt + 1; // Inc Timeout Counter
+	       s_timeout_done <= 1'b0;
+	       
+	    end
+	    else begin
+	       s_timeout_done <= 1'b1;
+	       $display("Error: Timeout occurs");
+	       
+	    end	    
+	 end
+         else begin
+	   s_timeout_cnt <= 32'h00000000;
+	   s_timeout_done <= 1'b0;
+         end // else: !if(s_timeout_en)	 	 	 
+      end      
    end
+   
 
 
    // WAIT DONE Management
@@ -224,6 +266,9 @@ module wait_event
 	    else if(s_wtf_detected == 1'b1 && s_wtr_wtf_sel == 1'b1)  begin
       	         o_wait_done <= 1'b1; 
 	    end
+	    else if(s_timeout_done == 1'b1) begin
+	         o_wait_done <= 1'b1;
+	    end	 
 	    else begin
 	      o_wait_done <= 1'b0; 
 	    end
