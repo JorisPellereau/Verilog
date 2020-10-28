@@ -26,3 +26,8 @@
 // WAIT EVENT Configuration
 `define C_WAIT_ALIAS_NB 5
 `define C_WAIT_WIDTH    1
+
+// CHECK LEVEL Configuration
+`define C_CHECK_ALIAS_NB 5
+`define C_CHECK_SIZE     5
+`define C_CHECK_WIDTH    32

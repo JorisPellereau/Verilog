@@ -58,10 +58,10 @@ module sequencer
  
       if (!rst_n) begin
 
-	 wait_ack <= 1'b0;
-	 file_open <= 1'b0;
+	 wait_ack   <= 1'b0;
+	 file_open  <= 1'b0;
 	 args_valid <= 1'b0;
-	 end_test <= 1'b0;
+	 end_test   <= 1'b0;
 	 
       end
       else begin
@@ -82,9 +82,9 @@ module sequencer
 	 
 
 	 if(end_test == 1'b1) begin
-	    $finish;
             $fclose(file);
-            $display("End of sequencer");	
+            $display("End of sequencer");
+      	    $finish;
 	 end
 	 //else if(wait_ack == 1'b0) begin
 	 else if(ack == 1'b1) begin
@@ -95,14 +95,15 @@ module sequencer
                args[i] = "";	   
 	    end
 
+	    
 	    $sscanf(line, "%s %s %s %s %s)", args[0], args[1], args[2], args[3], args[4]);
-	    $display("line : %s", line);
+	    //$display("line : %s", line);
 	    args_valid <= 1'b1;
 	    
 	    // DISPLAY ARGS
-	    for (i = 0; i < ARGS_NB; i++) begin
+	    /*for (i = 0; i < ARGS_NB; i++) begin
                $display("argi : %s", args[i]);	   
-	    end
+	    end*/
 
 	    wait_ack <= 1'b1;
 

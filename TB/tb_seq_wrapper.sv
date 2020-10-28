@@ -24,7 +24,10 @@ module tb_seq_wrapper
 
     parameter WAIT_SIZE    = 5,
     parameter WAIT_WIDTH   = 1,
-    parameter CLK_PERIOD   = 2000
+    parameter CLK_PERIOD   = 2000,
+
+    parameter CHECK_SIZE   = 5,
+    parameter CHECK_WIDTH  = 32
     
   )
   (
@@ -37,7 +40,11 @@ module tb_seq_wrapper
 
    // WAIT EVENT I/F
    input string 	      i_wait_alias [WAIT_SIZE],
-   input [WAIT_WIDTH - 1 : 0] i_wait [WAIT_SIZE]
+   input [WAIT_WIDTH - 1 : 0] i_wait [WAIT_SIZE],
+
+   // CHECK LEVEL I/F
+   input string 	      i_check_alias [CHECK_SIZE],
+   input [CHECK_WIDTH - 1 : 0] i_check [CHECK_SIZE]
    
   );
    
@@ -80,7 +87,7 @@ module tb_seq_wrapper
        .i_wait_done   (s_wait_done),	      
        .o_sel_wait    (s_sel_wait),
 	      
-       .o_sel_check   (),
+       .o_sel_check   (s_sel_check),
 	      
        .o_ack         (s_ack)
 		      
@@ -130,6 +137,24 @@ module tb_seq_wrapper
        .o_wait_done   (s_wait_done)
    );
    
+
+   // CHECK LEVEL INST
+   check_level #(
+		 .ARGS_NB     (ARGS_NB),
+		 .CHECK_SIZE  (CHECK_SIZE),
+		 .CHECK_WIDTH (CHECK_WIDTH)
+   )
+   i_check_level (
+        .clk         (clk),
+        .rst_n       (rst_n),
+
+	.i_check_alias  (i_check_alias),
+	.i_sel_check    (s_sel_check),
+        .i_args_valid   (s_args_valid),
+        .i_args         (s_args),
+        .i_check        (i_check)		 
+		  
+   );
    
      
    

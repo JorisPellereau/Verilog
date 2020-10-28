@@ -35,10 +35,11 @@ module tb_top;
 
    // WAIT EVENT signals
    string 	                s_wait_alias [`C_WAIT_ALIAS_NB];
-   wire [`C_SET_WIDTH - 1:0] 	s_wait [`C_WAIT_ALIAS_NB];
+   wire [`C_WAIT_WIDTH - 1:0] 	s_wait [`C_WAIT_ALIAS_NB];
 
    // CHECK LEVEL signals
-   
+   string 	                s_check_alias [`C_CHECK_ALIAS_NB];
+   wire [`C_CHECK_WIDTH - 1:0] 	s_check [`C_CHECK_ALIAS_NB];
    // ========================
    
    
@@ -71,13 +72,11 @@ module tb_top;
    // ========================
 
    // == CHECK LEVEL ALIAS ==
-/* -----\/----- EXCLUDED -----\/-----
-   assign s_check_lvl_alias[0] = "O0";
-   assign s_check_lvl_alias[1] = "O1";
-   assign s_check_lvl_alias[2] = "O2";
-   assign s_check_lvl_alias[3] = "O3";
-   assign s_check_lvl_alias[4] = "O4";
- -----/\----- EXCLUDED -----/\----- */
+   assign s_check_alias[0] = "TOTO0";
+   assign s_check_alias[1] = "TOTO1";
+   assign s_check_alias[2] = "TOTO2";
+   assign s_check_alias[3] = "TOTO3";
+   assign s_check_alias[4] = "TOTO4";
    // ========================
 
    // == WAIT EVENT INPUTS ==
@@ -88,6 +87,14 @@ module tb_top;
    assign s_wait[4] = 1'b0;
    // =======================
 
+   // == CHECK LEVEL INPUTS ==
+   assign s_check[0] = 32'hCAFEDECA;
+   assign s_check[1] = 32'h12345678;
+   assign s_check[2] = 8'h72;
+   assign s_check[3] = 1;
+   assign s_check[4] = 1'bz;   
+   // ========================
+
    
    
    // Testbench Sequencer INST
@@ -96,7 +103,9 @@ module tb_top;
     .SET_ALIAS_NB  (`C_SET_ALIAS_NB),
     .SET_SIZE      (`C_SET_SIZE),
     .SET_WIDTH     (`C_SET_WIDTH),
-    .CLK_PERIOD    (`C_TB_CLK_PERIOD)
+    .CLK_PERIOD    (`C_TB_CLK_PERIOD),
+    .CHECK_SIZE    (`C_CHECK_SIZE),
+    .CHECK_WIDTH   (`C_CHECK_WIDTH)
    )
    i_tb_seq_wrapper_0 (
 		       
@@ -109,9 +118,11 @@ module tb_top;
 
      // WAIT ALIAS
      .i_wait_alias  (s_wait_alias),
-     .i_wait        (s_wait)
+     .i_wait        (s_wait),
 
      // CHECK LEVEL
+     .i_check_alias  (s_check_alias),
+     .i_check        (s_check)
   );
    
  

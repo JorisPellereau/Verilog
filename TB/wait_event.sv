@@ -40,27 +40,24 @@ module wait_event
    reg 			      s_valid;
    reg 			      s_timeout_en;
    
-   reg 			      s_start_timeout;
    reg 			      s_wtr_detected;
-   reg 			      s_wtf_detected;
-   
-   reg 			      s_wait_done;
-   
-   
+   reg 			      s_wtf_detected;   
+      
    string		      s_alias;
    string 		      s_unit; // ps - ns - us - ms
    
-
    int s_alias_array [string];
-
    
    int s_max_timeout_cnt;
    int s_timeout_value;
    
    reg [31:0] s_timeout_cnt;
    reg 	      s_timeout_done;
+
    
-   
+   initial
+   //shall print %t with scaled in ns (-9), with 2 precision digits, and would print the " ns" string
+   $timeformat(-9, 2, " ns", 20);
    
 
    // DECOD Command
@@ -68,7 +65,6 @@ module wait_event
    always @(posedge clk) begin
       if(!rst_n) begin
 	 s_wtr_wtf_sel     <= 1'b0;
-	 //s_alias           <= "";
 	 s_max_timeout_cnt <= 0;
 	 s_timeout_value   <= 0;
 	 s_valid <= 1'b0;
@@ -116,16 +112,21 @@ module wait_event
 		  
 		  case (s_unit) 
 		    "ps": begin
-		       s_max_timeout_cnt = s_timeout_value / CLK_PERIOD;		       
+		       s_max_timeout_cnt = s_timeout_value / CLK_PERIOD;
+		       $display("Timeout : %d %s",s_timeout_value, s_unit);
+		       
 		    end
 		    "ns": begin
 		       s_max_timeout_cnt = (1000 * s_timeout_value) / (CLK_PERIOD);
+		       $display("Timeout : %d %s",s_timeout_value, s_unit);
 		    end
 		    "us": begin
 		       s_max_timeout_cnt = (1000000 * s_timeout_value) / (CLK_PERIOD);
+		       $display("Timeout : %d %s",s_timeout_value, s_unit);
 		    end
 		    "ms": begin
 		       s_max_timeout_cnt = (1000000000 * s_timeout_value) / (CLK_PERIOD);
+		       $display("Timeout : %d %s",s_timeout_value, s_unit);
 		    end
 		    
 		    default: begin
@@ -150,7 +151,7 @@ module wait_event
 	   s_timeout_en <= 1'b0; 
 	 end // else: !if(i_sel_wait)
 	 
- 	 if(s_wtr_detected == 1'b1 || s_wtf_detected == 1'b1) begin
+ 	 if(s_wtr_detected == 1'b1 || s_wtf_detected == 1'b1 || s_timeout_done == 1'b1) begin
 	    s_timeout_en <= 1'b0;
 	    
 	 end
@@ -232,7 +233,7 @@ module wait_event
       end
       else begin
 
-	 if(s_timeout_en) begin
+	 if(s_timeout_en == 1'b1 && s_timeout_done == 1'b0) begin
 	    if(s_timeout_cnt < s_max_timeout_cnt) begin
 	       s_timeout_cnt <= s_timeout_cnt + 1; // Inc Timeout Counter
 	       s_timeout_done <= 1'b0;
@@ -240,7 +241,7 @@ module wait_event
 	    end
 	    else begin
 	       s_timeout_done <= 1'b1;
-	       $display("Error: Timeout occurs");
+	       $display("Error: Timeout occurs %t", $time);
 	       
 	    end	    
 	 end
