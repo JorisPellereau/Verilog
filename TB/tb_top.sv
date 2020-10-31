@@ -99,13 +99,14 @@ module tb_top;
    
    // Testbench Sequencer INST
    tb_seq_wrapper #(
-    .ARGS_NB       (`C_CMD_ARGS_NB),
-    .SET_ALIAS_NB  (`C_SET_ALIAS_NB),
-    .SET_SIZE      (`C_SET_SIZE),
-    .SET_WIDTH     (`C_SET_WIDTH),
-    .CLK_PERIOD    (`C_TB_CLK_PERIOD),
-    .CHECK_SIZE    (`C_CHECK_SIZE),
-    .CHECK_WIDTH   (`C_CHECK_WIDTH)
+    .SCN_FILE_PATH  ("scn.txt"),		    
+    .ARGS_NB        (`C_CMD_ARGS_NB),
+    .SET_ALIAS_NB   (`C_SET_ALIAS_NB),
+    .SET_SIZE       (`C_SET_SIZE),
+    .SET_WIDTH      (`C_SET_WIDTH),
+    .CLK_PERIOD     (`C_TB_CLK_PERIOD),
+    .CHECK_SIZE     (`C_CHECK_SIZE),
+    .CHECK_WIDTH    (`C_CHECK_WIDTH)
    )
    i_tb_seq_wrapper_0 (
 		       

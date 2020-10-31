@@ -16,6 +16,7 @@
 
 module tb_seq_wrapper
   #(
+    parameter SCN_FILE_PATH = "scn.txt",
     parameter ARGS_NB = 5,
     
     parameter SET_ALIAS_NB = 5,
@@ -59,7 +60,8 @@ module tb_seq_wrapper
   
   // SEQUENCER INST
   sequencer #(
-     .ARGS_NB(ARGS_NB)
+     .ARGS_NB        (ARGS_NB),
+     .SCN_FILE_PATH  (SCN_FILE_PATH)
   )
   i_sequencer_0 (
 		 .clk     (clk),

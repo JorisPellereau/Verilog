@@ -14,7 +14,8 @@
 module sequencer
   
    #(
-     parameter ARGS_NB = 5
+     parameter ARGS_NB = 5,
+     parameter SCN_FILE_PATH = "test.txt"
    )
    (
     input 	  clk,
@@ -70,7 +71,7 @@ module sequencer
        // Open File once
 	 if(file_open == 1'b0) begin
 	    $display("Beginning of sequencer");
-	    file = $fopen("/home/jorisp/GitHub/Verilog/test.txt", "r");
+	    file = $fopen(SCN_FILE_PATH, "r");
 	    file_open <= 1'b1;	
 	 end
 
