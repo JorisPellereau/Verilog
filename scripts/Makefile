@@ -21,7 +21,7 @@ WORK_DIR_NAME=TB_WORK
 WORK_DIR=$(ROOT)/$(WORK_DIR_NAME)
 
 # == SOURCES DIRECTORY ==
-SRC_DIR=$(ROOT)/TB
+SRC_DIR=$(ROOT)/lib_testbench
 TB_SRC_DIR=$(ROOT)/tb_sources
 
 SCRIPTS_DIR=$(ROOT)/scripts
@@ -84,7 +84,7 @@ all:
 	@echo ""
 	@echo ""
 	@echo "======     RUN TESTS MAX7219          ======"
-	@echo "- Run test : MAX7219_CMD_DECOD :"
+	@echo "- Run test : run tb test :"
 	@echo "make run_tb_test"
 	@echo "============================================"
 
@@ -157,5 +157,5 @@ trans_test1=test_max7219_cmd_decod.txt
 wave_test1=wave_test_max7219_cmd_decod
 run_tb_test : clean libs compile_tb_v_files
 	cd $(WORK_DIR); \
-	$(vsim)  +nowarn3116 -novopt -t ps $(LIB_TB_TOP).tb_top ;
+	$(vsim)  +nowarn3116 -novopt -t ps $(LIB_TB_TOP).tb_top -G/tb_top/i_tb_seq_wrapper_0/SCN_FILE_PATH="/home/jorisp/GitHub/Verilog/test.txt";
 # ===========
