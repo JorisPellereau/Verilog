@@ -152,7 +152,7 @@ module tb_seq_wrapper
 	.i_sel_check    (s_sel_check),
         .i_args_valid   (s_args_valid),
         .i_args         (s_args),
-        .i_check        (i_check)		 
+        .i_check        (i_check)	 
 		  
    );
    

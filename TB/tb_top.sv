@@ -23,7 +23,7 @@ module tb_top;
    wire rst_n;
 
    
-   string s_args [5];   
+   string s_args [`C_CMD_ARGS_NB];   
    wire	  s_args_valid;
    
    wire 	s_ack;
@@ -89,9 +89,9 @@ module tb_top;
 
    // == CHECK LEVEL INPUTS ==
    assign s_check[0] = 32'hCAFEDECA;
-   assign s_check[1] = 32'h12345678;
+   assign s_check[1] = 16'h5678;
    assign s_check[2] = 8'h72;
-   assign s_check[3] = 1;
+   assign s_check[3] = 16'hzzzz;
    assign s_check[4] = 1'bz;   
    // ========================
 

@@ -70,8 +70,9 @@ module decoder
    assign o_ack = (i_args[0] == "WTR" ? (i_wait_done == 1'b1 ? 1'b1 : 1'b0) :  (i_args[0] == "WTF" ? (i_wait_done == 1'b1 ? 1'b1 : 1'b0) : 1'b1)  );
 
    // Outputs affectation
-   assign o_sel_set  = s_sel_set;
-   assign o_sel_wait = s_sel_wait;
+   assign o_sel_set   = s_sel_set;
+   assign o_sel_wait  = s_sel_wait;
+   assign o_sel_check = s_sel_check;
    
    
    
