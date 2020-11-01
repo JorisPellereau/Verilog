@@ -38,7 +38,7 @@ module sequencer
     
    string line;
 
-   int file;
+   int scn_file;
    int i;
    
 
@@ -52,7 +52,9 @@ module sequencer
       end      
    end
    
-  
+  integer code ;
+   integer error_code;
+   
 
 
    always @(posedge clk) begin
@@ -63,6 +65,7 @@ module sequencer
 	 file_open  <= 1'b0;
 	 args_valid <= 1'b0;
 	 end_test   <= 1'b0;
+	 scn_file <= 0;
 	 
       end
       else begin
@@ -71,7 +74,7 @@ module sequencer
        // Open File once
 	 if(file_open == 1'b0) begin
 	    $display("Beginning of sequencer");
-	    file = $fopen(SCN_FILE_PATH, "r");
+	    scn_file = $fopen(SCN_FILE_PATH, "r");
 	    file_open <= 1'b1;	
 	 end
 
@@ -83,13 +86,17 @@ module sequencer
 	 
 
 	 if(end_test == 1'b1) begin
-            $fclose(file);
+            $fclose(scn_file);
             $display("End of sequencer");
       	    $finish;
 	 end
 	 //else if(wait_ack == 1'b0) begin
 	 else if(ack == 1'b1) begin
-	    $fgets(line, file); // GET ENTIRE LINE
+	    code = $fgets(line, scn_file); // GET ENTIRE LINE
+	    //$display("code : %d", code);
+
+	    //error_code = $ferror(scn_file, line);
+	    
 	    
 	    // RAZ ARGS
 	    for (i = 0; i < ARGS_NB; i++) begin

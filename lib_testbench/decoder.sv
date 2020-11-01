@@ -31,6 +31,10 @@ module decoder
    
    // CHECK I/F
    output 	o_sel_check,
+
+   // WAIT DURATION I/F
+   input 	i_wait_duration_done,
+   output       o_sel_wait_duration,
    
    output reg 	o_ack
    );
@@ -63,16 +67,21 @@ module decoder
  -----/\----- EXCLUDED -----/\----- */
    
 
-   assign s_sel_set   = (i_args[0] == "SET" ? 1'b1 : 1'b0);
-   assign s_sel_wait  = (i_args[0] == "WTR" ? 1'b1 : i_args[0] == "WTF" ? 1'b1 : 1'b0);
-   assign s_sel_check = (i_args[0] == "CHK" ? 1'b1 : 1'b0);
+   assign s_sel_set           = (i_args[0] == "SET"  ? 1'b1 : 1'b0);
+   assign s_sel_wait          = (i_args[0] == "WTR"  ? 1'b1 : i_args[0] == "WTF" ? 1'b1 : 1'b0);
+   assign s_sel_check         = (i_args[0] == "CHK"  ? 1'b1 : 1'b0);
+   assign s_sel_wait_duration = (i_args[0] == "WAIT" ? 1'b1 : 1'b0);
    
-   assign o_ack = (i_args[0] == "WTR" ? (i_wait_done == 1'b1 ? 1'b1 : 1'b0) :  (i_args[0] == "WTF" ? (i_wait_done == 1'b1 ? 1'b1 : 1'b0) : 1'b1)  );
+   
+   assign o_ack = (i_args[0] == "WTR" ? (i_wait_done == 1'b1 ? 1'b1 : 1'b0) :  
+                    (i_args[0] == "WTF" ? (i_wait_done == 1'b1 ? 1'b1 : 1'b0) : 
+                      (i_args[0] == "WAIT" ? (i_wait_duration_done == 1'b1 ? 1'b1 : 1'b0) : 1'b1)));
 
    // Outputs affectation
-   assign o_sel_set   = s_sel_set;
-   assign o_sel_wait  = s_sel_wait;
-   assign o_sel_check = s_sel_check;
+   assign o_sel_set           = s_sel_set;
+   assign o_sel_wait          = s_sel_wait;
+   assign o_sel_check         = s_sel_check;
+   assign o_sel_wait_duration = s_sel_wait_duration;
    
    
    

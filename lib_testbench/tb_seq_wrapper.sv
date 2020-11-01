@@ -90,6 +90,9 @@ module tb_seq_wrapper
        .o_sel_wait    (s_sel_wait),
 	      
        .o_sel_check   (s_sel_check),
+
+       .i_wait_duration_done  (s_wait_duration_done),
+       .o_sel_wait_duration   (s_sel_wait_duration),
 	      
        .o_ack         (s_ack)
 		      
@@ -158,6 +161,21 @@ module tb_seq_wrapper
 		  
    );
    
-     
+   // WAIT DURATION
+   wait_duration #(
+		   .ARGS_NB     (ARGS_NB),
+		   .CLK_PERIOD (CLK_PERIOD)		   
+   )
+   i_wait_duration (
+        .clk         (clk),
+        .rst_n       (rst_n),
+
+        .i_sel_wait_duration   (s_sel_wait_duration),
+	.i_args_valid          (s_args_valid),
+	.i_args                (s_args),
+	.o_wait_duration_done  (s_wait_duration_done)
+		    
+   );
+   
    
 endmodule // tb_seq_wrapper

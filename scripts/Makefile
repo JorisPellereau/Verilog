@@ -133,6 +133,7 @@ src_v=		$(SRC_DIR)/testbench_setup.sv \
 		$(SRC_DIR)/decoder.sv \
 		$(SRC_DIR)/set_injector.sv \
 		$(SRC_DIR)/wait_event.sv \
+		$(SRC_DIR)/wait_duration.sv \
 		$(SRC_DIR)/check_level.sv \
 		$(SRC_DIR)/tb_seq_wrapper.sv \
 		$(SRC_DIR)/tb_top.sv \
