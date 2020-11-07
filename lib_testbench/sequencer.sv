@@ -104,7 +104,7 @@ module sequencer
 	    end
 
 	    
-	    $sscanf(line, "%s %s %s %s %s)", args[0], args[1], args[2], args[3], args[4]);
+	    $sscanf(line, "%s %s %s %s %s", args[0], args[1], args[2], args[3], args[4]);
 	    //$display("line : %s", line);
 	    args_valid <= 1'b1;
 	    

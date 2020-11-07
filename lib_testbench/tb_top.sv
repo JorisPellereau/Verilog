@@ -11,6 +11,8 @@
 `timescale 1ps/1ps
 
 `include "testbench_setup.sv"
+`include "tb_tasks.sv"
+
 
 // TB TOP
 module tb_top;
@@ -98,6 +100,7 @@ module tb_top;
    
    
    // Testbench Sequencer INST
+/* -----\/----- EXCLUDED -----\/-----
    tb_seq_wrapper #(
     .SCN_FILE_PATH  ("scn.txt"),		    
     .ARGS_NB        (`C_CMD_ARGS_NB),
@@ -125,6 +128,37 @@ module tb_top;
      .i_check_alias  (s_check_alias),
      .i_check        (s_check)
   );
+ -----/\----- EXCLUDED -----/\----- */
+
+   wire 			i_wait_done;
+   wire				i_wait_duration_done;
+   
+   int 			o_sel_wait;
+   int 			o_sel_check;
+   int 			o_sel_wait_duration;
+   int 			o_sel_set;
+   string 			line;
+   string 			args [5];
+   
+   
+
+   // CREATE CLASS
+   tb_class tb_class_inst;
+   
+   assign i_wait_duration_done = 1'b0;
+   
+   // TASK Testbench Sequencer
+   initial begin
+
+      tb_class_inst = new();
+
+      //tb_class_inst.cmd_decoder(line, i_wait_done, i_wait_duration_done, o_sel_set, o_sel_wait, o_sel_check, o_sel_wait_duration, args);
+      #1;
+      
+      tb_class_inst.tb_sequencer("/home/jorisp/GitHub/Verilog/test_tasks.txt", i_wait_done, i_wait_duration_done, o_sel_wait, o_sel_set, o_sel_check, o_sel_wait_duration);
+      
+      
+   end
    
  
 endmodule // tb_top

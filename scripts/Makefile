@@ -128,6 +128,7 @@ libs:  prepare_libs create_libs
 
 # == V FILES LIST ==
 src_v=		$(SRC_DIR)/testbench_setup.sv \
+		$(SRC_DIR)/tb_tasks.sv \
 		$(SRC_DIR)/sequencer.sv \
 		$(SRC_DIR)/clk_gen.sv \
 		$(SRC_DIR)/decoder.sv \
