@@ -8,9 +8,19 @@
 // Update Count    : 0
 // Status          : Unknown, Use with caution!
 
-//module tb_tasks;
 
-class tb_class;
+class tb_class #(
+        parameter ARGS_NB   = 5,
+
+	// SET INJECTOR PARAMETERS
+        parameter SET_SIZE  = 5,
+        parameter SET_WIDTH = 32,
+
+	// WAIT EVENT PARAMETERS
+	parameter WAIT_SIZE  = 5,
+        parameter WAIT_WIDTH = 1,
+        parameter CLK_PERIOD = 1000 // Unity : ps
+      );
    
 
    /* SEQUENCER Task
@@ -23,18 +33,20 @@ class tb_class;
       input string scn_file_path;
       input i_wait_done;
       input i_wait_duration_done;
+     
 
-      output  o_sel_wait;
-      output  o_sel_set;
-      output  o_sel_check;
-      output  o_sel_wait_duration;
+      // SET INJECTOR I/F
+      input string i_set_alias [SET_SIZE];      
+      output logic [SET_WIDTH - 1 : 0] o_set       [SET_SIZE];
+      
       
      
 
-      // LOCAL VARIABLES ?
+      // LOCAL VARIABLES
       int 	   scn_file;      
       string 	   line;
-      string 	   args[5];
+      logic 	   cmd_exists;      
+      string 	   args[ARGS_NB];
       
 
       // OPEN File
@@ -53,100 +65,140 @@ class tb_class;
 	   // Ignore Line   
 	 end
 
+	 // End of Test detected
+	 else if( {line.getc(0), line.getc(1), line.getc(2), line.getc(3), line.getc(4), line.getc(5), line.getc(6), line.getc(7)} == "END_TEST") begin
+	   $display("End of test");
+           $fclose(scn_file);	    
+	   $finish;
+	 end
+	 
 	 // Send line to Command Decoder
 	 else begin
-	    cmd_decoder(line, i_wait_done, i_wait_duration_done, o_sel_set, o_sel_wait, o_sel_check, o_sel_wait_duration, args);	    
-	 end
+	    cmd_decoder(line, cmd_exists, args);
 
-	 if(args[0] == "END_TEST") begin
-	    $display("End of test");	    
-	    $finish;
-	    
-	 end
+            if(cmd_exists) begin
+
+	       case(args[0])
+        
+		  "SET": begin
+		     set_injector(i_set_alias, args, o_set);		     
+		  end
+
+		  "WTR": begin
+		  end
+
+		  "WTF": begin
+		  end		 
+		  
+		  default: $display("");
+		 
+	       endcase // case (args[0])	       	       
+            end	    
+	 end // else: !if( {line.getc(0), line.getc(1), line.getc(2), line.getc(3), line.getc(4), line.getc(5), line.getc(6), line.getc(7)} == "END_TEST")
+
 	 
-	 
-	 
-      end      
-                  
+	 	 
+      end // while (1)
+      
+                       
    endtask // tb_sequencer
 
 
    /* COMMAND DECODER TASK
-    * Search
+    * Extracts Args and Check if commands exists
     * 
     */
    task cmd_decoder(
       input string  line,
-      input 	    i_wait_done,
-      input 	    i_wait_duration_done,
-      
-      output 	    o_sel_set,
-      output        o_sel_wait,
-      output 	    o_sel_check,
-      output 	    o_sel_wait_duration,
-      output string args [5]);
+      output logic  o_cmd_exists,		    
+      output string args [ARGS_NB]);
       
       begin
+	 	       
+        $display("line : %s", line);
 	 
+        $sscanf(line, "%s %s %s %s %s", args[0], args[1], args[2], args[3], args[4]);
+        $display("Args : %s %s %s %s %s", args[0], args[1], args[2], args[3], args[4]);
 	 
-      
-	 $display("line : %s", line);
-	 
-      $sscanf(line, "%s %s %s %s %s", args[0], args[1], args[2], args[3], args[4]);
-      $display("Args : %s %s %s %s %s", args[0], args[1], args[2], args[3], args[4]);
-	 
-      if(args[0] == "SET") begin
-	 o_sel_set = 1'b1;	 
+        if(args[0] == "SET") begin
+     	  o_cmd_exists = 1'b1;	 
+        end
+        else if(args[0] ==  "WTR") begin
+	  o_cmd_exists = 1'b1;	 
+        end
+        else if(args[0] == "WTF") begin
+          o_cmd_exists = 1'b1;
+        end
+        else if(args[0] == "CHK") begin
+	  o_cmd_exists = 1'b1; 
+        end
+        else if(args[0] == "WAIT") begin
+	  o_cmd_exists = 1'b1; 
+        end    
+        else begin
+	  $display("Error: Command %s not recognized", args[0]);
+          o_cmd_exists = 1'b0;	 
+        end
       end
-      else if(args[0] ==  "WTR") begin
-	 o_sel_wait = 1'b1;
+              
+   endtask // cmd_decoder
 
-	 // WAIT ACK For Blocking Commands
-	 while(i_wait_done != 1'b1) begin
-	    
-	 end
-	 
-      end
-      else if(args[0] == "WTF") begin
-	 o_sel_wait = 1'b1;
-	 // WAIT ACK For Blocking Commands
-	 while(i_wait_done != 1'b1) begin
-	    
-	 end
-      end
-      else if(args[0] == "CHK") begin
-	 o_sel_check = 1'b1;	 
-      end
-      else if(args[0] == "WAIT") begin
-	 o_sel_wait_duration = 1'b1;
-	 $display("Wait command detected");
-	 
-         // WAIT ACK For Blocking Commands
-	 while(i_wait_duration_done != 1'b1) begin
-	    $display("While Wait");
-	    
-	 end	 
-      end
-      else if(args[0] == "END_TEST") begin
-	 
-      end      
-      else begin
-	$display("Error: Command not recognized");
-	 
-	o_sel_set = 1'b0;
-        o_sel_wait = 1'b0;
-	o_sel_wait = 1'b0;	 
-        o_sel_check = 1'b0;
-        o_sel_wait_duration = 1'b0;	 
-      end
 
-      
-      end
+
+   /* SET INJECTOR TASK
+    * Read Args From Decoder task and set output as combinational
+    * 
+    */
+   task set_injector(
+     input string                        i_set_alias [SET_SIZE],		     
+     input string                        i_args      [ARGS_NB],
+     output logic    [SET_WIDTH - 1 : 0] o_set       [SET_SIZE]
+   );
+      begin
+
+	 // LOCAL VARIABLES
+	 int 	 s_alias_array [string];
+         int     s_str_len;
+	 string  s_str;
+
+	 // INIT ALIAS
+	 for (int i = 0; i < SET_SIZE; i++) begin
+	   s_alias_array[i_set_alias[i]] = i;
+         end
+	 
+	 // Case : 0x at the beginning of the Args
+	 if( {i_args[2].getc(0),  i_args[2].getc(1)} == "0x") begin
+		  
+           s_str_len = i_args[2].len();                    // Find Length		  
+           s_str     = i_args[2].substr(2, s_str_len - 1); // Remove 0x	
+	    // 	  		  
+	   o_set[s_alias_array[i_args[1]]] = s_str.atohex(); // Set Correct Hex value
+	 end
+	 // Decimal args
+	 else begin
+           o_set[s_alias_array[i_args[1]]] = i_args[2].atoi();		  
+	 end
+
+      end            
+      	 
+   endtask // set_injector
+
+
+   /* TASK WAIT EVENT
+    *
+    * 
+    */
+   task wait_event (
+     input string 	        i_wait_alias [WAIT_SIZE],
+     input [WAIT_WIDTH - 1 : 0] i_wait [WAIT_SIZE],
+     output reg		        o_wait_done
+   );
+      begin
+	 
+   endtask // wait_event
+   
       
    
-   endtask // cmd_decoder
    
  endclass
   
-
-//endmodule // tb_tasks

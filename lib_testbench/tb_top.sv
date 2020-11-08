@@ -33,8 +33,11 @@ module tb_top;
 
    // SET INJECTOR signals
    string 	                s_set_alias [`C_SET_ALIAS_NB];
+   
    wire [`C_SET_WIDTH - 1:0] 	s_set [`C_SET_ALIAS_NB];
 
+   
+   logic [`C_SET_WIDTH - 1:0] 	s_set_task [`C_SET_ALIAS_NB];
    // WAIT EVENT signals
    string 	                s_wait_alias [`C_WAIT_ALIAS_NB];
    wire [`C_WAIT_WIDTH - 1:0] 	s_wait [`C_WAIT_ALIAS_NB];
@@ -66,7 +69,7 @@ module tb_top;
    // ========================
 
    // == WAIT EVENT ALIAS ==
-   assign s_wait_alias[0] = "O0";
+   assign s_wait_alias[0] = "RST_N";
    assign s_wait_alias[1] = "O1";
    assign s_wait_alias[2] = "O2";
    assign s_wait_alias[3] = "O3";
@@ -130,20 +133,21 @@ module tb_top;
   );
  -----/\----- EXCLUDED -----/\----- */
 
-   wire 			i_wait_done;
+   wire 			s_wait_done;
    wire				i_wait_duration_done;
    
-   int 			o_sel_wait;
-   int 			o_sel_check;
-   int 			o_sel_wait_duration;
-   int 			o_sel_set;
+   logic 			s_sel_wait;
+   logic 			o_sel_check;
+   logic 			o_sel_wait_duration;
+   logic 			o_sel_set;
+   
    string 			line;
    string 			args [5];
    
    
 
-   // CREATE CLASS
-   tb_class tb_class_inst;
+   // CREATE CLASS - Configure Parameters
+   tb_class #(`C_CMD_ARGS_NB, `C_SET_SIZE, `C_SET_WIDTH, 5, 1, `C_TB_CLK_PERIOD) tb_class_inst;
    
    assign i_wait_duration_done = 1'b0;
    
@@ -151,14 +155,38 @@ module tb_top;
    initial begin
 
       tb_class_inst = new();
-
-      //tb_class_inst.cmd_decoder(line, i_wait_done, i_wait_duration_done, o_sel_set, o_sel_wait, o_sel_check, o_sel_wait_duration, args);
-      #1;
-      
-      tb_class_inst.tb_sequencer("/home/jorisp/GitHub/Verilog/test_tasks.txt", i_wait_done, i_wait_duration_done, o_sel_wait, o_sel_set, o_sel_check, o_sel_wait_duration);
+      forever begin
+       #1;	 
+       //if(rst_n == 1'b1) begin     
+	 
+         tb_class_inst.tb_sequencer("/home/jorisp/GitHub/Verilog/test_tasks.txt", s_wait_done, i_wait_duration_done, s_set_alias, s_set_task);
+       //end
+      end
       
       
    end
+
+
+
+
+   // WAIT EVENT INST
+   wait_event #(
+		.ARGS_NB    (`C_CMD_ARGS_NB),		
+		.WAIT_SIZE  (`C_WAIT_ALIAS_NB),
+		.WAIT_WIDTH (1),
+		.CLK_PERIOD (`C_TB_CLK_PERIOD)
+   )
+   i_wait_event (
+       .clk         (clk),
+       .rst_n       (rst_n),		 
+
+       .i_wait_alias  (s_wait_alias),
+       .i_sel_wait    (s_sel_wait),	 
+       .i_args_valid  (s_args_valid),
+       .i_args        (s_args),		 
+       .i_wait        (s_wait),
+       .o_wait_done   (s_wait_done)
+   );
    
  
 endmodule // tb_top
