@@ -144,7 +144,9 @@ module tb_top;
    string 			line;
    string 			args [5];
    
-   
+   wire 			s_sel_wtr_wtf;
+   wire [31:0] 			s_max_timeout;
+   wire [1 - 1 : 0]      s_wait_en [5];
 
    // CREATE CLASS - Configure Parameters
    tb_class #(`C_CMD_ARGS_NB, `C_SET_SIZE, `C_SET_WIDTH, 5, 1, `C_TB_CLK_PERIOD) tb_class_inst;
@@ -159,7 +161,7 @@ module tb_top;
        #1;	 
        //if(rst_n == 1'b1) begin     
 	 
-         tb_class_inst.tb_sequencer("/home/jorisp/GitHub/Verilog/test_tasks.txt", s_wait_done, i_wait_duration_done, s_set_alias, s_set_task);
+         tb_class_inst.tb_sequencer("/home/jorisp/GitHub/Verilog/test_tasks.txt", s_wait_done, i_wait_duration_done, s_set_alias, s_set_task, s_wait_alias, s_wait_done, s_sel_wtr_wtf, s_wait_en, s_max_timeout);
        //end
       end
       

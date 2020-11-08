@@ -31,7 +31,6 @@ class tb_class #(
 
       // PHYSICAL INPUTS
       input string scn_file_path;
-      input i_wait_done;
       input i_wait_duration_done;
      
 
@@ -39,8 +38,16 @@ class tb_class #(
       input string i_set_alias [SET_SIZE];      
       output logic [SET_WIDTH - 1 : 0] o_set       [SET_SIZE];
       
+      // WAIT EVENT I/F
+      input string 		       i_wait_alias [WAIT_SIZE];      
+      input 			       i_wait_done;      
+      output 			       o_sel_wtr_wtf;      
+      output [WAIT_WIDTH - 1 : 0]      o_wait_en [WAIT_SIZE];  
+      output reg [31:0] 	       o_max_timeout;
       
-     
+
+
+				 
 
       // LOCAL VARIABLES
       int 	   scn_file;      
@@ -85,6 +92,7 @@ class tb_class #(
 		  end
 
 		  "WTR": begin
+		     wait_event(i_wait_alias, args, i_wait_done, o_sel_wtr_wtf, o_wait_en, o_max_timeout);		     
 		  end
 
 		  "WTF": begin
@@ -189,11 +197,95 @@ class tb_class #(
     * 
     */
    task wait_event (
-     input string 	        i_wait_alias [WAIT_SIZE],
-     input [WAIT_WIDTH - 1 : 0] i_wait [WAIT_SIZE],
-     output reg		        o_wait_done
+     input string 		 i_wait_alias [WAIT_SIZE],
+     input string                i_args      [ARGS_NB],
+     input 			 i_wait_done,
+		    
+		    
+     output 			 o_sel_wtr_wtf,
+     output [WAIT_WIDTH - 1 : 0] o_wait_en [WAIT_SIZE],
+		    
+     output reg [31:0] 		 o_max_timeout
    );
       begin
+
+	 string 		      s_unit; // ps - ns - us - ms
+	 int s_timeout_value;
+	 int s_max_timeout_cnt;
+         int s_alias_array [string];
+	 
+	 // INIT ALIAS ARRAY
+	 for (int i = 0; i < WAIT_SIZE; i++) begin
+	   s_alias_array[i_wait_alias[i]] = i;
+         end
+
+	 // Command Decod
+	 if(i_args[0] == "WTR") begin
+           o_sel_wtr_wtf = 1'b0;		  
+	 end
+	 else if(i_args[0] == "WTF") begin
+	   o_sel_wtr_wtf = 1'b1;		  
+         end	       
+         else begin
+           $display("Error: Not A Wait Command");		  
+	 end
+
+
+	 // Timeout Decod
+	 if(i_args[2] != "" && i_args[3] != "") begin		  		  
+	   s_timeout_value = i_args[2].atoi(); // STR to INT
+	   if(i_args[3] == "ps" || i_args[3] == "ns" || i_args[3] == "us" || i_args[3] == "ms") begin
+ 	     s_unit = i_args[3];
+		     
+	   end		  
+           else begin
+            $display("Error: Wrong timeout unity");  
+           end				   
+	 end
+	 else begin
+          $display("Wait_event : No timeout");		  
+	 end
+
+	 case (s_unit) 
+           "ps": begin
+             s_max_timeout_cnt = s_timeout_value / CLK_PERIOD;
+             $display("Timeout : %d %s",s_timeout_value, s_unit);
+		       
+           end
+	   
+           "ns": begin
+	      s_max_timeout_cnt = (1000 * s_timeout_value) / (CLK_PERIOD);
+	      $display("Timeout : %d %s",s_timeout_value, s_unit);
+           end
+	   
+           "us": begin
+             s_max_timeout_cnt = (1000000 * s_timeout_value) / (CLK_PERIOD);
+             $display("Timeout : %d %s",s_timeout_value, s_unit);
+           end
+	   
+           "ms": begin
+             s_max_timeout_cnt = (1000000000 * s_timeout_value) / (CLK_PERIOD);
+             $display("Timeout : %d %s",s_timeout_value, s_unit);
+            end
+		    
+            default: begin
+              $display("Error: wrong unit format");		       
+            end
+		    
+          endcase // case (s_unit)
+
+	 o_max_timeout = s_max_timeout_cnt;
+	 
+         // SEL WAIT EVENT signal to wait
+	 o_wait_en[s_alias_array[i_args[1]]] = 1'b1;
+
+
+	 // Wait for WAIT EVENT module acknewledge
+	 while(i_wait_done != 1'b0) begin
+	    $display("Wait for WAIT EVET ACK ...");
+	    
+	 end
+      end
 	 
    endtask // wait_event
    
