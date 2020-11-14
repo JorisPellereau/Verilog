@@ -21,7 +21,19 @@ class tb_class #(
         parameter WAIT_WIDTH = 1,
         parameter CLK_PERIOD = 1000 // Unity : ps
       );
+
+
+   // == VIRTUAL I/F ==
+   virtual wait_event_intf vif;   
+   // =================
+
+   // Interface passed in Virtual I/F
+   function new(virtual wait_event_intf vif/*nif*/);
+      this.vif = vif/*nif*/;   
+   endfunction // new
    
+   
+   // == TASKS ==   
 
    /* SEQUENCER Task
     * Read The Scenario File
@@ -40,10 +52,15 @@ class tb_class #(
       
       // WAIT EVENT I/F
       input string 		       i_wait_alias [WAIT_SIZE];      
-      input 			       i_wait_done;      
-      output 			       o_sel_wtr_wtf;      
-      output [WAIT_WIDTH - 1 : 0]      o_wait_en [WAIT_SIZE];  
+      input int/*bit*/		       i_wait_done;      
+      output bit        	       o_sel_wtr_wtf;      
+      output int 		       o_wait_en;    
       output reg [31:0] 	       o_max_timeout;
+
+
+      // SEQUENCER INFO
+      output 			       o_finish;
+      
       
 
 
@@ -60,7 +77,8 @@ class tb_class #(
       $display("Beginning of sequencer");
       scn_file = $fopen(scn_file_path, "r");
 
-
+      o_finish = 1'b0;
+      
       // Ifinite Loop
       while(1) begin
 
@@ -75,7 +93,9 @@ class tb_class #(
 	 // End of Test detected
 	 else if( {line.getc(0), line.getc(1), line.getc(2), line.getc(3), line.getc(4), line.getc(5), line.getc(6), line.getc(7)} == "END_TEST") begin
 	   $display("End of test");
-           $fclose(scn_file);	    
+           $fclose(scn_file);
+	    o_finish = 1'b1;
+	    
 	   $finish;
 	 end
 	 
@@ -96,6 +116,7 @@ class tb_class #(
 		  end
 
 		  "WTF": begin
+		     wait_event(i_wait_alias, args, i_wait_done, o_sel_wtr_wtf, o_wait_en, o_max_timeout);
 		  end		 
 		  
 		  default: $display("");
@@ -197,15 +218,16 @@ class tb_class #(
     * 
     */
    task wait_event (
-     input string 		 i_wait_alias [WAIT_SIZE],
-     input string                i_args      [ARGS_NB],
-     input 			 i_wait_done,
+     input string      i_wait_alias [WAIT_SIZE],
+     input string      i_args [ARGS_NB],
+     input int	       i_wait_done,
 		    
 		    
-     output 			 o_sel_wtr_wtf,
-     output [WAIT_WIDTH - 1 : 0] o_wait_en [WAIT_SIZE],
+     output bit      o_sel_wtr_wtf,
+     output int        o_wait_en,
 		    
-     output reg [31:0] 		 o_max_timeout
+		    
+     output reg [31:0] o_max_timeout
    );
       begin
 
@@ -221,10 +243,16 @@ class tb_class #(
 
 	 // Command Decod
 	 if(i_args[0] == "WTR") begin
-           o_sel_wtr_wtf = 1'b0;		  
+           o_sel_wtr_wtf = 1'b0;
+	    #1;
+	    
+	    $display("WTR selected");
+		  
 	 end
 	 else if(i_args[0] == "WTF") begin
-	   o_sel_wtr_wtf = 1'b1;		  
+	   o_sel_wtr_wtf = 1'b1;
+	    $display("WTF selected");
+	    
          end	       
          else begin
            $display("Error: Not A Wait Command");		  
@@ -236,61 +264,94 @@ class tb_class #(
 	   s_timeout_value = i_args[2].atoi(); // STR to INT
 	   if(i_args[3] == "ps" || i_args[3] == "ns" || i_args[3] == "us" || i_args[3] == "ms") begin
  	     s_unit = i_args[3];
-		     
+
+
+
+             case (s_unit) 
+             "ps": begin
+               s_max_timeout_cnt = s_timeout_value / CLK_PERIOD;
+               $display("Timeout : %d %s",s_timeout_value, s_unit);
+		       
+             end
+	   
+             "ns": begin
+	        s_max_timeout_cnt = (1000 * s_timeout_value) / (CLK_PERIOD);
+	        $display("Timeout : %d %s",s_timeout_value, s_unit);
+             end
+	   
+             "us": begin
+               s_max_timeout_cnt = (1000000 * s_timeout_value) / (CLK_PERIOD);
+               $display("Timeout : %d %s",s_timeout_value, s_unit);
+             end
+	   
+             "ms": begin
+               s_max_timeout_cnt = (1000000000 * s_timeout_value) / (CLK_PERIOD);
+               $display("Timeout : %d %s",s_timeout_value, s_unit);
+              end
+		    
+              default: begin
+                $display("Error: wrong unit format");		       
+              end
+		    
+            endcase // case (s_unit)
+
+	    o_max_timeout = s_max_timeout_cnt;
+
+           	     
 	   end		  
            else begin
             $display("Error: Wrong timeout unity");  
            end				   
 	 end
 	 else begin
-          $display("Wait_event : No timeout");		  
-	 end
-
-	 case (s_unit) 
-           "ps": begin
-             s_max_timeout_cnt = s_timeout_value / CLK_PERIOD;
-             $display("Timeout : %d %s",s_timeout_value, s_unit);
-		       
-           end
-	   
-           "ns": begin
-	      s_max_timeout_cnt = (1000 * s_timeout_value) / (CLK_PERIOD);
-	      $display("Timeout : %d %s",s_timeout_value, s_unit);
-           end
-	   
-           "us": begin
-             s_max_timeout_cnt = (1000000 * s_timeout_value) / (CLK_PERIOD);
-             $display("Timeout : %d %s",s_timeout_value, s_unit);
-           end
-	   
-           "ms": begin
-             s_max_timeout_cnt = (1000000000 * s_timeout_value) / (CLK_PERIOD);
-             $display("Timeout : %d %s",s_timeout_value, s_unit);
-            end
-		    
-            default: begin
-              $display("Error: wrong unit format");		       
-            end
-		    
-          endcase // case (s_unit)
-
-	 o_max_timeout = s_max_timeout_cnt;
-	 
-         // SEL WAIT EVENT signal to wait
-	 o_wait_en[s_alias_array[i_args[1]]] = 1'b1;
-
-
-	 // Wait for WAIT EVENT module acknewledge
-	 while(i_wait_done != 1'b0) begin
-	    $display("Wait for WAIT EVET ACK ...");
+          $display("Wait_event : No timeout");	
+	    o_max_timeout = 0;
 	    
 	 end
+
+
+	 
+
+	 o_wait_en = s_alias_array[i_args[1]]; // NEED TO RETUNR THE INDEX !
+
+
+	 $display("Wait for WAIT EVENT ACK ... %t", $time);	 
+	   while(i_wait_done != 1 /*1'b1*/) begin	    
+	      #1;
+	      $display("time : %t", $time);
+ 
+	   end
+	 
       end
 	 
    endtask // wait_event
    
+
+   task /*static*/ task_test(
+		  /*input 	       i_wait_done,*/
+	        virtual wait_event_intf vif,
+		  output bit toto
+      );
+      begin
+
+	 $display("TASK TEST");
+	 #1;
+
+	 //@(posedge vif.wait_done);
+	 //$display("i_wait_done INTF = %d", i_wait_done);
+	 
+	 //while(vif.wait_done /*i_wait_done*/ != 1'b1) begin
+	    //$display("i_wait_done = %d", i_wait_done);
+	    toto = 1'b0;
+	    #1;	    
+	 //end
+	 $display("TASK TEST : end of while");
+	 
+	 toto = 1'b1;
+      end
       
-   
-   
+   endtask // task_test
+
+
+ 
  endclass
-  

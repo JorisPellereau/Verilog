@@ -31,7 +31,7 @@ module clk_gen
 
    // Reset generation
    initial begin
-      rst_n <= 1'b1;
+      rst_n <= 1'b0;
       #G_WAIT_RST;
       rst_n <= 1'b0;
       #G_WAIT_RST;

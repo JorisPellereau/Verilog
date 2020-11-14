@@ -127,19 +127,21 @@ libs:  prepare_libs create_libs
 
 
 # == V FILES LIST ==
-src_v=		$(SRC_DIR)/testbench_setup.sv \
-		$(SRC_DIR)/tb_tasks.sv \
-		$(SRC_DIR)/sequencer.sv \
-		$(SRC_DIR)/clk_gen.sv \
-		$(SRC_DIR)/decoder.sv \
-		$(SRC_DIR)/set_injector.sv \
-		$(SRC_DIR)/wait_event.sv \
-		$(SRC_DIR)/wait_duration.sv \
-		$(SRC_DIR)/check_level.sv \
-		$(SRC_DIR)/tb_seq_wrapper.sv \
-		$(SRC_DIR)/tb_top.sv \
-		#$(SRC_DIR)/file_3.v \
-		#$(SRC_DIR)/file_4.v
+src_v+=$(SRC_DIR)/testbench_setup.sv
+src_v+=$(SRC_DIR)/wait_event_intf.sv
+src_v+=$(SRC_DIR)/sequencer.sv
+src_v+=$(SRC_DIR)/clk_gen.sv
+src_v+=$(SRC_DIR)/decoder.sv
+src_v+=$(SRC_DIR)/set_injector.sv
+src_v+=$(SRC_DIR)/wait_event.sv
+src_v+=$(SRC_DIR)/wait_event_tb.sv
+src_v+=$(SRC_DIR)/wait_event_wrapper.sv
+src_v+=$(SRC_DIR)/wait_duration.sv
+src_v+=$(SRC_DIR)/check_level.sv
+src_v+=$(SRC_DIR)/tb_tasks.sv
+src_v+=$(SRC_DIR)/tb_seq_wrapper.sv
+src_v+=$(SRC_DIR)/tb_top.sv
+
 
 # ==================
 
@@ -147,7 +149,13 @@ src_v=		$(SRC_DIR)/testbench_setup.sv \
 # == COMPILES V FILES ==
 compile_tb_v_files :
 	cd $(WORK_DIR); \
-	$(vlog) -work $(LIB_TB_TOP) $(src_v)
+	$(foreach list, $(src_v), $(vlog) -work $(LIB_1) $(list);) \
+
+
+#$(foreach list, $(src_v), $(vlog) -work $(LIB_TB_TOP) $(list);) \
+
+
+#$(vlog) -work $(LIB_TB_TOP) $(src_v)
 # ======================
 
 compile_all: clean libs compile_tb_v_files
