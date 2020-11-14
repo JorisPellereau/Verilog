@@ -67,14 +67,7 @@ module tb_top;
       output int 		       o_wait_en;    
       output reg [31:0] 	       o_max_timeout;
 
-
-      // SEQUENCER INFO
-      output 			       o_finish;
-      
-      
-
-
-				 
+        			 
 
       // LOCAL VARIABLES
       int 	   scn_file;      
@@ -87,7 +80,6 @@ module tb_top;
       $display("Beginning of sequencer");
       scn_file = $fopen(scn_file_path, "r");
 
-      o_finish = 1'b0;
       
       // Ifinite Loop
       while(1) begin
@@ -104,7 +96,6 @@ module tb_top;
 	 else if( {line.getc(0), line.getc(1), line.getc(2), line.getc(3), line.getc(4), line.getc(5), line.getc(6), line.getc(7)} == "END_TEST") begin
 	   $display("End of test");
            $fclose(scn_file);
-	    o_finish = 1'b1;
 	    
 	   $finish;
 	 end
@@ -277,8 +268,6 @@ module tb_top;
 	   if(i_args[3] == "ps" || i_args[3] == "ns" || i_args[3] == "us" || i_args[3] == "ms") begin
  	     s_unit = i_args[3];
 
-
-
              case (s_unit) 
              "ps": begin
                s_max_timeout_cnt = s_timeout_value / CLK_PERIOD;
@@ -341,39 +330,6 @@ module tb_top;
    endclass // tb_class
    
 
-   
-   class class_test;   
-
-  // == VIRTUAL I/F ==
-   virtual interface test_intf vif;   
-   // =================
-
-   // Interface passed in Virtual I/F
-   function new(virtual interface test_intf nif);
-      this.vif = nif;   
-   endfunction // new
-
-
-   task test_task(
-          virtual interface test_intf vif
-   );
-      begin
-
-	 if(vif.toto == 1'b0) begin
-	    $display("Toto = 0");
-	    
-	 end
-	 else begin
-	    $display("too != 0");
-	    
-	 end
-	 
-	 
-	 
-      end
-   endtask // test_task
-   
-endclass // endclass
 
    
 
@@ -462,37 +418,7 @@ endclass // endclass
    // ========================
 
    
-   
-   // Testbench Sequencer INST
-/* -----\/----- EXCLUDED -----\/-----
-   tb_seq_wrapper #(
-    .SCN_FILE_PATH  ("scn.txt"),		    
-    .ARGS_NB        (`C_CMD_ARGS_NB),
-    .SET_ALIAS_NB   (`C_SET_ALIAS_NB),
-    .SET_SIZE       (`C_SET_SIZE),
-    .SET_WIDTH      (`C_SET_WIDTH),
-    .CLK_PERIOD     (`C_TB_CLK_PERIOD),
-    .CHECK_SIZE     (`C_CHECK_SIZE),
-    .CHECK_WIDTH    (`C_CHECK_WIDTH)
-   )
-   i_tb_seq_wrapper_0 (
-		       
-     .clk   (clk),
-     .rst_n (rst_n),
-
-     // SET ALIAS
-     .i_set_alias  (s_set_alias),
-     .o_set        (s_set),
-
-     // WAIT ALIAS
-     .i_wait_alias  (s_wait_alias),
-     .i_wait        (s_wait),
-
-     // CHECK LEVEL
-     .i_check_alias  (s_check_alias),
-     .i_check        (s_check)
-  );
- -----/\----- EXCLUDED -----/\----- */
+ 
 
    bit   			s_wait_done;
    wire				i_wait_duration_done;
@@ -526,23 +452,12 @@ endclass // endclass
    // CREATE CLASS - Configure Parameters
    tb_class #(`C_CMD_ARGS_NB, `C_SET_SIZE, `C_SET_WIDTH, 5, 1, `C_TB_CLK_PERIOD) tb_class_inst;
 
-   class_test s_class_test;
-   
    
    assign i_wait_duration_done = 1'b0;
 
-   bit 				s_toto;
 
 
-   interface dut_if;
-  
-     logic 	wait_done;
-     modport TB(output wait_done) ; // Modport declaration 
-   endinterface // wait_event_intf
-
-   // Create Inst   
-   dut_if dif();
-
+   // == INTERFACES ==
    interface wait_event_intf #(
      parameter WAIT_SIZE  = 5,
      parameter WAIT_WIDTH = 1
@@ -555,38 +470,29 @@ endclass // endclass
    logic 	wait_done;
    
    endinterface // wait_event_int
+
+   // =================
+
+   // == INTERFACES INST ==
    
    wait_event_intf #(.WAIT_SIZE(5), .WAIT_WIDTH(1)) s_wait_event_if();  // WAIT EVENT I/F
 
-   wire 	s_i;
-   assign s_i = 1'b0;
 
-   //tb_class_inst  = new(s_wait_event_if());
-   // TASK Testbench Sequencer
    initial begin
     //tb_class_inst = new();
       tb_class_inst  = new(s_wait_event_if);
-      s_class_test   = new(s_test_intf);
       
       forever begin
        #1;
-	 //tb_class_inst.task_test(s_wait_event_if/*.wait_done*//*s_i*/, s_toto);
-	 //tb_class_inst.toto();
-	 //s_class_test.test_task(s_test_intf);
-	 
-       //if(rst_n == 1'b1) begin     
-	 //if(s_finish != 1'b1) begin
+
          tb_class_inst.tb_sequencer("/home/jorisp/GitHub/Verilog/test_tasks.txt", 
                                    i_wait_duration_done, 
                                    s_set_alias, s_set_task, s_wait_alias, 
                                    s_wait_done, s_sel_wtr_wtf, s_wait_en, 
-                                   s_max_timeout, s_finish);
-	 //end
-	 
-      end
-      
-      
-   end
+                                   s_max_timeout);	 
+      end            
+   end // initial begin
+   
 
 
    
@@ -607,50 +513,5 @@ endclass // endclass
    assign    s_wait_event_if.sel_wtr_wtf  = s_sel_wtr_wtf;
    assign    s_wait_event_if.max_timeout  = s_max_timeout;
    assign    s_wait_event_if.wait_signals = s_wait;
-   //assign    s_wait_event_if.wait_done    = 
 
-   // WAIT EVENT TB INST
-   /*wait_event_tb #(
-		.ARGS_NB    (`C_CMD_ARGS_NB),		
-		.WAIT_SIZE  (`C_WAIT_ALIAS_NB),
-		.WAIT_WIDTH (1),
-		.CLK_PERIOD (`C_TB_CLK_PERIOD)   
-   )
-   i_wait_event_tb (
-       .clk         (clk),
-       .rst_n       (rst_n),
-		    
-       .i_wait_en      (s_wait_en),
-       .i_sel_wtr_wtf  (s_sel_wtr_wtf),
-       .i_max_timeout  (s_max_timeout),
-       .i_wait         (s_wait),
-       .o_wait_done    (dif.wait_done)//s_wait_done)		    
-   );*/
-   
-     
-   
-
-
-   // WAIT EVENT INST
-/* -----\/----- EXCLUDED -----\/-----
-   wait_event #(
-		.ARGS_NB    (`C_CMD_ARGS_NB),		
-		.WAIT_SIZE  (`C_WAIT_ALIAS_NB),
-		.WAIT_WIDTH (1),
-		.CLK_PERIOD (`C_TB_CLK_PERIOD)
-   )
-   i_wait_event (
-       .clk         (clk),
-       .rst_n       (rst_n),		 
-
-       .i_wait_alias  (s_wait_alias),
-       .i_sel_wait    (s_sel_wait),	 
-       .i_args_valid  (s_args_valid),
-       .i_args        (s_args),		 
-       .i_wait        (s_wait),
-       .o_wait_done   (s_wait_done)
-   );
- -----/\----- EXCLUDED -----/\----- */
-   
- 
 endmodule // tb_top
