@@ -28,8 +28,8 @@ class tb_class #(
    // =================
 
    // Interface passed in Virtual I/F
-   function new(virtual wait_event_intf vif/*nif*/);
-      this.vif = vif/*nif*/;   
+   function new(virtual wait_event_intf nif);
+      this.vif = nif;   
    endfunction // new
    
    
@@ -57,14 +57,7 @@ class tb_class #(
       output int 		       o_wait_en;    
       output reg [31:0] 	       o_max_timeout;
 
-
-      // SEQUENCER INFO
-      output 			       o_finish;
-      
-      
-
-
-				 
+        			 
 
       // LOCAL VARIABLES
       int 	   scn_file;      
@@ -73,15 +66,22 @@ class tb_class #(
       string 	   args[ARGS_NB];
       
 
+      logic 	   end_test;
+
+      o_max_timeout = 0;
+      
+      
+      end_test = 1'b0;
+      
       // OPEN File
       $display("Beginning of sequencer");
       scn_file = $fopen(scn_file_path, "r");
 
-      o_finish = 1'b0;
-      
-      // Ifinite Loop
-      while(1) begin
 
+      
+      // While END_TEST not Reach
+      while(end_test == 1'b0) begin
+      
 	 // READ SCENARIO LINE
 	 $fgets(line, scn_file);
 
@@ -94,8 +94,8 @@ class tb_class #(
 	 else if( {line.getc(0), line.getc(1), line.getc(2), line.getc(3), line.getc(4), line.getc(5), line.getc(6), line.getc(7)} == "END_TEST") begin
 	   $display("End of test");
            $fclose(scn_file);
-	    o_finish = 1'b1;
-	    
+	    end_test = 1'b1;
+ 
 	   $finish;
 	 end
 	 
@@ -112,11 +112,11 @@ class tb_class #(
 		  end
 
 		  "WTR": begin
-		     wait_event(i_wait_alias, args, i_wait_done, o_sel_wtr_wtf, o_wait_en, o_max_timeout);		     
+		     wait_event(vif, i_wait_alias, args, i_wait_done, o_sel_wtr_wtf, o_wait_en, o_max_timeout);		     
 		  end
 
 		  "WTF": begin
-		     wait_event(i_wait_alias, args, i_wait_done, o_sel_wtr_wtf, o_wait_en, o_max_timeout);
+		     //wait_event(i_wait_alias, args, i_wait_done, o_sel_wtr_wtf, o_wait_en, o_max_timeout);
 		  end		 
 		  
 		  default: $display("");
@@ -127,7 +127,8 @@ class tb_class #(
 
 	 
 	 	 
-      end // while (1)
+      end // while (end_test == 1'b0)
+      
       
                        
    endtask // tb_sequencer
@@ -143,11 +144,12 @@ class tb_class #(
       output string args [ARGS_NB]);
       
       begin
-	 	       
+ 	 $display("Command Decoder");
+       
         $display("line : %s", line);
 	 
         $sscanf(line, "%s %s %s %s %s", args[0], args[1], args[2], args[3], args[4]);
-        $display("Args : %s %s %s %s %s", args[0], args[1], args[2], args[3], args[4]);
+        //$display("Args : %s %s %s %s %s", args[0], args[1], args[2], args[3], args[4]);
 	 
         if(args[0] == "SET") begin
      	  o_cmd_exists = 1'b1;	 
@@ -218,12 +220,14 @@ class tb_class #(
     * 
     */
    task wait_event (
+
+     virtual wait_event_intf vif,		    
      input string      i_wait_alias [WAIT_SIZE],
      input string      i_args [ARGS_NB],
-     input int	       i_wait_done,
+     input int 	       i_wait_done,
 		    
 		    
-     output bit      o_sel_wtr_wtf,
+     output bit        o_sel_wtr_wtf,
      output int        o_wait_en,
 		    
 		    
@@ -310,15 +314,13 @@ class tb_class #(
 	 end
 
 
-	 
-
 	 o_wait_en = s_alias_array[i_args[1]]; // NEED TO RETUNR THE INDEX !
 
 
 	 $display("Wait for WAIT EVENT ACK ... %t", $time);	 
-	   while(i_wait_done != 1 /*1'b1*/) begin	    
+	   while(vif.wait_done != 1 /*1'b1*/) begin	    
 	      #1;
-	      $display("time : %t", $time);
+	      //$display("time : %t", $time);
  
 	   end
 	 
