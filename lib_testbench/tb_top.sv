@@ -11,20 +11,9 @@
 `timescale 1ps/1ps
 
 `include "testbench_setup.sv"
+`include "wait_event_wrapper.sv"
 `include "tb_tasks.sv"
 
-interface wait_event_intf #(
-     parameter WAIT_SIZE  = 5,
-     parameter WAIT_WIDTH = 1
-   );
-   
-   logic wait_en;   
-   logic sel_wtr_wtf;
-   logic [31:0] max_timeout;
-   logic [WAIT_WIDTH - 1 : 0] wait_signals [WAIT_SIZE];   
-   logic 	wait_done;
-   
-   endinterface // wait_event_int
 
 // TB TOP
 module tb_top;
@@ -38,9 +27,7 @@ module tb_top;
 
    
    string s_args [`C_CMD_ARGS_NB];   
-   wire	  s_args_valid;
    
-   wire 	s_ack;
    wire 	s_sel_set;
 
    // SET INJECTOR signals
@@ -164,7 +151,7 @@ module tb_top;
        .clk         (clk),
        .rst_n       (rst_n),
 
-	.wait_event_if (s_wait_event_if)			 
+       .wait_event_if (s_wait_event_if)			 
    );
    
    assign    s_wait_event_if.wait_en      = s_wait_en;

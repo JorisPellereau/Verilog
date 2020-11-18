@@ -24,12 +24,12 @@ class tb_class #(
 
 
    // == VIRTUAL I/F ==
-   virtual wait_event_intf vif;   
+   virtual wait_event_intf wait_event_vif;   
    // =================
 
    // Interface passed in Virtual I/F
    function new(virtual wait_event_intf nif);
-      this.vif = nif;   
+      this.wait_event_vif = nif;   
    endfunction // new
    
    
@@ -112,11 +112,11 @@ class tb_class #(
 		  end
 
 		  "WTR": begin
-		     wait_event(vif, i_wait_alias, args, i_wait_done, o_sel_wtr_wtf, o_wait_en, o_max_timeout);		     
+		     wait_event(wait_event_vif, i_wait_alias, args);		     
 		  end
 
 		  "WTF": begin
-		     //wait_event(i_wait_alias, args, i_wait_done, o_sel_wtr_wtf, o_wait_en, o_max_timeout);
+		     wait_event(wait_event_vif, i_wait_alias, args);
 		  end		 
 		  
 		  default: $display("");
@@ -221,17 +221,9 @@ class tb_class #(
     */
    task wait_event (
 
-     virtual wait_event_intf vif,		    
+     virtual           wait_event_intf wait_event_vif,		    
      input string      i_wait_alias [WAIT_SIZE],
-     input string      i_args [ARGS_NB],
-     input int 	       i_wait_done,
-		    
-		    
-     output bit        o_sel_wtr_wtf,
-     output int        o_wait_en,
-		    
-		    
-     output reg [31:0] o_max_timeout
+     input string      i_args [ARGS_NB]
    );
       begin
 
@@ -247,14 +239,14 @@ class tb_class #(
 
 	 // Command Decod
 	 if(i_args[0] == "WTR") begin
-           o_sel_wtr_wtf = 1'b0;
-	    #1;
-	    
+           //o_sel_wtr_wtf = 1'b0;
+	    wait_event_vif.sel_wtr_wtf = 1'b0;	    
 	    $display("WTR selected");
 		  
 	 end
 	 else if(i_args[0] == "WTF") begin
-	   o_sel_wtr_wtf = 1'b1;
+	   //o_sel_wtr_wtf = 1'b1;
+	    wait_event_vif.sel_wtr_wtf = 1'b1;
 	    $display("WTF selected");
 	    
          end	       
@@ -299,8 +291,8 @@ class tb_class #(
 		    
             endcase // case (s_unit)
 
-	    o_max_timeout = s_max_timeout_cnt;
-
+	    //o_max_timeout = s_max_timeout_cnt;
+           wait_event_vif.max_timeout = s_max_timeout_cnt;
            	     
 	   end		  
            else begin
@@ -309,51 +301,25 @@ class tb_class #(
 	 end
 	 else begin
           $display("Wait_event : No timeout");	
-	    o_max_timeout = 0;
+	    //o_max_timeout = 0;
+	    wait_event_vif.max_timeout = 0;
 	    
 	 end
 
-
-	 o_wait_en = s_alias_array[i_args[1]]; // NEED TO RETUNR THE INDEX !
-
-
-	 $display("Wait for WAIT EVENT ACK ... %t", $time);	 
-	   while(vif.wait_done != 1 /*1'b1*/) begin	    
-	      #1;
-	      //$display("time : %t", $time);
- 
-	   end
+//	 o_wait_en = s_alias_array[i_args[1]]; // NEED TO RETURN THE INDEX !
+	 $display("i_args[1] : %s", i_args[1]);
+	 $display("s_alias_array[i_args[1]] : %d", s_alias_array[i_args[1]]);
+         wait_event_vif.wait_en = s_alias_array[i_args[1]];
+	 wait_event_vif.en_wait_event = 1'b1;
 	 
-      end
-	 
-   endtask // wait_event
-   
-
-   task /*static*/ task_test(
-		  /*input 	       i_wait_done,*/
-	        virtual wait_event_intf vif,
-		  output bit toto
-      );
-      begin
-
-	 $display("TASK TEST");
-	 #1;
-
-	 //@(posedge vif.wait_done);
-	 //$display("i_wait_done INTF = %d", i_wait_done);
-	 
-	 //while(vif.wait_done /*i_wait_done*/ != 1'b1) begin
-	    //$display("i_wait_done = %d", i_wait_done);
-	    toto = 1'b0;
-	    #1;	    
-	 //end
-	 $display("TASK TEST : end of while");
-	 
-	 toto = 1'b1;
+	 $display("Wait for WAIT EVENT ACK ... %t", $time);
+         @(posedge wait_event_vif.wait_done);
+         wait_event_vif.en_wait_event = 1'b0;
       end
       
-   endtask // task_test
-
+   endtask // wait_event
+   
+   
 
  
  endclass
