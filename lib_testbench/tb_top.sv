@@ -72,15 +72,6 @@ module tb_top
    
  
 
-   bit   			s_wait_done;
-   wire				i_wait_duration_done;
-   
-   logic 			o_sel_check;
-   logic 			o_sel_wait_duration;
-   logic 			o_sel_set;
-   
-   
-
    // == TESTBENCH GENERIC INTERFACE SIGNALS DECLARATIONS ==
     wait_event_intf #( .WAIT_SIZE   (`C_WAIT_ALIAS_NB),
                        .WAIT_WIDTH  (`C_WAIT_WIDTH)
@@ -92,9 +83,7 @@ module tb_top
     )
     s_set_injector_if();
  
-    wait_duration_intf #( .WAIT_CLK_PERIOD (`C_TB_CLK_PERIOD)
-    )
-    s_wait_duration_if();
+    wait_duration_intf s_wait_duration_if();
    
     assign s_wait_duration_if.clk = clk;
    
@@ -185,7 +174,6 @@ module tb_top
    
    initial begin
       tb_class_inst.tb_sequencer("/home/jorisp/GitHub/Verilog/test_tasks.txt");
-
 
    end // initial begin
    

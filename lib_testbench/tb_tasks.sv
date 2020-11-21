@@ -24,16 +24,17 @@ class tb_class #(
 
 
    // == VIRTUAL I/F ==
-   virtual wait_event_intf    wait_event_vif;
-   virtual set_injector_intf  set_injector_vif;
-   virtual wait_duration_intf wait_duration_vif;
+   virtual wait_event_intf     wait_event_vif;
+   virtual set_injector_intf   set_injector_vif;
+   virtual wait_duration_intf  wait_duration_vif;
    
    // =================
 
    // == Interface passed in Virtual I/F ==
-   function new(virtual wait_event_intf    wait_nif, 
-                virtual set_injector_intf  set_nif,
+   function new(virtual wait_event_intf     wait_nif, 
+                virtual set_injector_intf set_nif, 
                 virtual wait_duration_intf wait_duration_nif);
+      
       wait_event_vif    = wait_nif;
       set_injector_vif  = set_nif;
       wait_duration_vif = wait_duration_nif;      
@@ -369,22 +370,22 @@ class tb_class #(
 
 	 case (s_unit) 
           "ps": begin
-            s_max_timeout_cnt = s_timeout_value / (wait_duration_vif.CLK_PERIOD);
+            s_max_timeout_cnt = s_timeout_value / (CLK_PERIOD);
             $display("WAIT duration : %d %s",s_timeout_value, s_unit);		       
           end
 	   
           "ns": begin
-            s_max_timeout_cnt = (1000 * s_timeout_value) / (wait_duration_vif.CLK_PERIOD);
+            s_max_timeout_cnt = (1000 * s_timeout_value) / (CLK_PERIOD);
             $display("WAIT duration : %d %s",s_timeout_value, s_unit);
           end
 	   
           "us": begin
-            s_max_timeout_cnt = (1000000 * s_timeout_value) / (wait_duration_vif.CLK_PERIOD);
+            s_max_timeout_cnt = (1000000 * s_timeout_value) / (CLK_PERIOD);
             $display("WAIT duration : %d %s",s_timeout_value, s_unit);
           end
 	   
           "ms": begin
-            s_max_timeout_cnt = (1000000000 * s_timeout_value) / (wait_duration_vif.CLK_PERIOD);
+            s_max_timeout_cnt = (1000000000 * s_timeout_value) / (CLK_PERIOD);
             $display("WAIT duration : %d %s",s_timeout_value, s_unit);
           end
 		    

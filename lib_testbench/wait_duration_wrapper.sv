@@ -9,15 +9,9 @@
 // Status          : Unknown, Use with caution!
 
 
-interface wait_duration_intf #(
-      parameter WAIT_CLK_PERIOD = 1000			       
-   );
+interface wait_duration_intf; 
    
    logic clk;
         
 endinterface // wait_duration_intf
-
-module wait_duration_wrapper
-endmodule // wait_duration_wrapper
-
 
