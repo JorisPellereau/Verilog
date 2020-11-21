@@ -12,6 +12,7 @@
 
 `include "testbench_setup.sv"
 `include "wait_event_wrapper.sv"
+`include "set_injector_wrapper.sv"
 `include "tb_tasks.sv"
 
 
@@ -29,21 +30,13 @@ module tb_top
    wire clk;
    wire rst_n;
 
-
    // SET INJECTOR signals
-   string 	                s_set_alias [`C_SET_ALIAS_NB];
-   
-   wire [`C_SET_WIDTH - 1:0] 	s_set [`C_SET_ALIAS_NB];
+   wire [31:0] i0;
+   wire [31:0] i1;
+   wire [31:0] i2;
+   wire [31:0] i3;
+   wire [31:0] i4;
 
-   
-   logic [`C_SET_WIDTH - 1:0] 	s_set_task [`C_SET_ALIAS_NB];
-
-   // CHECK LEVEL signals
-   string 	                s_check_alias [`C_CHECK_ALIAS_NB];
-   wire [`C_CHECK_WIDTH - 1:0] 	s_check [`C_CHECK_ALIAS_NB];
-   // ========================
-   
-   
    
    // == CLK GEN INST ==
    clk_gen #(
@@ -56,31 +49,23 @@ module tb_top
    );
    // ==================
 
-   // == SET INJECTOR ALIAS ==
-   assign s_set_alias[0] = "I0";
-   assign s_set_alias[1] = "I1";
-   assign s_set_alias[2] = "I2";
-   assign s_set_alias[3] = "I3";
-   assign s_set_alias[4] = "I4";
-   // ========================
-
 
    // == CHECK LEVEL ALIAS ==
-   assign s_check_alias[0] = "TOTO0";
+   /*assign s_check_alias[0] = "TOTO0";
    assign s_check_alias[1] = "TOTO1";
    assign s_check_alias[2] = "TOTO2";
    assign s_check_alias[3] = "TOTO3";
-   assign s_check_alias[4] = "TOTO4";
+   assign s_check_alias[4] = "TOTO4";*/
    // ========================
 
 
 
    // == CHECK LEVEL INPUTS ==
-   assign s_check[0] = 32'hCAFEDECA;
+   /*assign s_check[0] = 32'hCAFEDECA;
    assign s_check[1] = 16'h5678;
    assign s_check[2] = 8'h72;
    assign s_check[3] = 16'hzzzz;
-   assign s_check[4] = 1'bz;   
+   assign s_check[4] = 1'bz; */  
    // ========================
 
    
@@ -99,9 +84,14 @@ module tb_top
     wait_event_intf #( .WAIT_SIZE   (`C_WAIT_ALIAS_NB),
                        .WAIT_WIDTH  (`C_WAIT_WIDTH)
     ) 
-    s_wait_event_if();  // WAIT EVENT I/F
+    s_wait_event_if();
 
+    set_injector_intf #( .SET_SIZE   (`C_SET_ALIAS_NB),
+			 .SET_WIDTH  (`C_SET_WIDTH)
+    )
+    s_set_injector_if();   
    
+
    // ===================================
 
    // == TESTBENCH MODULES ALIASES & SIGNALS AFFECTATION ==
@@ -119,9 +109,32 @@ module tb_top
    assign s_wait_event_if.wait_signals[2] = 1'b0;
    assign s_wait_event_if.wait_signals[3] = 1'b0;
    assign s_wait_event_if.wait_signals[4] = 1'b0;
+
+   // INIT SET ALIAS
+   assign s_set_injector_if.set_alias[0] = "I0";
+   assign s_set_injector_if.set_alias[1] = "I1";
+   assign s_set_injector_if.set_alias[2] = "I2";
+   assign s_set_injector_if.set_alias[3] = "I3";
+   assign s_set_injector_if.set_alias[4] = "I4";
+   
+   // SET SET_INJECTOR SIGNALS
+   assign i0 = s_set_injector_if.set_signals_synch[0];
+   assign i1 = s_set_injector_if.set_signals_synch[1];
+   assign i2 = s_set_injector_if.set_signals_synch[2];
+   assign i3 = s_set_injector_if.set_signals_synch[3];
+   assign i4 = s_set_injector_if.set_signals_synch[4];
+
+   // SET SET_INJECTOR INITIAL VALUES
+   assign s_set_injector_if.set_signals_asynch_init_value[0] = 32'hAAAAAAAA;
+   assign s_set_injector_if.set_signals_asynch_init_value[1] = 32'h22222222;
+   assign s_set_injector_if.set_signals_asynch_init_value[2] = 32'h55555555;
+   assign s_set_injector_if.set_signals_asynch_init_value[3] = 32'hZZZZZZZZ;
+   assign s_set_injector_if.set_signals_asynch_init_value[4] = 32'hFFFFFFFF;
    
    // =====================================================
 
+
+   
    // == HDL GENERIC TESTBENCH MODULES ==
 
    // WAIT EVENT TB WRAPPER INST
@@ -135,8 +148,17 @@ module tb_top
        .wait_event_if  (s_wait_event_if)			 
    );
 
-   
 
+   // SET INJECTOR TB WRAPPER INST
+   set_injector_wrapper #(
+			  .ARGS_NB(`C_CMD_ARGS_NB) 
+   )
+   i_set_injector_wrapper (
+       .clk              (clk),
+       .rst_n            (rst_n),
+       .set_injector_if  (s_set_injector_if)			   
+   );
+   
    
    // ===========================
 
@@ -150,14 +172,12 @@ module tb_top
                       `C_WAIT_ALIAS_NB,
                       `C_WAIT_WIDTH, 
                       `C_TB_CLK_PERIOD) 
-   tb_class_inst = new (s_wait_event_if);
+   tb_class_inst = new (s_wait_event_if, s_set_injector_if);
    
    
    initial begin
-      tb_class_inst  = new(s_wait_event_if);
-      tb_class_inst.tb_sequencer("/home/jorisp/GitHub/Verilog/test_tasks.txt", 
-                                 i_wait_duration_done, 
-                                 s_set_alias, s_set_task);
+      tb_class_inst.tb_sequencer("/home/jorisp/GitHub/Verilog/test_tasks.txt");
+
 
    end // initial begin
    

@@ -36,7 +36,7 @@ module wait_event_wrapper #(
       wait_event_intf wait_event_if    
    );
    
-
+   // WAIT EVENT TB Module INST
    wait_event_tb #(
 		.ARGS_NB    (ARGS_NB),		
 		.WAIT_SIZE  (wait_event_if.WAIT_SIZE),

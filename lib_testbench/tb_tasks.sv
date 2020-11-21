@@ -24,14 +24,21 @@ class tb_class #(
 
 
    // == VIRTUAL I/F ==
-   virtual wait_event_intf wait_event_vif;   
+   virtual wait_event_intf   wait_event_vif;
+   virtual set_injector_intf set_injector_vif;
+ 
    // =================
 
-   // Interface passed in Virtual I/F
-   function new(virtual wait_event_intf nif);
-      this.wait_event_vif = nif;   
+   // == Interface passed in Virtual I/F ==
+   function new(virtual wait_event_intf wait_nif, virtual set_injector_intf set_nif);
+      wait_event_vif   = wait_nif;
+      set_injector_vif = set_nif;
+      
    endfunction // new
+
+   // ====================================
    
+      
    
    // == TASKS ==   
 
@@ -41,14 +48,8 @@ class tb_class #(
    */
    task tb_sequencer(
 
-      // PHYSICAL INPUTS
-      input string 		       scn_file_path,
-      input 			       i_wait_duration_done,
-     
-      // SET INJECTOR I/F
-      input string 		       i_set_alias [SET_SIZE],
-      output logic [SET_WIDTH - 1 : 0] o_set [SET_SIZE]
-      
+        input string scn_file_path // SCENARIO FILE PATH
+
       );
       
      begin
@@ -64,10 +65,14 @@ class tb_class #(
 
       logic 	   end_test;
 
-      //o_max_timeout = 0;
       
       
       end_test = 1'b0;
+
+
+      // INIT SET INJECTOR
+      set_injector_init(set_injector_vif);
+	
       
       // OPEN File
       $display("Beginning of sequencer");
@@ -104,7 +109,7 @@ class tb_class #(
 	       case(args[0])
         
 		  "SET": begin
-		     set_injector(i_set_alias, args, o_set);		     
+		     set_injector(set_injector_vif, args);		     
 		  end
 
 		  "WTR": begin
@@ -171,6 +176,20 @@ class tb_class #(
               
    endtask // cmd_decoder
 
+   /* SET INJECTOR INIT TASK
+    *  SET initial valueto the SET INJECTOR outputs
+    * 
+    * 
+    */
+   task set_injector_init (
+      virtual set_injector_intf set_injector_vif
+   );
+      begin
+	 set_injector_vif.set_signals_asynch = set_injector_vif.set_signals_asynch_init_value; 
+      end
+   endtask // set_injector_init
+   
+		  
 
 
    /* SET INJECTOR TASK
@@ -178,9 +197,8 @@ class tb_class #(
     * 
     */
    task set_injector(
-     input string                        i_set_alias [SET_SIZE],		     
-     input string                        i_args      [ARGS_NB],
-     output logic    [SET_WIDTH - 1 : 0] o_set       [SET_SIZE]
+     virtual set_injector_intf set_injector_vif,
+     input string 		      i_args [ARGS_NB]
    );
       begin
 
@@ -191,7 +209,7 @@ class tb_class #(
 
 	 // INIT ALIAS
 	 for (int i = 0; i < SET_SIZE; i++) begin
-	   s_alias_array[i_set_alias[i]] = i;
+	   s_alias_array[set_injector_vif.set_alias[i]] = i;
          end
 	 
 	 // Case : 0x at the beginning of the Args
@@ -199,12 +217,15 @@ class tb_class #(
 		  
            s_str_len = i_args[2].len();                    // Find Length		  
            s_str     = i_args[2].substr(2, s_str_len - 1); // Remove 0x	
-	    // 	  		  
-	   o_set[s_alias_array[i_args[1]]] = s_str.atohex(); // Set Correct Hex value
+	    // 	 
+	    // 
+	   set_injector_vif.set_signals_asynch[s_alias_array[i_args[1]]] = s_str.atohex();		  
+	   //o_set[s_alias_array[i_args[1]]] = s_str.atohex(); // Set Correct Hex value
 	 end
 	 // Decimal args
 	 else begin
-           o_set[s_alias_array[i_args[1]]] = i_args[2].atoi();		  
+	   set_injector_vif.set_signals_asynch[s_alias_array[i_args[1]]]  = i_args[2].atoi(); 
+           //o_set[s_alias_array[i_args[1]]] = i_args[2].atoi();		  
 	 end
 
       end            
