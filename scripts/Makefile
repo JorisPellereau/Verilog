@@ -139,6 +139,7 @@ src_v+=$(SRC_DIR)/wait_event_wrapper.sv
 src_v+=$(SRC_DIR)/set_injector_tb.sv
 src_v+=$(SRC_DIR)/set_injector_wrapper.sv
 src_v+=$(SRC_DIR)/wait_duration.sv
+src_v+=$(SRC_DIR)/wait_duration_wrapper.sv
 src_v+=$(SRC_DIR)/check_level.sv
 src_v+=$(SRC_DIR)/tb_tasks.sv
 src_v+=$(SRC_DIR)/tb_seq_wrapper.sv

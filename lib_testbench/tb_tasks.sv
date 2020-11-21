@@ -24,16 +24,19 @@ class tb_class #(
 
 
    // == VIRTUAL I/F ==
-   virtual wait_event_intf   wait_event_vif;
-   virtual set_injector_intf set_injector_vif;
- 
+   virtual wait_event_intf    wait_event_vif;
+   virtual set_injector_intf  set_injector_vif;
+   virtual wait_duration_intf wait_duration_vif;
+   
    // =================
 
    // == Interface passed in Virtual I/F ==
-   function new(virtual wait_event_intf wait_nif, virtual set_injector_intf set_nif);
-      wait_event_vif   = wait_nif;
-      set_injector_vif = set_nif;
-      
+   function new(virtual wait_event_intf    wait_nif, 
+                virtual set_injector_intf  set_nif,
+                virtual wait_duration_intf wait_duration_nif);
+      wait_event_vif    = wait_nif;
+      set_injector_vif  = set_nif;
+      wait_duration_vif = wait_duration_nif;      
    endfunction // new
 
    // ====================================
@@ -118,7 +121,12 @@ class tb_class #(
 
 		  "WTF": begin
 		     wait_event(wait_event_vif, args);
-		  end		 
+		  end
+
+                  "WAIT": begin
+		     wait_duration(wait_duration_vif, args);		     
+                  end
+	 
 		  
 		  default: $display("");
 		 
@@ -156,7 +164,7 @@ class tb_class #(
         if(args[0] == "SET") begin
      	  o_cmd_exists = 1'b1;	 
         end
-        else if(args[0] ==  "WTR") begin
+        else if(args[0] == "WTR") begin
 	  o_cmd_exists = 1'b1;	 
         end
         else if(args[0] == "WTF") begin
@@ -217,15 +225,13 @@ class tb_class #(
 		  
            s_str_len = i_args[2].len();                    // Find Length		  
            s_str     = i_args[2].substr(2, s_str_len - 1); // Remove 0x	
-	    // 	 
-	    // 
-	   set_injector_vif.set_signals_asynch[s_alias_array[i_args[1]]] = s_str.atohex();		  
-	   //o_set[s_alias_array[i_args[1]]] = s_str.atohex(); // Set Correct Hex value
+
+	   set_injector_vif.set_signals_asynch[s_alias_array[i_args[1]]] = s_str.atohex();	  
 	 end
+	 
 	 // Decimal args
 	 else begin
-	   set_injector_vif.set_signals_asynch[s_alias_array[i_args[1]]]  = i_args[2].atoi(); 
-           //o_set[s_alias_array[i_args[1]]] = i_args[2].atoi();		  
+	   set_injector_vif.set_signals_asynch[s_alias_array[i_args[1]]]  = i_args[2].atoi();	  
 	 end
 
       end            
@@ -327,7 +333,85 @@ class tb_class #(
       end
       
    endtask // wait_event
+
    
+   task wait_duration (
+	virtual      wait_duration_intf wait_duration_vif, 	       
+        input string i_args [ARGS_NB]       	              		       
+   );
+      
+      begin
+
+	 string        s_unit; // ps - ns - us - ms
+	 int           s_timeout_value;
+	 int           s_max_timeout_cnt;
+	 int 	       s_cnt;	 
+	 logic 	       s_cnt_done;
+
+	 s_cnt_done = 1'b0;
+	 s_cnt      = 0;
+	 
+
+	 if(i_args[1] != "" && i_args[2] != "") begin		  		  
+	   s_timeout_value = i_args[1].atoi(); // STR to INT
+           if(i_args[2] == "ps" || i_args[2] == "ns" || i_args[2] == "us" || i_args[2] == "ms") begin
+             s_unit = i_args[2];
+		     
+           end		  
+           else begin
+             $display("Error: Wrong timeout unity");  
+           end				   
+	 end
+	 else begin
+           $display("Wait Duration : No timeout");		  
+	 end // else: !if(i_args[1] != "" && i_args[2] != "")
+
+
+	 case (s_unit) 
+          "ps": begin
+            s_max_timeout_cnt = s_timeout_value / (wait_duration_vif.CLK_PERIOD);
+            $display("WAIT duration : %d %s",s_timeout_value, s_unit);		       
+          end
+	   
+          "ns": begin
+            s_max_timeout_cnt = (1000 * s_timeout_value) / (wait_duration_vif.CLK_PERIOD);
+            $display("WAIT duration : %d %s",s_timeout_value, s_unit);
+          end
+	   
+          "us": begin
+            s_max_timeout_cnt = (1000000 * s_timeout_value) / (wait_duration_vif.CLK_PERIOD);
+            $display("WAIT duration : %d %s",s_timeout_value, s_unit);
+          end
+	   
+          "ms": begin
+            s_max_timeout_cnt = (1000000000 * s_timeout_value) / (wait_duration_vif.CLK_PERIOD);
+            $display("WAIT duration : %d %s",s_timeout_value, s_unit);
+          end
+		    
+          default: begin
+            $display("Error: wrong unit format");		       
+          end
+		    
+         endcase // case (s_unit)
+
+
+	 // WAIT until end of counter
+	 while(s_cnt_done == 1'b0) begin
+	    @(posedge wait_duration_vif.clk); // WAIT FOR RISING EDRE of CLK
+	    if(s_cnt < s_max_timeout_cnt) begin
+	       s_cnt = s_cnt + 1;
+	    end
+	    else begin
+	       s_cnt_done = 1'b1;	       	       
+	    end	    
+	 end
+	 
+	 
+	 
+	 
+      end
+   endtask // wait_duration
    
+      
 
  endclass

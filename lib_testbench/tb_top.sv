@@ -13,6 +13,7 @@
 `include "testbench_setup.sv"
 `include "wait_event_wrapper.sv"
 `include "set_injector_wrapper.sv"
+`include "wait_duration_wrapper.sv"
 `include "tb_tasks.sv"
 
 
@@ -80,7 +81,7 @@ module tb_top
    
    
 
-   // == INTERNAL SIGNALS DECLARATIONS ==
+   // == TESTBENCH GENERIC INTERFACE SIGNALS DECLARATIONS ==
     wait_event_intf #( .WAIT_SIZE   (`C_WAIT_ALIAS_NB),
                        .WAIT_WIDTH  (`C_WAIT_WIDTH)
     ) 
@@ -89,10 +90,17 @@ module tb_top
     set_injector_intf #( .SET_SIZE   (`C_SET_ALIAS_NB),
 			 .SET_WIDTH  (`C_SET_WIDTH)
     )
-    s_set_injector_if();   
+    s_set_injector_if();
+ 
+    wait_duration_intf #( .WAIT_CLK_PERIOD (`C_TB_CLK_PERIOD)
+    )
+    s_wait_duration_if();
+   
+    assign s_wait_duration_if.clk = clk;
+   
    
 
-   // ===================================
+   // =====================================================
 
    // == TESTBENCH MODULES ALIASES & SIGNALS AFFECTATION ==
 
@@ -172,7 +180,7 @@ module tb_top
                       `C_WAIT_ALIAS_NB,
                       `C_WAIT_WIDTH, 
                       `C_TB_CLK_PERIOD) 
-   tb_class_inst = new (s_wait_event_if, s_set_injector_if);
+   tb_class_inst = new (s_wait_event_if, s_set_injector_if, s_wait_duration_if);
    
    
    initial begin
