@@ -16,19 +16,19 @@
 
 
 // TB TOP
-module tb_top;
+module tb_top
+  #(
+    parameter SCN_FILE_PATH = "scn.txt"
+   )
+   ();
+   
 
    
    // == INTERNAL SIGNALS ==
    
    wire clk;
-   wire ack;
    wire rst_n;
 
-   
-   string s_args [`C_CMD_ARGS_NB];   
-   
-   wire 	s_sel_set;
 
    // SET INJECTOR signals
    string 	                s_set_alias [`C_SET_ALIAS_NB];
@@ -37,9 +37,6 @@ module tb_top;
 
    
    logic [`C_SET_WIDTH - 1:0] 	s_set_task [`C_SET_ALIAS_NB];
-   // WAIT EVENT signals
-   string 	                s_wait_alias [`C_WAIT_ALIAS_NB];
-   wire [`C_WAIT_WIDTH - 1:0] 	s_wait [`C_WAIT_ALIAS_NB];
 
    // CHECK LEVEL signals
    string 	                s_check_alias [`C_CHECK_ALIAS_NB];
@@ -67,13 +64,6 @@ module tb_top;
    assign s_set_alias[4] = "I4";
    // ========================
 
-   // == WAIT EVENT ALIAS ==
-   assign s_wait_alias[0] = "RST_N";
-   assign s_wait_alias[1] = "O1";
-   assign s_wait_alias[2] = "O2";
-   assign s_wait_alias[3] = "O3";
-   assign s_wait_alias[4] = "O4";
-   // ========================
 
    // == CHECK LEVEL ALIAS ==
    assign s_check_alias[0] = "TOTO0";
@@ -83,13 +73,7 @@ module tb_top;
    assign s_check_alias[4] = "TOTO4";
    // ========================
 
-   // == WAIT EVENT INPUTS ==
-   assign s_wait[0] = rst_n;
-   assign s_wait[1] = 1'b0;
-   assign s_wait[2] = 1'b0;
-   assign s_wait[3] = 1'b0;
-   assign s_wait[4] = 1'b0;
-   // =======================
+
 
    // == CHECK LEVEL INPUTS ==
    assign s_check[0] = 32'hCAFEDECA;
@@ -105,42 +89,40 @@ module tb_top;
    bit   			s_wait_done;
    wire				i_wait_duration_done;
    
-   logic 			s_sel_wait;
    logic 			o_sel_check;
    logic 			o_sel_wait_duration;
    logic 			o_sel_set;
    
-   string 			line;
-   string 			args [`C_CMD_ARGS_NB];
-   
-   bit  			s_sel_wtr_wtf;
-   logic [31:0] 		s_max_timeout;
-   int 				s_wait_en;
    
 
-
-   assign i_wait_duration_done = 1'b0;
-
-    wait_event_intf #(.WAIT_SIZE(5), .WAIT_WIDTH(1)) s_wait_event_if();  // WAIT EVENT I/F
-
-
-   // CREATE CLASS - Configure Parameters
-   static tb_class #(`C_CMD_ARGS_NB, `C_SET_SIZE, `C_SET_WIDTH, 5, 1, `C_TB_CLK_PERIOD) tb_class_inst = new (s_wait_event_if);
-   
-   initial begin
-      tb_class_inst  = new(s_wait_event_if);
-      tb_class_inst.tb_sequencer("/home/jorisp/GitHub/Verilog/test_tasks.txt", 
-                                   i_wait_duration_done, 
-                                   s_set_alias, s_set_task, s_wait_alias, 
-                                   s_wait_done, s_sel_wtr_wtf, s_wait_en, 
-                                   s_max_timeout);
-
-
-   end // initial begin
-   
-
+   // == INTERNAL SIGNALS DECLARATIONS ==
+    wait_event_intf #( .WAIT_SIZE   (`C_WAIT_ALIAS_NB),
+                       .WAIT_WIDTH  (`C_WAIT_WIDTH)
+    ) 
+    s_wait_event_if();  // WAIT EVENT I/F
 
    
+   // ===================================
+
+   // == TESTBENCH MODULES ALIASES & SIGNALS AFFECTATION ==
+
+   // INIT WAIT EVENT ALIAS
+   assign s_wait_event_if.wait_alias[0] = "RST_N";
+   assign s_wait_event_if.wait_alias[1] = "O1";
+   assign s_wait_event_if.wait_alias[2] = "O2";
+   assign s_wait_event_if.wait_alias[3] = "O3";
+   assign s_wait_event_if.wait_alias[4] = "O4";
+
+   // SET WAIT EVENT SIGNALS
+   assign s_wait_event_if.wait_signals[0] = rst_n;
+   assign s_wait_event_if.wait_signals[1] = 1'b0;
+   assign s_wait_event_if.wait_signals[2] = 1'b0;
+   assign s_wait_event_if.wait_signals[3] = 1'b0;
+   assign s_wait_event_if.wait_signals[4] = 1'b0;
+   
+   // =====================================================
+
+   // == HDL GENERIC TESTBENCH MODULES ==
 
    // WAIT EVENT TB WRAPPER INST
    wait_event_wrapper #(
@@ -148,15 +130,38 @@ module tb_top;
 			.CLK_PERIOD (`C_TB_CLK_PERIOD)
    )
    i_wait_event_wrapper (
-       .clk         (clk),
-       .rst_n       (rst_n),
-
-       .wait_event_if (s_wait_event_if)			 
+       .clk            (clk),
+       .rst_n          (rst_n),
+       .wait_event_if  (s_wait_event_if)			 
    );
-   
-   assign    s_wait_event_if.wait_en      = s_wait_en;
-   assign    s_wait_event_if.sel_wtr_wtf  = s_sel_wtr_wtf;
-   assign    s_wait_event_if.max_timeout  = s_max_timeout;
-   assign    s_wait_event_if.wait_signals = s_wait;
 
+   
+
+   
+   // ===========================
+
+
+   // == TESTBENCH SEQUENCER ==
+   
+   // CREATE CLASS - Configure Parameters
+   static tb_class #( `C_CMD_ARGS_NB, 
+                      `C_SET_SIZE, 
+                      `C_SET_WIDTH,
+                      `C_WAIT_ALIAS_NB,
+                      `C_WAIT_WIDTH, 
+                      `C_TB_CLK_PERIOD) 
+   tb_class_inst = new (s_wait_event_if);
+   
+   
+   initial begin
+      tb_class_inst  = new(s_wait_event_if);
+      tb_class_inst.tb_sequencer("/home/jorisp/GitHub/Verilog/test_tasks.txt", 
+                                 i_wait_duration_done, 
+                                 s_set_alias, s_set_task);
+
+   end // initial begin
+   
+   // ========================
+
+   
 endmodule // tb_top

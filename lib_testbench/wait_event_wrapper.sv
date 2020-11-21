@@ -18,7 +18,8 @@ interface wait_event_intf #(
    int 	 wait_en;  
    logic sel_wtr_wtf;
    logic [31:0] max_timeout;   
-   logic [WAIT_WIDTH - 1 : 0] wait_signals [WAIT_SIZE];   
+   string 	wait_alias [WAIT_SIZE];   
+   logic [WAIT_WIDTH - 1 : 0] wait_signals [WAIT_SIZE];  
    logic 		      wait_done;
    
    

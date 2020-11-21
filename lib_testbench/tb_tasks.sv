@@ -39,25 +39,21 @@ class tb_class #(
     * Read The Scenario File
     * Send Args to the Decoder
    */
-   task tb_sequencer;
+   task tb_sequencer(
 
       // PHYSICAL INPUTS
-      input string scn_file_path;
-      input i_wait_duration_done;
+      input string 		       scn_file_path,
+      input 			       i_wait_duration_done,
      
-
       // SET INJECTOR I/F
-      input string i_set_alias [SET_SIZE];      
-      output logic [SET_WIDTH - 1 : 0] o_set       [SET_SIZE];
+      input string 		       i_set_alias [SET_SIZE],
+      output logic [SET_WIDTH - 1 : 0] o_set [SET_SIZE]
       
-      // WAIT EVENT I/F
-      input string 		       i_wait_alias [WAIT_SIZE];      
-      input int/*bit*/		       i_wait_done;      
-      output bit        	       o_sel_wtr_wtf;      
-      output int 		       o_wait_en;    
-      output reg [31:0] 	       o_max_timeout;
-
-        			 
+      );
+      
+     begin
+	
+         			 
 
       // LOCAL VARIABLES
       int 	   scn_file;      
@@ -68,7 +64,7 @@ class tb_class #(
 
       logic 	   end_test;
 
-      o_max_timeout = 0;
+      //o_max_timeout = 0;
       
       
       end_test = 1'b0;
@@ -112,11 +108,11 @@ class tb_class #(
 		  end
 
 		  "WTR": begin
-		     wait_event(wait_event_vif, i_wait_alias, args);		     
+		     wait_event(wait_event_vif, args);		     
 		  end
 
 		  "WTF": begin
-		     wait_event(wait_event_vif, i_wait_alias, args);
+		     wait_event(wait_event_vif, args);
 		  end		 
 		  
 		  default: $display("");
@@ -129,6 +125,7 @@ class tb_class #(
 	 	 
       end // while (end_test == 1'b0)
       
+     end // task tb_sequencer(
       
                        
    endtask // tb_sequencer
@@ -216,13 +213,12 @@ class tb_class #(
 
 
    /* TASK WAIT EVENT
-    *
-    * 
+    *   Set configuration for WAIT EVENT TB module
+    *   Wait for WAIT EVENT TB module response
     */
    task wait_event (
 
      virtual           wait_event_intf wait_event_vif,		    
-     input string      i_wait_alias [WAIT_SIZE],
      input string      i_args [ARGS_NB]
    );
       begin
@@ -234,18 +230,16 @@ class tb_class #(
 	 
 	 // INIT ALIAS ARRAY
 	 for (int i = 0; i < WAIT_SIZE; i++) begin
-	   s_alias_array[i_wait_alias[i]] = i;
+	   s_alias_array[wait_event_vif.wait_alias[i]] = i;
          end
 
 	 // Command Decod
 	 if(i_args[0] == "WTR") begin
-           //o_sel_wtr_wtf = 1'b0;
 	    wait_event_vif.sel_wtr_wtf = 1'b0;	    
 	    $display("WTR selected");
 		  
 	 end
 	 else if(i_args[0] == "WTF") begin
-	   //o_sel_wtr_wtf = 1'b1;
 	    wait_event_vif.sel_wtr_wtf = 1'b1;
 	    $display("WTF selected");
 	    
@@ -291,7 +285,6 @@ class tb_class #(
 		    
             endcase // case (s_unit)
 
-	    //o_max_timeout = s_max_timeout_cnt;
            wait_event_vif.max_timeout = s_max_timeout_cnt;
            	     
 	   end		  
@@ -301,18 +294,13 @@ class tb_class #(
 	 end
 	 else begin
           $display("Wait_event : No timeout");	
-	    //o_max_timeout = 0;
 	    wait_event_vif.max_timeout = 0;
 	    
 	 end
 
-//	 o_wait_en = s_alias_array[i_args[1]]; // NEED TO RETURN THE INDEX !
-	 $display("i_args[1] : %s", i_args[1]);
-	 $display("s_alias_array[i_args[1]] : %d", s_alias_array[i_args[1]]);
          wait_event_vif.wait_en = s_alias_array[i_args[1]];
 	 wait_event_vif.en_wait_event = 1'b1;
 	 
-	 $display("Wait for WAIT EVENT ACK ... %t", $time);
          @(posedge wait_event_vif.wait_done);
          wait_event_vif.en_wait_event = 1'b0;
       end
@@ -321,5 +309,4 @@ class tb_class #(
    
    
 
- 
  endclass
