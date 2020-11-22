@@ -27,6 +27,7 @@ SCRIPTS_DIR=$(ROOT)/scripts
 RUN_DO_DIR=$(ROOT)/do_files/run_files
 TRANSCRIPTS_DIR=$(ROOT)/transcripts
 WLF_DIR=$(ROOT)/WLF
+SCN_DIR=$(ROOT)/scenarios
 
 # MODELSIM ALIAS
 vsim=/opt/intelFPGA/18.1/modelsim_ase/bin/vsim
@@ -36,8 +37,18 @@ vcom=/opt/intelFPGA/18.1/modelsim_ase/linuxaloem/vcom
 vlog=/opt/intelFPGA/18.1/modelsim_ase/linuxaloem/vlog
 
 # Library List
-LIB_1=lib_tb
+LIB_TESTBENCH=lib_tb
 LIB_TB_TOP=lib_tb_top
+
+
+
+
+# == VSIM ARGS ==
+VSIM_ARGS+=-novopt -t ps
+VSIM_ARGS+=+nowarn3116
+VSIM_G_ARGS+=-G/tb_top/SCN_FILE_PATH==$(SCN_DIR)/
+# ===============
+
 
 all: 
 	@echo ""
@@ -83,6 +94,10 @@ create_dir:
 	mkdir transcripts; \
 	mkdir do_files; \
 	mkdir WLF;
+	mkdir scenarios; \
+	cd ./do_files; \
+	mkdir run_files; \
+	mkdir waves; \
 # ======================
 
 
@@ -96,12 +111,12 @@ clean:
 # == PREPARE MODELSIM LIBRARY ==
 prepare_libs:
 	cd $(WORK_DIR); \
-	$(vlib) ./${LIB_1}; \
+	$(vlib) ./${LIB_TESTBENCH}; \
 	$(vlib) ./$(LIB_TB_TOP);
 
 create_libs:
 	cd $(WORK_DIR); \
-	$(vmap) $(LIB_TB_TOP) ./$(LIB_1);
+	$(vmap) $(LIB_TB_TOP) ./$(LIB_TESTBENCH);
 
 libs:  prepare_libs create_libs
 #=============================
@@ -131,21 +146,15 @@ src_v+=$(SRC_DIR)/tb_top.sv
 # == COMPILES V FILES ==
 compile_tb_v_files :
 	cd $(WORK_DIR); \
-	$(foreach list, $(src_v), $(vlog) -work $(LIB_1) $(list);)
+	$(foreach list, $(src_v), $(vlog) -work $(LIB_TESTBENCH) $(list);)
 
 # ======================
 
 compile_all: clean libs compile_tb_v_files
 
-# == TEST1 ==
-entity_test1=test_max7219_cmd_decod
-run_test1=run_max7219_cmd_decod.do
-trans_test1=test_max7219_cmd_decod.txt
-wave_test1=wave_test_max7219_cmd_decod
+# == RUN TESTBENCH TEST ==
 run_tb_test : clean libs compile_tb_v_files
 	cd $(WORK_DIR); \
-	$(vsim)  +nowarn3116 -novopt -t ps $(LIB_TB_TOP).tb_top -G/tb_top/SCN_FILE_PATH="/home/jorisp/GitHub/Verilog/Testbench/test_tasks.txt";
-
-
-# ===========
+	$(vsim) $(VSIM_ARGS) -l $(TRANSCRIPTS_DIR)/$(TEST)_transcript.txt $(LIB_TB_TOP).tb_top $(VSIM_G_ARGS)$(TEST).txt -do $(RUN_DO_DIR)/$(TEST)_run.do;
+# ========================
 

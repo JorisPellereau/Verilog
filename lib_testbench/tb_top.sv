@@ -6,7 +6,7 @@
 // Last Modified By: JorisP
 // Last Modified On: Mon Oct 12 21:51:03 2020
 // Update Count    : 0
-// Status          : Unknown, Use with caution!
+// Status          : V1.0
 
 `timescale 1ps/1ps
 
@@ -21,7 +21,7 @@
 // TB TOP
 module tb_top
   #(
-    parameter SCN_FILE_PATH = "/home/jorisp/GitHub/Verilog/test_tasks.txt"
+    parameter SCN_FILE_PATH = "scenario.txt"
    )
    ();
    
@@ -176,12 +176,20 @@ module tb_top
                         s_check_level_if);
    
    
-   initial begin
+   initial begin : TB_SEQUENCER
       tb_class_inst.tb_sequencer(SCN_FILE_PATH);
       
-   end // initial begin
+   end : TB_SEQUENCER
    
    // ========================
+
+
+
+
+
+   // == DUT INST ==
+   
+   // ==============
 
    
 endmodule // tb_top
