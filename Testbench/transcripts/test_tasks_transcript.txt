@@ -1,5 +1,5 @@
-# vsim "+nowarn3116" -novopt -t ps lib_tb_top.tb_top -G/tb_top/SCN_FILE_PATH=/home/jorisp/GitHub/Verilog/Testbench/test_tasks.txt 
-# Start time: 16:21:35 on Nov 22,2020
+# vsim -novopt -t ps "+nowarn3116" -l /home/jorisp/GitHub/Verilog/Testbench/scripts/../transcripts/test_tasks_transcript.txt lib_tb_top.tb_top -do "/home/jorisp/GitHub/Verilog/Testbench/scripts/../do_files/run_files/test_tasks_run.do" -G/tb_top/SCN_FILE_PATH=/home/jorisp/GitHub/Verilog/Testbench/scripts/../scenarios/test_tasks.txt 
+# Start time: 16:45:39 on Nov 22,2020
 # Loading sv_std.std
 # Loading lib_tb_top.tb_top_sv_unit
 # Loading lib_tb_top.tb_top
@@ -16,7 +16,7 @@
 #    Time: 0 ps  Iteration: 0  Region: /tb_top_sv_unit::tb_class::tb_class__1::tb_sequencer/#ublk#49146052#65 File: /home/jorisp/GitHub/Verilog/Testbench/scripts/../../lib_testbench/tb_tasks.sv
 # ** Warning: (vsim-PLI-3691) /home/jorisp/GitHub/Verilog/Testbench/scripts/../../lib_testbench/tb_tasks.sv(171): Expected a system task, not a system function '$sscanf'.
 #    Time: 0 ps  Iteration: 0  Region: /tb_top_sv_unit::tb_class::tb_class__1::cmd_decoder File: /home/jorisp/GitHub/Verilog/Testbench/scripts/../../lib_testbench/tb_tasks.sv
-run -all
+# do /home/jorisp/GitHub/Verilog/Testbench/scripts/../do_files/run_files/test_tasks_run.do
 # Beginning of sequencer
 # WTR RST_N
 # 
@@ -259,5 +259,5 @@ run -all
 # End of test
 # ** Note: $finish    : /home/jorisp/GitHub/Verilog/Testbench/scripts/../../lib_testbench/tb_tasks.sv(110)
 #    Time: 2172183 ns  Iteration: 1  Instance: /tb_top
-# End time: 16:28:38 on Nov 22,2020, Elapsed time: 0:07:03
-# Errors: 0, Warnings: 2, Suppressed Warnings: 1
+# 1
+# Break in Task tb_top_sv_unit/tb_class::tb_sequencer at /home/jorisp/GitHub/Verilog/Testbench/scripts/../../lib_testbench/tb_tasks.sv line 110

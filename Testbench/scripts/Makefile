@@ -13,7 +13,7 @@
 #	     |__ /run_files => Run .do
 #	     |__ /waves     => Waves .do
 
-# MAKEFILE for MAX7219 Tests
+# MAKEFILE for TESTBENCH TEST
 
 # 
 ROOT=$(PWD)/..
@@ -46,7 +46,7 @@ LIB_TB_TOP=lib_tb_top
 # == VSIM ARGS ==
 VSIM_ARGS+=-novopt -t ps
 VSIM_ARGS+=+nowarn3116
-VSIM_G_ARGS+=-G/tb_top/SCN_FILE_PATH==$(SCN_DIR)/
+VSIM_G_ARGS+=-G/tb_top/SCN_FILE_PATH=$(SCN_DIR)/
 # ===============
 
 
@@ -81,8 +81,8 @@ all:
 	@echo ""
 	@echo ""
 	@echo "== RUN TEST TESTBENCH =="
-	@echo "- Run test : run tb test :"
-	@echo "make run_tb_test"
+	@echo "- Run TB test :"
+	@echo "make run_tb_test TEST=[TEST_NAME]"
 	@echo "========================"
 
 

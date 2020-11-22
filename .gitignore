@@ -18,3 +18,5 @@ Testbench/TB_WORK/lib_tb/_vmake
 Testbench/TB_WORK/lib_tb_top/_info
 
 *.ini
+
+*.wlf
