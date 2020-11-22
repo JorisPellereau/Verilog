@@ -14,13 +14,14 @@
 `include "wait_event_wrapper.sv"
 `include "set_injector_wrapper.sv"
 `include "wait_duration_wrapper.sv"
+`include "check_level_wrapper.sv"
 `include "tb_tasks.sv"
 
 
 // TB TOP
 module tb_top
   #(
-    parameter SCN_FILE_PATH = "scn.txt"
+    parameter SCN_FILE_PATH = "/home/jorisp/GitHub/Verilog/test_tasks.txt"
    )
    ();
    
@@ -51,26 +52,7 @@ module tb_top
    // ==================
 
 
-   // == CHECK LEVEL ALIAS ==
-   /*assign s_check_alias[0] = "TOTO0";
-   assign s_check_alias[1] = "TOTO1";
-   assign s_check_alias[2] = "TOTO2";
-   assign s_check_alias[3] = "TOTO3";
-   assign s_check_alias[4] = "TOTO4";*/
-   // ========================
 
-
-
-   // == CHECK LEVEL INPUTS ==
-   /*assign s_check[0] = 32'hCAFEDECA;
-   assign s_check[1] = 16'h5678;
-   assign s_check[2] = 8'h72;
-   assign s_check[3] = 16'hzzzz;
-   assign s_check[4] = 1'bz; */  
-   // ========================
-
-   
- 
 
    // == TESTBENCH GENERIC INTERFACE SIGNALS DECLARATIONS ==
     wait_event_intf #( .WAIT_SIZE   (`C_WAIT_ALIAS_NB),
@@ -87,6 +69,11 @@ module tb_top
    
     assign s_wait_duration_if.clk = clk;
    
+
+    check_level_intf #( .CHECK_SIZE  (),
+		        .CHECK_WIDTH  ()
+    )
+    s_check_level_if();
    
 
    // =====================================================
@@ -127,7 +114,21 @@ module tb_top
    assign s_set_injector_if.set_signals_asynch_init_value[2] = 32'h55555555;
    assign s_set_injector_if.set_signals_asynch_init_value[3] = 32'hZZZZZZZZ;
    assign s_set_injector_if.set_signals_asynch_init_value[4] = 32'hFFFFFFFF;
-   
+
+   // INIT CHECK LEVEL ALIAS
+   assign s_check_level_if.check_alias[0] = "TOTO0";
+   assign s_check_level_if.check_alias[1] = "TOTO1";
+   assign s_check_level_if.check_alias[2] = "TOTO2";
+   assign s_check_level_if.check_alias[3] = "TOTO3";
+   assign s_check_level_if.check_alias[4] = "TOTO4";
+
+   // SET CHECK_SIGNALS
+   assign s_check_level_if.check_signals[0] =  32'hCAFEDECA;
+   assign s_check_level_if.check_signals[1] =  32'hCAFEDEC0;
+   assign s_check_level_if.check_signals[2] =  32'hCAFEDEC1;
+   assign s_check_level_if.check_signals[3] =  32'hCAFEDEC2;
+   assign s_check_level_if.check_signals[4] =  32'hCAFEDEC3;
+  
    // =====================================================
 
 
@@ -169,12 +170,15 @@ module tb_top
                       `C_WAIT_ALIAS_NB,
                       `C_WAIT_WIDTH, 
                       `C_TB_CLK_PERIOD) 
-   tb_class_inst = new (s_wait_event_if, s_set_injector_if, s_wait_duration_if);
+   tb_class_inst = new (s_wait_event_if, 
+                        s_set_injector_if, 
+                        s_wait_duration_if,
+                        s_check_level_if);
    
    
    initial begin
-      tb_class_inst.tb_sequencer("/home/jorisp/GitHub/Verilog/test_tasks.txt");
-
+      tb_class_inst.tb_sequencer(SCN_FILE_PATH);
+      
    end // initial begin
    
    // ========================

@@ -19,7 +19,11 @@ class tb_class #(
 	// WAIT EVENT PARAMETERS
 	parameter WAIT_SIZE  = 5,
         parameter WAIT_WIDTH = 1,
-        parameter CLK_PERIOD = 1000 // Unity : ps
+        parameter CLK_PERIOD = 1000, // Unity : ps
+
+	// CHECK LEVEL PARAMETER
+	parameter CHECK_SIZE  = 5,
+	parameter CHECK_WIDTH = 32
       );
 
 
@@ -27,17 +31,19 @@ class tb_class #(
    virtual wait_event_intf     wait_event_vif;
    virtual set_injector_intf   set_injector_vif;
    virtual wait_duration_intf  wait_duration_vif;
-   
+   virtual check_level_intf    check_level_vif;   
    // =================
 
    // == Interface passed in Virtual I/F ==
    function new(virtual wait_event_intf     wait_nif, 
-                virtual set_injector_intf set_nif, 
-                virtual wait_duration_intf wait_duration_nif);
+                virtual set_injector_intf   set_nif, 
+                virtual wait_duration_intf  wait_duration_nif,
+                virtual check_level_intf    check_level_nif);
       
       wait_event_vif    = wait_nif;
       set_injector_vif  = set_nif;
-      wait_duration_vif = wait_duration_nif;      
+      wait_duration_vif = wait_duration_nif;
+      check_level_vif   = check_level_nif;      
    endfunction // new
 
    // ====================================
@@ -127,6 +133,10 @@ class tb_class #(
                   "WAIT": begin
 		     wait_duration(wait_duration_vif, args);		     
                   end
+
+		  "CHK" : begin
+		    check_level(check_level_vif, args);
+		  end  
 	 
 		  
 		  default: $display("");
@@ -155,12 +165,10 @@ class tb_class #(
       output string args [ARGS_NB]);
       
       begin
- 	 $display("Command Decoder");
        
-        $display("line : %s", line);
+        $display("%s", line);
 	 
         $sscanf(line, "%s %s %s %s %s", args[0], args[1], args[2], args[3], args[4]);
-        //$display("Args : %s %s %s %s %s", args[0], args[1], args[2], args[3], args[4]);
 	 
         if(args[0] == "SET") begin
      	  o_cmd_exists = 1'b1;	 
@@ -235,7 +243,9 @@ class tb_class #(
 	   set_injector_vif.set_signals_asynch[s_alias_array[i_args[1]]]  = i_args[2].atoi();	  
 	 end
 
-      end            
+      end
+      
+      $display("");      
       	 
    endtask // set_injector
 
@@ -264,12 +274,12 @@ class tb_class #(
 	 // Command Decod
 	 if(i_args[0] == "WTR") begin
 	    wait_event_vif.sel_wtr_wtf = 1'b0;	    
-	    $display("WTR selected");
+	    $display("Waiting for a rising edge ...");
 		  
 	 end
 	 else if(i_args[0] == "WTF") begin
 	    wait_event_vif.sel_wtr_wtf = 1'b1;
-	    $display("WTF selected");
+	    $display("Waiting for a falling edge ...");
 	    
          end	       
          else begin
@@ -332,6 +342,8 @@ class tb_class #(
          @(posedge wait_event_vif.wait_done);
          wait_event_vif.en_wait_event = 1'b0;
       end
+
+      $display("");
       
    endtask // wait_event
 
@@ -406,12 +418,87 @@ class tb_class #(
 	       s_cnt_done = 1'b1;	       	       
 	    end	    
 	 end
-	 
-	 
-	 
-	 
+	 	 	 
       end
+
+      $display("");
    endtask // wait_duration
+
+
+   
+   task check_level (
+        virtual check_level_intf    check_level_vif,
+        input string i_args [ARGS_NB]
+   );
+      begin
+
+	 // ASSOCIATIVE ARRAY
+         int 	 s_alias_array [string];
+         reg [CHECK_WIDTH - 1 : 0]     s_check_value;
+         string 		       s_str;     
+         int 			       s_str_len;
+	 
+	 // INIT ALIAS
+	 for (int i = 0; i < CHECK_SIZE; i++) begin
+	   s_alias_array[check_level_vif.check_alias[i]] = i;
+         end
+
+	 // Case : 0x at the beginning of the Args
+	 if( {i_args[2].getc(0),  i_args[2].getc(1)} == "0x") begin
+		  
+	   s_str_len     = i_args[2].len(); // Find Length		  
+           s_str         = i_args[2].substr(2, s_str_len - 1); // Remove 0x
+           s_check_value = s_str.atohex(); // Set Correct Hex value
+	 end
+	 // DECIMAL ARGS
+	 else begin
+           s_check_value = s_str.atoi;
+		  
+	 end // else: !if( {i_args[2].getc(0),  i_args[2].getc(1)} == "0x")
+
+
+	 // Test if ALIAS Name Exist else Error
+	 if(s_alias_array.exists(i_args[1])) begin
+	 // CHECK VALUE
+	 // OK Expected
+	   if(i_args[3] == "OK") begin
+
+             if(check_level_vif.check_signals[s_alias_array[i_args[1]]] == s_check_value) begin
+               $display("CHECK %s = 0x%x - Expected : 0x%x => OK", i_args[1], check_level_vif.check_signals[s_alias_array[i_args[1]]], s_check_value);
+		     
+	     end
+	     else begin
+               $display("Error: %s = 0x%x - Expected : 0x%x", i_args[1], check_level_vif.check_signals[s_alias_array[i_args[1]]], s_check_value);
+	     end		  
+	   end
+	   // ERROR Expected
+	   else if(i_args[3] == "ERROR") begin
+		  
+             if(check_level_vif.check_signals[s_alias_array[i_args[1]]] != s_check_value) begin
+               $display("CHECK %s != 0x%x  => OK", i_args[1],  s_check_value);
+		     
+	     end
+	     else begin
+               $display("Error: %s = 0x%x", i_args[1], s_check_value);
+	     end
+	   end
+	   // Error no Expected state value
+	   else begin
+             $display("Error: Args[3] of CHECK command not defined");
+		  
+	   end // else: !if(i_args[3] == "ERROR")
+	       
+	 end // if (s_alias_array.exists(i_args[1]))
+	 else begin
+           $display("Error: %s alias doesn't exists", i_args[1]);
+		  
+	 end // else: !if(s_alias_array.exists(i_args[1]))
+	 	 
+      end
+
+      $display("");
+      
+   endtask // check_level
    
       
 
