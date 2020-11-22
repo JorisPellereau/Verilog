@@ -10,7 +10,7 @@ Script and scenario for the testbench :
 * **scripts** : Makefile for Testbench utilization
 * **transcripts** : Transcripts output results
 
-> Testbench Architecture :![TB_ARCHI](/Verilog/Testbench/doc/TB_ARCHI.png)
+> Testbench Architecture :![TB_ARCHI](https://github.com/JorisPellereau/Verilog/blob/master/Testbench/doc/TB_ARCHI.png)
 
 ## lib_testbench
 Repository with Testbench SV files :
