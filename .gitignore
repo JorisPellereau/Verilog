@@ -4,3 +4,17 @@ Test/sources/pwm\.v~
 Test/sources/test\.v~
 
 *.sv~
+
+Testbench/TB_WORK/lib_tb/_info
+
+*.qdb
+
+*.qpg
+
+*.qtl
+
+Testbench/TB_WORK/lib_tb/_vmake
+
+Testbench/TB_WORK/lib_tb_top/_info
+
+*.ini
