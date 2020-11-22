@@ -37,20 +37,7 @@ vlog=/opt/intelFPGA/18.1/modelsim_ase/linuxaloem/vlog
 
 # Library List
 LIB_1=lib_tb
-#LIB_2=lib_2
 LIB_TB_TOP=lib_tb_top
-
-
-
-# .vhd file compilation
-#VCOM1=$(vcom) -nologo -work
-
-
-
-# .v file compilation
-#VLOG1=$(vlog) -nologo -work
-
-
 
 all: 
 	@echo ""
@@ -58,7 +45,7 @@ all:
 	@echo ""
 	@echo "TB Test & Simulation"
 	@echo ""
-	@echo "======     PROJECT CONFIGURATION      ======"
+	@echo "== PROJECT CONFIGURATION =="
 	@echo "- Create Work Directory : "
 	@echo "make create_dir"
 	@echo ""
@@ -71,7 +58,7 @@ all:
 	@echo "============================================"
 	@echo ""
 	@echo ""
-	@echo "====== SOURCES COMPILATIONS           ======"
+	@echo "== TESTBENCH SOURCES COMPILATIONS =="
 	@echo ""
 	@echo "- Compile TestBench sources - v files :"
 	@echo "make compile_tb_v_src"
@@ -82,10 +69,10 @@ all:
 	@echo "============================================"
 	@echo ""
 	@echo ""
-	@echo "======     RUN TESTS MAX7219          ======"
+	@echo "== RUN TEST TESTBENCH =="
 	@echo "- Run test : run tb test :"
 	@echo "make run_tb_test"
-	@echo "============================================"
+	@echo "========================"
 
 
 
@@ -127,22 +114,14 @@ libs:  prepare_libs create_libs
 
 # == V FILES LIST ==
 src_v+=$(SRC_DIR)/testbench_setup.sv
-src_v+=$(SRC_DIR)/wait_event_intf.sv
-src_v+=$(SRC_DIR)/sequencer.sv
 src_v+=$(SRC_DIR)/clk_gen.sv
-src_v+=$(SRC_DIR)/decoder.sv
-src_v+=$(SRC_DIR)/set_injector.sv
-src_v+=$(SRC_DIR)/wait_event.sv
 src_v+=$(SRC_DIR)/wait_event_tb.sv
 src_v+=$(SRC_DIR)/wait_event_wrapper.sv
 src_v+=$(SRC_DIR)/set_injector_tb.sv
 src_v+=$(SRC_DIR)/set_injector_wrapper.sv
-src_v+=$(SRC_DIR)/wait_duration.sv
 src_v+=$(SRC_DIR)/wait_duration_wrapper.sv
-src_v+=$(SRC_DIR)/check_level.sv
 src_v+=$(SRC_DIR)/check_level_wrapper.sv
 src_v+=$(SRC_DIR)/tb_tasks.sv
-src_v+=$(SRC_DIR)/tb_seq_wrapper.sv
 src_v+=$(SRC_DIR)/tb_top.sv
 
 
@@ -152,13 +131,8 @@ src_v+=$(SRC_DIR)/tb_top.sv
 # == COMPILES V FILES ==
 compile_tb_v_files :
 	cd $(WORK_DIR); \
-	$(foreach list, $(src_v), $(vlog) -work $(LIB_1) $(list);) \
+	$(foreach list, $(src_v), $(vlog) -work $(LIB_1) $(list);)
 
-
-#$(foreach list, $(src_v), $(vlog) -work $(LIB_TB_TOP) $(list);) \
-
-
-#$(vlog) -work $(LIB_TB_TOP) $(src_v)
 # ======================
 
 compile_all: clean libs compile_tb_v_files
@@ -170,6 +144,8 @@ trans_test1=test_max7219_cmd_decod.txt
 wave_test1=wave_test_max7219_cmd_decod
 run_tb_test : clean libs compile_tb_v_files
 	cd $(WORK_DIR); \
-	$(vsim)  +nowarn3116 -novopt -t ps $(LIB_TB_TOP).tb_top -G/tb_top/i_tb_seq_wrapper_0/SCN_FILE_PATH="/home/jorisp/GitHub/Verilog/test.txt";
+	$(vsim)  +nowarn3116 -novopt -t ps $(LIB_TB_TOP).tb_top -G/tb_top/SCN_FILE_PATH="/home/jorisp/GitHub/Verilog/Testbench/test_tasks.txt";
+
+
 # ===========
 
