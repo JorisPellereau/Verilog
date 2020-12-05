@@ -29,14 +29,14 @@ class tb_class #(
 
    // == VIRTUAL I/F ==
    virtual wait_event_intf     wait_event_vif;
-   virtual set_injector_intf   set_injector_vif;
+   virtual set_injector_intf #(SET_SIZE, SET_WIDTH)  set_injector_vif;
    virtual wait_duration_intf  wait_duration_vif;
    virtual check_level_intf    check_level_vif;   
    // =================
 
    // == Interface passed in Virtual I/F ==
    function new(virtual wait_event_intf     wait_nif, 
-                virtual set_injector_intf   set_nif, 
+                virtual set_injector_intf #(SET_SIZE, SET_WIDTH)  set_nif, 
                 virtual wait_duration_intf  wait_duration_nif,
                 virtual check_level_intf    check_level_nif);
       
@@ -199,7 +199,7 @@ class tb_class #(
     * 
     */
    task set_injector_init (
-      virtual set_injector_intf set_injector_vif
+      virtual set_injector_intf #(SET_SIZE, SET_WIDTH) set_injector_vif
    );
       begin
 	 set_injector_vif.set_signals_asynch = set_injector_vif.set_signals_asynch_init_value; 
@@ -214,7 +214,7 @@ class tb_class #(
     * 
     */
    task set_injector(
-     virtual set_injector_intf set_injector_vif,
+     virtual set_injector_intf #(SET_SIZE, SET_WIDTH) set_injector_vif,
      input string 		      i_args [ARGS_NB]
    );
       begin
