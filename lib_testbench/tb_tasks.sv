@@ -75,10 +75,12 @@ class tb_class #(
 
       logic 	   end_test;
 
+      int 	   line_status;
       
       
       end_test = 1'b0;
-
+	line_status = 0;
+	
 
       // INIT SET INJECTOR
       set_injector_init(set_injector_vif);
@@ -93,13 +95,18 @@ class tb_class #(
       // While END_TEST not Reach
       while(end_test == 1'b0) begin
       
-	 // READ SCENARIO LINE
-	 $fgets(line, scn_file);
+	 // READ SCENARIO LINE and return status
+	 line_status = $fgets(line, scn_file);
+	 
 
 	 // Filter Commentary
 	 if( {line.getc(0), line.getc(1)} == "//" || {line.getc(0), line.getc(1)} == "--") begin
 	   // Ignore Line   
 	 end
+
+	 else if(line.getc(0) == "\n") begin
+	    // Ignore Line if line empty
+	 end	 
 
 	 // End of Test detected
 	 else if( {line.getc(0), line.getc(1), line.getc(2), line.getc(3), line.getc(4), line.getc(5), line.getc(6), line.getc(7)} == "END_TEST") begin
@@ -136,7 +143,16 @@ class tb_class #(
 
 		  "CHK" : begin
 		    check_level(check_level_vif, args);
-		  end  
+		  end
+
+		 "WTRS" : begin
+		    wait_event_soft(wait_event_vif, args);		    
+		  end
+
+		 "WTFS" : begin
+		    wait_event_soft(wait_event_vif, args);
+		  end
+		 
 	 
 		  
 		  default: $display("");
@@ -184,7 +200,13 @@ class tb_class #(
         end
         else if(args[0] == "WAIT") begin
 	  o_cmd_exists = 1'b1; 
-        end    
+        end
+	else if(args[0] == "WTRS") begin
+	  o_cmd_exists = 1'b1; 
+	end
+	else if(args[0] == "WTFS") begin
+	  o_cmd_exists = 1'b1;  
+	end	 
         else begin
 	  $display("Error: Command %s not recognized", args[0]);
           o_cmd_exists = 1'b0;	 
@@ -499,7 +521,43 @@ class tb_class #(
       $display("");
       
    endtask // check_level
+
+
    
+   task wait_event_soft (
+			virtual           wait_event_intf wait_event_vif,		    
+                        input string      i_args [ARGS_NB]
+   );
+      begin
+
+	 string 		      s_unit; // ps - ns - us - ms
+	 int s_timeout_value;
+	 int s_max_timeout_cnt;
+         int s_alias_array [string];
+	 
+	 // INIT ALIAS ARRAY
+	 for (int i = 0; i < WAIT_SIZE; i++) begin
+	   s_alias_array[wait_event_vif.wait_alias[i]] = i;
+         end
+
+
+	 // Command Decod
+	 if(i_args[0] == "WTRS") begin  
+	    $display("Waiting for a rising edge ...");
+	    @(posedge wait_event_vif.wait_signals[s_alias_array[i_args[1]]]);	    
+		  
+	 end
+	 else if(i_args[0] == "WTFS") begin
+	    $display("Waiting for a falling edge ...");
+	    @(negedge wait_event_vif.wait_signals[s_alias_array[i_args[1]]]);	    
+         end	       
+         else begin
+           $display("Error: Not A Wait soft Command");		  
+	 end
+
+	 
+      end
+   endtask // wait_event_soft         
       
 
  endclass
