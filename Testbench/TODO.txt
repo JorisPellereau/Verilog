@@ -1,0 +1,3 @@
+Toto list :
+
+* Ajouter fonction pour setter les alias
