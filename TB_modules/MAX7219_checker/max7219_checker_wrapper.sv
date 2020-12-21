@@ -103,6 +103,7 @@ module max7219_checker_wrapper #(
    // == DISPLAY SCREEN MATRIX ==
    always @(posedge clk) begin
       if(!rst_n) begin
+	 line <= 0;
 	 
       end
       else begin
@@ -111,34 +112,35 @@ module max7219_checker_wrapper #(
 	       for(l = 0 ; l < G_NB_MATRIX ; l++) begin
 		  for(m = 0 ; m < 8 ; m++) begin
 		     if(m == 0) begin
-  			line[(8*G_NB_MATRIX - 1) - m+l*8] = max7219_screen_matrix[l].REG_DIGIT_7[7 - k];
+  			line[(8*G_NB_MATRIX - 1) - (m+l*8)] = max7219_screen_matrix[l].REG_DIGIT_7[7 - k];
 		     end
 		     else if(m == 1) begin
-		        line[(8*G_NB_MATRIX - 1) - m+l*8] = max7219_screen_matrix[l].REG_DIGIT_6[7 - k];	
+		        line[(8*G_NB_MATRIX - 1) - (m+l*8)] = max7219_screen_matrix[l].REG_DIGIT_6[7 - k];	
 		     end
 		     else if(m == 2) begin
-		        line[(8*G_NB_MATRIX - 1) - m+l*8] = max7219_screen_matrix[l].REG_DIGIT_5[7 - k];	
+		        line[(8*G_NB_MATRIX - 1) - (m+l*8)] = max7219_screen_matrix[l].REG_DIGIT_5[7 - k];	
 		     end
 		     else if(m == 3) begin
-		        line[(8*G_NB_MATRIX - 1) - m+l*8] = max7219_screen_matrix[l].REG_DIGIT_4[7 - k];	
+		        line[(8*G_NB_MATRIX - 1) - (m+l*8)] = max7219_screen_matrix[l].REG_DIGIT_4[7 - k];	
 		     end
 		     else if(m == 4) begin
-		        line[(8*G_NB_MATRIX - 1) - m+l*8] = max7219_screen_matrix[l].REG_DIGIT_3[7 - k];	
+		        line[(8*G_NB_MATRIX - 1) - (m+l*8)] = max7219_screen_matrix[l].REG_DIGIT_3[7 - k];	
 		     end
 		     else if(m == 5) begin
-		        line[(8*G_NB_MATRIX - 1) - m+l*8] = max7219_screen_matrix[l].REG_DIGIT_2[7 - k];	
+		        line[(8*G_NB_MATRIX - 1) - (m+l*8)] = max7219_screen_matrix[l].REG_DIGIT_2[7 - k];	
 		     end
 		     else if(m == 6) begin
-		        line[(8*G_NB_MATRIX - 1) - m+l*8] = max7219_screen_matrix[l].REG_DIGIT_1[7 - k];	
+		        line[(8*G_NB_MATRIX - 1) - (m+l*8)] = max7219_screen_matrix[l].REG_DIGIT_1[7 - k];	
 		     end
 		     else if(m == 7) begin
-		        line[(8*G_NB_MATRIX - 1) - m+l*8] = max7219_screen_matrix[l].REG_DIGIT_0[7 - k];	
+		        line[(8*G_NB_MATRIX - 1) - (m+l*8)] = max7219_screen_matrix[l].REG_DIGIT_0[7 - k];	
 		     end
 		     
 		  end
 		  
 	       end // for (l = 0 ; l < G_NB_MATRIX ; l++)
-	       $display("%b", line);
+	       $display("%B", line);
+	       line <= 0;
 	       
 	       
 	    end
