@@ -8,6 +8,9 @@
 // Update Count    : 0
 // Status          : Unknown, Use with caution!
 
+package fli;
+    import "DPI-C" function mti_Cmd(input string cmd);
+endpackage
 
 class tb_class #(
         parameter ARGS_NB   = 5,
@@ -69,17 +72,18 @@ class tb_class #(
       // LOCAL VARIABLES
       int 	   scn_file;      
       string 	   line;
+      string 	   line_tmp; // Temporary Line for Modelsim Command execution
+	
       logic 	   cmd_exists;      
       string 	   args[ARGS_NB];
       
 
       logic 	   end_test;
-
       int 	   line_status;
       
       
-      end_test = 1'b0;
-	line_status = 0;
+      end_test    = 1'b0;
+      line_status = 0;
 	
 
       // INIT SET INJECTOR
@@ -145,13 +149,21 @@ class tb_class #(
 		    check_level(check_level_vif, args);
 		  end
 
-		 "WTRS" : begin
+		  "WTRS" : begin
 		    wait_event_soft(wait_event_vif, args);		    
-		  end
+		   end
 
-		 "WTFS" : begin
+		  "WTFS" : begin
 		    wait_event_soft(wait_event_vif, args);
 		  end
+
+		  "MODELSIM_CMD" : begin
+		     extract_line_double_quote(line, line_tmp);
+                     line_tmp = "mem load -i /home/jorisp/GitHub/VHDL_code/MAX7219/stimulis/max7219_ram_pattern_3.mem -format mti /tb_top/i_dut/tdpram_inst_0/v_ram";
+		     
+		     modelsim_cmd_exec(line_tmp);		     
+		  end
+		 
 		 
 	 
 		  
@@ -183,9 +195,9 @@ class tb_class #(
       begin
        
         $display("%s", line);
-	 
+	 	 
         $sscanf(line, "%s %s %s %s %s", args[0], args[1], args[2], args[3], args[4]);
-	 
+	 	 
         if(args[0] == "SET") begin
      	  o_cmd_exists = 1'b1;	 
         end
@@ -206,6 +218,9 @@ class tb_class #(
 	end
 	else if(args[0] == "WTFS") begin
 	  o_cmd_exists = 1'b1;  
+	end
+	else if(args[0] == "MODELSIM_CMD") begin
+	  o_cmd_exists = 1'b1;	
 	end	 
         else begin
 	  $display("Error: Command %s not recognized", args[0]);
@@ -557,7 +572,55 @@ class tb_class #(
 
 	 
       end
-   endtask // wait_event_soft         
+   endtask // wait_event_soft    
+
+   /*
+    *
+    * Task : get line in double quote
+    * 
+    */
+   task extract_line_double_quote (
+                                  input string line,
+				  output string line_in_double_quote
+      );
+      begin
+	 int first_guillemet  = 0;
+	 int i;
+
+	 for(i = 0 ; i < line.len() ; i++) begin // Find guillement position
+	    if(line[i] == "\"") begin
+	       if(first_guillemet == 0) begin
+		  first_guillemet = i; 	  
+	       end	       	       
+	    end	    
+	 end // for (i == 0 ; i < line_length ; i++)
+
+         line_in_double_quote = line.substr( first_guillemet, line.len() - 1);
+	 $display("Line in double quote : %s", line_in_double_quote);
+	 
+      end
+   endtask // extract_line_double_quote
+   
       
+
+   /*
+    * Task : Execute a Modelsim Command when command is executed
+    *
+    * */
+   task modelsim_cmd_exec (
+			  input string      line
+      );
+      begin
+
+	 int 	status;
+	 	 
+	 $display("Modelsim Command Exec : ");
+	 status = mti_fli::mti_Cmd(line);
+	 $display("status : %d", status);
+	 
+      end
+   endtask // modelsim_cmd_exec
+   
+    
 
  endclass
