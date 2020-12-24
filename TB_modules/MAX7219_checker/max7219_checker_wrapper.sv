@@ -94,16 +94,21 @@ module max7219_checker_wrapper #(
    // =============================================
 
 
+   reg [8*8*G_NB_MATRIX - 1 : 0] line_char;
+   
    reg [8*G_NB_MATRIX - 1 : 0] line;
    int 			       k;
    int 			       l;
    int 			       m;
+   int 			       n;
+   
    
    
    // == DISPLAY SCREEN MATRIX ==
    always @(posedge clk) begin
       if(!rst_n) begin
-	 line <= 0;
+	 line      <= 0;
+	 line_char <= 0;
 	 
       end
       else begin
@@ -139,8 +144,22 @@ module max7219_checker_wrapper #(
 		  end
 		  
 	       end // for (l = 0 ; l < G_NB_MATRIX ; l++)
-	       $display("%B", line);
-	       line <= 0;
+	       //$display("%B", line);
+	       
+	       for(n = 0; n < 8*G_NB_MATRIX ; n++) begin	         
+		  if(line[n] == 1'b1) begin		     
+		     line_char[n*8 +: /*n*8 +*/ 7] = "*";		     
+		  end
+		  else begin		     
+		     line_char[n*8 +: /*n*8 +*/ 7] = " ";
+		  end		  		  
+	       end
+	       
+	       $display("%s", line_char);
+	       
+	       
+	       line      <= 0;
+	       line_char <= 0;
 	       
 	       
 	    end
