@@ -8,9 +8,13 @@
 // Update Count    : 0
 // Status          : Unknown, Use with caution!
 
+// Add package - Not necessary
 package fli;
     import "DPI-C" function mti_Cmd(input string cmd);
-endpackage
+endpackage // fli
+
+
+   
 
 class tb_class #(
         parameter ARGS_NB   = 5,
@@ -72,7 +76,7 @@ class tb_class #(
       // LOCAL VARIABLES
       int 	   scn_file;      
       string 	   line;
-      string 	   line_tmp; // Temporary Line for Modelsim Command execution
+      string 	   line_tmp = ""; // Temporary Line for Modelsim Command execution
 	
       logic 	   cmd_exists;      
       string 	   args[ARGS_NB];
@@ -159,7 +163,10 @@ class tb_class #(
 
 		  "MODELSIM_CMD" : begin
 		     extract_line_double_quote(line, line_tmp);
-                     line_tmp = "mem load -i /home/jorisp/GitHub/VHDL_code/MAX7219/stimulis/max7219_ram_pattern_3.mem -format mti /tb_top/i_dut/tdpram_inst_0/v_ram";
+                     //line_tmp = "mem load -i /home/jorisp/GitHub/VHDL_code/MAX7219/stimulis/max7219_ram_pattern_3.mem -format mti /tb_top/i_dut/tdpram_inst_0/v_ram";
+		     $display($typename(line_tmp));
+		     
+		     
 		     
 		     modelsim_cmd_exec(line_tmp);		     
 		  end
@@ -595,7 +602,8 @@ class tb_class #(
 	    end	    
 	 end // for (i == 0 ; i < line_length ; i++)
 
-         line_in_double_quote = line.substr( first_guillemet, line.len() - 1);
+	 // Remove '"' in string (End of line fill with \n and ")
+         line_in_double_quote = line.substr( first_guillemet + 1, line.len() - 3);
 	 $display("Line in double quote : %s", line_in_double_quote);
 	 
       end
@@ -613,10 +621,11 @@ class tb_class #(
       begin
 
 	 int 	status;
-	 	 
-	 $display("Modelsim Command Exec : ");
+	 string line_tmp = "";
+	 
+	 $display("Modelsim Command Exec : %s", line);
 	 status = mti_fli::mti_Cmd(line);
-	 $display("status : %d", status);
+	 //$display("status : %d", status);
 	 
       end
    endtask // modelsim_cmd_exec
