@@ -35,17 +35,17 @@ class tb_class #(
 
 
    // == VIRTUAL I/F ==
-   virtual wait_event_intf     wait_event_vif;
-   virtual set_injector_intf #(SET_SIZE, SET_WIDTH)  set_injector_vif;
+   virtual wait_event_intf     #(WAIT_SIZE, WAIT_WIDTH)     wait_event_vif;
+   virtual set_injector_intf   #(SET_SIZE, SET_WIDTH)       set_injector_vif;
    virtual wait_duration_intf  wait_duration_vif;
-   virtual check_level_intf    check_level_vif;   
+   virtual check_level_intf    #(CHECK_SIZE, CHECK_WIDTH)   check_level_vif;   
    // =================
 
    // == Interface passed in Virtual I/F ==
-   function new(virtual wait_event_intf     wait_nif, 
-                virtual set_injector_intf #(SET_SIZE, SET_WIDTH)  set_nif, 
+   function new(virtual wait_event_intf     #(WAIT_SIZE, WAIT_WIDTH)    wait_nif, 
+                virtual set_injector_intf   #(SET_SIZE, SET_WIDTH)      set_nif, 
                 virtual wait_duration_intf  wait_duration_nif,
-                virtual check_level_intf    check_level_nif);
+                virtual check_level_intf    #(CHECK_SIZE, CHECK_WIDTH)  check_level_nif);
       
       wait_event_vif    = wait_nif;
       set_injector_vif  = set_nif;
@@ -300,7 +300,7 @@ class tb_class #(
     */
    task wait_event (
 
-     virtual           wait_event_intf wait_event_vif,		    
+     virtual           wait_event_intf #(WAIT_SIZE, WAIT_WIDTH) wait_event_vif,		    
      input string      i_args [ARGS_NB]
    );
       begin
@@ -471,7 +471,7 @@ class tb_class #(
 
    
    task check_level (
-        virtual check_level_intf    check_level_vif,
+        virtual check_level_intf #(CHECK_SIZE, CHECK_WIDTH) check_level_vif,
         input string i_args [ARGS_NB]
    );
       begin
@@ -547,7 +547,7 @@ class tb_class #(
 
    
    task wait_event_soft (
-			virtual           wait_event_intf wait_event_vif,		    
+			virtual           wait_event_intf #(WAIT_SIZE, WAIT_WIDTH) wait_event_vif,		    
                         input string      i_args [ARGS_NB]
    );
       begin
