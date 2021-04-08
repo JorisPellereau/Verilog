@@ -24,3 +24,5 @@ Testbench/TB_WORK/lib_tb_top/_info
 *.odg#
 
 Testbench/transcripts/test_tasks_transcript.txt
+
+*.pyc
