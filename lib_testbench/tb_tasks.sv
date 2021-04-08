@@ -105,13 +105,19 @@ class tb_class #(
       
 	 // READ SCENARIO LINE and return status
 	 line_status = $fgets(line, scn_file);
-	 
 
-	 // Filter Commentary
-	 if( {line.getc(0), line.getc(1)} == "//" || {line.getc(0), line.getc(1)} == "--") begin
-	   // Ignore Line   
+
+	 // Display if special commentary
+	 if( {line.getc(0), line.getc(1), line.getc(2), line.getc(3)}  == "//--") begin
+	    $display("%s", line);	    
 	 end
 
+	 // Filter Commentary
+	 else if( {line.getc(0), line.getc(1)} == "//" || {line.getc(0), line.getc(1)} == "--") begin
+	   // Ignore Line   
+	 end
+       
+	 // Line empty 
 	 else if(line.getc(0) == "\n") begin
 	    // Ignore Line if line empty
 	 end	 
