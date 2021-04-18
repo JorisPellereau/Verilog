@@ -211,7 +211,8 @@ module tb_top
     );
    // ====================================
 
-
+   assign s_rx_uart = s_tx_uart; // LOOP
+   
    // == TESTBENCH SEQUENCER ==
    
    // CREATE CLASS - Configure Parameters
@@ -237,7 +238,16 @@ module tb_top
    // ========================
 
    //string line = "UART[UART_1] TX_START(0xFF 14 55 99 56 44)\n";
-   string line = "UART[UART_0] TX_START(0xFF)\n";
+   string line; // = "UART[UART_0] TX_START(0xFF)\n";
+
+   string cmd_0 = "UART[UART_0] TX_START(0xFF 1 2 3 4 5 6 7 8 9 255 0xDD 0xFF 99 0xBD 0xCA 0xFF 0x32)\n";
+   string cmd_1 = "UART[UART_0] RX_READ(0xFF)\n";
+
+   logic  sel;
+   assign sel = 0;
+   
+   assign line = (sel == 0) ? cmd_0 : cmd_1;
+   
    
    string uart_checker_cmd_list [2];
    logic   command_exist;
@@ -255,7 +265,6 @@ module tb_top
    
 
    //assign line = "UART[UART_0] TX_START(0xFF)";
-   
 
 
    initial begin: UART_CLASS

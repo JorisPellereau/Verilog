@@ -34,14 +34,15 @@ endinterface // uart_checker_intf
 
 module uart_checker_wrapper #(
 
-			      parameter G_NB_UART_CHECKER = 1,
-			      parameter G_STOP_BIT_NUMBER = 1,
-			      parameter G_POLARITY        = 1,
-			      parameter G_PARITY          = 0,
-			      parameter G_BAUDRATE        = 0,
-			      parameter G_DATA_WIDTH      = 8,
-			      parameter G_FIRST_BIT       = 0,
-			      parameter G_CLOCK_FREQ      = 20000000
+			      parameter G_NB_UART_CHECKER   = 1,
+			      parameter G_STOP_BIT_NUMBER   = 1,
+			      parameter G_POLARITY          = 1,
+			      parameter G_PARITY            = 0,
+			      parameter G_BAUDRATE          = 0,
+			      parameter G_DATA_WIDTH        = 8,
+			      parameter G_FIRST_BIT         = 0,
+			      parameter G_CLOCK_FREQ        = 20000000,
+			      parameter G_BUFFER_ADDR_WIDTH = 8
    )
    (
     input  clk,
@@ -54,6 +55,16 @@ module uart_checker_wrapper #(
     uart_checker_intf uart_checker_if
     
     );
+
+
+   // INTERNAL SIGNALS
+   reg [G_BUFFER_ADDR_WIDTH - 1 :0]    s_wr_ptr [G_NB_UART_CHECKER - 1 : 0];
+   
+   reg [G_DATA_WIDTH - 1 :0]  s_buffer_rx [G_NB_UART_CHECKER - 1 : 0][2**G_BUFFER_ADDR_WIDTH - 1 :0];
+
+   reg 			      s_rx_done_p [G_NB_UART_CHECKER - 1 : 0];   
+   wire 		      s_rx_done_r_edge [G_NB_UART_CHECKER - 1 : 0];
+   
 
 
    // TX UART INST
@@ -95,4 +106,40 @@ module uart_checker_wrapper #(
 								  .rx_done      (uart_checker_if.rx_done),
 								  .parity_rcvd  (uart_checker_if.parity_rcvd)
 								  );
+
+   // Storage of RX Data mnagement
+   always @(posedge clk) begin
+      if(!rst_n) begin
+	 for(int i = 0 ; i < uart_checker_if.G_NB_UART_CHECKER ; i++) begin
+	    s_wr_ptr[i] <= 0;
+	    s_rx_done_p[i] <= 0;
+	    
+	    for(int j = 0 ; j < 2**G_BUFFER_ADDR_WIDTH ; j++) begin	       
+	       s_buffer_rx[i][j] <= 0;	       
+	    end
+	    
+	 end
+      end
+      else begin
+
+	 //s_rx_done_p <= uart_checker_if.rx_done;
+	 
+	 for(int i = 0 ; i < uart_checker_if.G_NB_UART_CHECKER ; i++) begin
+	    s_rx_done_p[i] <= uart_checker_if.rx_done[i];
+	    if(s_rx_done_r_edge[i] == 1) begin
+	       s_buffer_rx[i][s_wr_ptr[i]] <= uart_checker_if.rx_data[i];	       
+	       s_wr_ptr[i] <=  s_wr_ptr[i] + 1;	       
+	    end
+	 end	 
+      end      
+   end
+
+   genvar k;
+   generate
+      for(k = 0 ; k < uart_checker_if.G_NB_UART_CHECKER ; k++) begin
+	 assign s_rx_done_r_edge[k] = uart_checker_if.rx_done[k] && !s_rx_done_p[k];
+      end
+   endgenerate
+   
+   
 endmodule // uart_checker_wrapper
