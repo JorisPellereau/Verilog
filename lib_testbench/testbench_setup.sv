@@ -31,3 +31,7 @@
 `define C_CHECK_ALIAS_NB 5
 `define C_CHECK_SIZE     5
 `define C_CHECK_WIDTH    32
+
+
+// UART CHECKER Configuration
+`define C_NB_UART_CHECKER 2

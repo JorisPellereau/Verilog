@@ -3,6 +3,11 @@
 --
 --
 WTR RST_N
+
+WAIT 10 ms
+END_TEST
+
+
 WTR O1 1 us
 WTF O1 20 us
 WTR O2 100 ns

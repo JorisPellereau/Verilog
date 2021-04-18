@@ -17,6 +17,9 @@
 `include "check_level_wrapper.sv"
 `include "tb_tasks.sv"
 
+`include "/home/jorisp/GitHub/Verilog/lib_tb_uart/tb_uart_class.sv"
+//`include "/home/jorisp/GitHub/Verilog/lib_tb_utils/tb_utils_class.sv"
+
 
 // TB TOP
 module tb_top
@@ -161,6 +164,54 @@ module tb_top
    // ===========================
 
 
+   wire [`C_NB_UART_CHECKER - 1 : 0] s_rx_uart;
+   wire [`C_NB_UART_CHECKER - 1 : 0] s_tx_uart;
+
+   // Create UART checker Interface
+   uart_checker_intf #(
+		       .G_NB_UART_CHECKER (`C_NB_UART_CHECKER),
+		       .G_DATA_WIDTH      (8)
+		       ) 
+   uart_checker_if();
+
+
+   // Assign Alias of UART checker
+
+   assign uart_checker_if.uart_checker_alias = '{
+						 "UART_0" : 0,
+						 "UART_1" : 1
+						 };
+   
+/*   assign uart_checker_if.uart_checker_alias[0] = "UART_0";
+   assign uart_checker_if.uart_checker_alias[1] = "UART_1";
+
+ */
+   
+   // == HDL SPEFICIC TESTBENCH MODULES ==
+   uart_checker_wrapper #(
+
+			      .G_NB_UART_CHECKER (`C_NB_UART_CHECKER),
+			      .G_STOP_BIT_NUMBER (1),
+			      .G_POLARITY        (4'd3),
+			      .G_PARITY          (0),
+			      .G_BAUDRATE        (9),
+			      .G_DATA_WIDTH      (8),
+			      .G_FIRST_BIT       (0),
+			      .G_CLOCK_FREQ      (20000000)
+   )
+   i_uart_checker_wrapper (
+			   .clk    (clk),
+			   .rst_n  (rst_n),			  
+
+			   .i_rx  (s_rx_uart),
+			   .o_tx  (s_tx_uart),
+
+			   .uart_checker_if (uart_checker_if)
+    
+    );
+   // ====================================
+
+
    // == TESTBENCH SEQUENCER ==
    
    // CREATE CLASS - Configure Parameters
@@ -185,7 +236,66 @@ module tb_top
    
    // ========================
 
+   //string line = "UART[UART_1] TX_START(0xFF 14 55 99 56 44)\n";
+   string line = "UART[UART_0] TX_START(0xFF)\n";
+   
+   string uart_checker_cmd_list [2];
+   logic   command_exist;
 
+   string  uart_alias;
+   string  uart_cmd;
+   string  uart_cmd_args;
+   
+      
+
+   int  UART_CMD_ARRAY [string] = '{
+			        "TX_START" : 0,
+			        "RX_READ"  : 1
+					      };
+   
+
+   //assign line = "UART[UART_0] TX_START(0xFF)";
+   
+
+
+   initial begin: UART_CLASS
+      // test UART checker class
+      static tb_uart_class #(
+			     .G_NB_UART_CHECKER    (2),
+			     .G_DATA_WIDTH         (8)
+			     )
+      i_tb_uart_class = new(uart_checker_if);
+
+      assign uart_checker_if.clk = clk;
+
+      i_tb_uart_class.INIT_UART_CHECKER(uart_checker_if);
+      
+
+      @(posedge rst_n);
+      
+      #1;
+      i_tb_uart_class.decod_scn_line(uart_checker_if,
+				     line, 
+				     UART_CMD_ARRAY, 
+				     command_exist,
+				     uart_alias,
+				     uart_cmd,
+				     uart_cmd_args);
+
+      #1;
+      i_tb_uart_class.UART_TX_START(uart_checker_if,
+				    uart_alias,
+				    uart_cmd,
+				    uart_cmd_args);
+      
+      
+      
+      
+
+   end : UART_CLASS
+   
+   
+   
 
 
 

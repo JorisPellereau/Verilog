@@ -50,7 +50,9 @@ class tb_class #(
       wait_event_vif    = wait_nif;
       set_injector_vif  = set_nif;
       wait_duration_vif = wait_duration_nif;
-      check_level_vif   = check_level_nif;      
+      check_level_vif   = check_level_nif;
+
+      // 
    endfunction // new
 
    // ====================================
@@ -133,7 +135,9 @@ class tb_class #(
 	 
 	 // Send line to Command Decoder
 	 else begin
-	    cmd_decoder(line, cmd_exists, args);
+	    cmd_decoder(line, cmd_exists, args); // Command decoder off generic CMD
+
+	    // Command decoder of specific Testbench Modules
 
             if(cmd_exists) begin
 
@@ -210,7 +214,8 @@ class tb_class #(
         $display("%s", line);
 	 	 
         $sscanf(line, "%s %s %s %s %s", args[0], args[1], args[2], args[3], args[4]);
-	 	 
+
+	// Check If GENERIC Command is recognized
         if(args[0] == "SET") begin
      	  o_cmd_exists = 1'b1;	 
         end
