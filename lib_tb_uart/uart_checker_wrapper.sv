@@ -9,8 +9,9 @@
 // Status          : Unknown, Use with caution!
 
 interface uart_checker_intf #(
-			      parameter G_NB_UART_CHECKER = 1,
-			      parameter G_DATA_WIDTH      = 8			      
+			      parameter G_NB_UART_CHECKER   = 1,
+			      parameter G_DATA_WIDTH        = 8,
+			      parameter G_BUFFER_ADDR_WIDTH = 8			      
 			      );
 
    logic clk;   
@@ -24,7 +25,12 @@ interface uart_checker_intf #(
    // RX UART command
    logic [G_DATA_WIDTH - 1:0] rx_data     [G_NB_UART_CHECKER - 1 : 0];
    logic 		      rx_done     [G_NB_UART_CHECKER - 1 : 0];
-   logic 		      parity_rcvd [G_NB_UART_CHECKER - 1 : 0];   
+   logic 		      parity_rcvd [G_NB_UART_CHECKER - 1 : 0];
+
+   // BUFFER command from soft
+   reg [G_DATA_WIDTH - 1 :0]  s_buffer_rx_soft [G_NB_UART_CHECKER - 1 : 0][2**G_BUFFER_ADDR_WIDTH - 1 :0]; 
+   reg [G_BUFFER_ADDR_WIDTH - 1 :0] s_wr_ptr_soft [G_NB_UART_CHECKER - 1 : 0];  
+   logic  [G_BUFFER_ADDR_WIDTH - 1 :0]    s_rd_ptr_soft [G_NB_UART_CHECKER - 1 : 0];
 
    // ALIASES
    int 		      uart_checker_alias [string];
@@ -58,9 +64,9 @@ module uart_checker_wrapper #(
 
 
    // INTERNAL SIGNALS
-   reg [G_BUFFER_ADDR_WIDTH - 1 :0]    s_wr_ptr [G_NB_UART_CHECKER - 1 : 0];
+   //reg [G_BUFFER_ADDR_WIDTH - 1 :0]    s_wr_ptr [G_NB_UART_CHECKER - 1 : 0];
    
-   reg [G_DATA_WIDTH - 1 :0]  s_buffer_rx [G_NB_UART_CHECKER - 1 : 0][2**G_BUFFER_ADDR_WIDTH - 1 :0];
+   //reg [G_DATA_WIDTH - 1 :0]  s_buffer_rx [G_NB_UART_CHECKER - 1 : 0][2**G_BUFFER_ADDR_WIDTH - 1 :0];
 
    reg 			      s_rx_done_p [G_NB_UART_CHECKER - 1 : 0];   
    wire 		      s_rx_done_r_edge [G_NB_UART_CHECKER - 1 : 0];
@@ -106,31 +112,30 @@ module uart_checker_wrapper #(
 								  .rx_done      (uart_checker_if.rx_done),
 								  .parity_rcvd  (uart_checker_if.parity_rcvd)
 								  );
-
+   
    // Storage of RX Data mnagement
    always @(posedge clk) begin
       if(!rst_n) begin
 	 for(int i = 0 ; i < uart_checker_if.G_NB_UART_CHECKER ; i++) begin
-	    s_wr_ptr[i] <= 0;
+	    uart_checker_if.s_wr_ptr_soft[i] <= 0;
 	    s_rx_done_p[i] <= 0;
 	    
 	    for(int j = 0 ; j < 2**G_BUFFER_ADDR_WIDTH ; j++) begin	       
-	       s_buffer_rx[i][j] <= 0;	       
+	       uart_checker_if.s_buffer_rx_soft[i][j] <= 0;	       
 	    end
 	    
 	 end
       end
       else begin
-
-	 //s_rx_done_p <= uart_checker_if.rx_done;
 	 
 	 for(int i = 0 ; i < uart_checker_if.G_NB_UART_CHECKER ; i++) begin
 	    s_rx_done_p[i] <= uart_checker_if.rx_done[i];
 	    if(s_rx_done_r_edge[i] == 1) begin
-	       s_buffer_rx[i][s_wr_ptr[i]] <= uart_checker_if.rx_data[i];	       
-	       s_wr_ptr[i] <=  s_wr_ptr[i] + 1;	       
+	       uart_checker_if.s_buffer_rx_soft[i][uart_checker_if.s_wr_ptr_soft[i]] <= uart_checker_if.rx_data[i];	       
+	       uart_checker_if.s_wr_ptr_soft[i] <=  uart_checker_if.s_wr_ptr_soft[i] + 1;	       
 	    end
-	 end	 
+	 end
+	 
       end      
    end
 
@@ -140,6 +145,10 @@ module uart_checker_wrapper #(
 	 assign s_rx_done_r_edge[k] = uart_checker_if.rx_done[k] && !s_rx_done_p[k];
       end
    endgenerate
+
+
+   // Assign s_buffer_rx_soft to current s_buffer_rx
+   //assign uart_checker_if.s_buffer_rx_soft = s_buffer_rx;
    
    
 endmodule // uart_checker_wrapper

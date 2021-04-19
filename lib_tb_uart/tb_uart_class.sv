@@ -188,7 +188,11 @@ class tb_uart_class #(
 	 int i;
 	 for(i = 0 ; i < uart_checker_vif.G_NB_UART_CHECKER; i++) begin
 	    uart_checker_vif.start_tx[i] = 0;
-	    uart_checker_vif.tx_data[i] = 4'hAA;	    
+	    uart_checker_vif.tx_data[i] = 4'hAA; // TBD
+	    uart_checker_vif.s_rd_ptr_soft[i] = 0;
+	    
+	    // 	 
+	    //    
 	 end
 	 
       end
@@ -202,7 +206,10 @@ class tb_uart_class #(
    //toto = new();
    
    
-   // Task : TX_START - Send a byte or multiple bytes on TX UART
+   /* Task : TX_START - Send a byte or multiple bytes on TX UART
+    * * BLOCKING COMMAND
+    * 
+    */
 
    task UART_TX_START (
 		       virtual 	     uart_checker_intf #(G_NB_UART_CHECKER, G_DATA_WIDTH) uart_checker_vif,
@@ -279,6 +286,7 @@ class tb_uart_class #(
 	 
 	 for(i = 0 ; i < data_nb ; i ++) begin
 
+	    // Convert STR to int
 	    if( {data_array[i].getc(0), data_array[i].getc(1)} == "0x") begin
 
 	       str_tmp = data_array[i].substr(2, data_array[i].len() - 1); // Remove 0x
@@ -319,7 +327,121 @@ class tb_uart_class #(
 	 
       end
    endtask // UART_TX_START
+
+
+
+   /* TASK : UART_RX_READ
+    *
+    * - Check Value in RX buffer - Non Blocking command
+    */
+
+   task UART_RX_READ(
+		     virtual 	  uart_checker_intf #(G_NB_UART_CHECKER, G_DATA_WIDTH) uart_checker_vif,
+		     input string uart_alias,
+		     input string uart_cmd,
+		     input string uart_cmd_args);
+      begin
+
+	 // INTERNAL VARIABLES
+	 int data_nb = 0;
+	 int space_position = 0;
+	 int start_pos = 0;
+	 int data_cnt = 0;
+	 int i = 0;	 
+	 int data_tmp [];	 
+	 string str_tmp;	 
+	 string data_array [];
+	 int 	array_index = 0;
+
+	 array_index = uart_checker_vif.uart_checker_alias[uart_alias]; // Get Array Index
+	 
+	 // Get the number of data in uart_cmd_args
+	 for(i = 0 ; i < uart_cmd_args.len() ; i ++) begin
+	    if(uart_cmd_args.getc(i) == " ") begin
+	       data_nb += 1;	       
+	    end	    	    
+	 end
+
+	 data_nb += 1; // Number of space + 1
+
+
+	 data_array = new [data_nb]; // Create a dynamic array with the number of data
+	 data_tmp   = new [data_nb];
+	 
+
+	 // Store data in an array
+	 for(i = 0 ; i < uart_cmd_args.len() ; i ++) begin
+	    if(uart_cmd_args.getc(i) == " ") begin	       
+	       space_position = i;
+	       if(data_cnt < data_nb) begin
+		  data_array[data_cnt] = uart_cmd_args.substr(start_pos, space_position -1);
+		  data_cnt += 1;
+		  $display("data_cnt : %d" , data_cnt);
+		  
+	       end
+	       start_pos = space_position + 1; // Update Start Position       
+	    end
+	 
+   	 end // for (i = 0 ; i < uart_cmd_args.len() ; i ++)
+
+	 // Fill Last data
+	 data_array[data_nb - 1] = uart_cmd_args.substr(start_pos, uart_cmd_args.len() - 1);
+
+	 $display("%p", data_array);
+
+
+	 // Fill Data to check
+	 for(i = 0 ; i < data_nb ; i ++) begin
+
+	    // Convert STR to INT
+	    if( {data_array[i].getc(0), data_array[i].getc(1)} == "0x") begin
+
+	       str_tmp = data_array[i].substr(2, data_array[i].len() - 1); // Remove 0x
+	       
+	       data_tmp[i] = str_tmp.atohex();
+	              		 
+	    end	   
+	    else begin
+	       data_tmp[i] = data_array[i].atoi();	       
+	    end
+	 end // for (i = 0 ; i < data_nb ; i ++)
+	    
+
+	 for(i = 0 ; i < data_nb ; i ++) begin
+
+	    // Check if data is stored
+	    if(uart_checker_vif.s_buffer_rx_soft[array_index][uart_checker_vif.s_rd_ptr_soft[array_index]] == data_tmp[i]) begin
+	       $display("UART RX_READ(%x) - Expected %x => OK", data_tmp[i], uart_checker_vif.s_buffer_rx_soft[array_index][uart_checker_vif.s_rd_ptr_soft[array_index]]);	       
+	    end
+	    else begin
+	       $display("UART RX_READ(%x) - Expected %x => Error", data_tmp[i], uart_checker_vif.s_buffer_rx_soft[array_index][uart_checker_vif.s_rd_ptr_soft]);
+	    end
+
+	    if(uart_checker_vif.s_rd_ptr_soft[array_index] < uart_checker_vif.s_wr_ptr_soft[array_index]) begin
+	       uart_checker_vif.s_rd_ptr_soft[array_index] = uart_checker_vif.s_rd_ptr_soft[array_index] + 1; // Inc	       
+	    end
+	    else begin
+	       $display("UART - Error : Buffer Read pointer soft > Buffer Write pointer soft");
+	       
+	    end
+	    
+	    //#1;
+	    
+	    
+	    
+	 end
+	 
+	 
+
+	    
+        
+	 $display("UART_RX_READ END");
+	 
+
+	 
+      end
+   endtask // UART_RX_READ
    
-   
+      
   
 endclass // tb_uart_class

@@ -169,8 +169,9 @@ module tb_top
 
    // Create UART checker Interface
    uart_checker_intf #(
-		       .G_NB_UART_CHECKER (`C_NB_UART_CHECKER),
-		       .G_DATA_WIDTH      (8)
+		       .G_NB_UART_CHECKER    (`C_NB_UART_CHECKER),
+		       .G_DATA_WIDTH         (8),
+		       .G_BUFFER_ADDR_WIDTH  (8)
 		       ) 
    uart_checker_if();
 
@@ -190,14 +191,15 @@ module tb_top
    // == HDL SPEFICIC TESTBENCH MODULES ==
    uart_checker_wrapper #(
 
-			      .G_NB_UART_CHECKER (`C_NB_UART_CHECKER),
-			      .G_STOP_BIT_NUMBER (1),
-			      .G_POLARITY        (4'd3),
-			      .G_PARITY          (0),
-			      .G_BAUDRATE        (9),
-			      .G_DATA_WIDTH      (8),
-			      .G_FIRST_BIT       (0),
-			      .G_CLOCK_FREQ      (20000000)
+			      .G_NB_UART_CHECKER    (`C_NB_UART_CHECKER),
+			      .G_STOP_BIT_NUMBER    (1),
+			      .G_POLARITY           (4'd3),
+			      .G_PARITY             (0),
+			      .G_BAUDRATE           (9),
+			      .G_DATA_WIDTH         (8),
+			      .G_FIRST_BIT          (0),
+			      .G_CLOCK_FREQ         (20000000),
+			      .G_BUFFER_ADDR_WIDTH  (8)
    )
    i_uart_checker_wrapper (
 			   .clk    (clk),
@@ -241,10 +243,10 @@ module tb_top
    string line; // = "UART[UART_0] TX_START(0xFF)\n";
 
    string cmd_0 = "UART[UART_0] TX_START(0xFF 1 2 3 4 5 6 7 8 9 255 0xDD 0xFF 99 0xBD 0xCA 0xFF 0x32)\n";
-   string cmd_1 = "UART[UART_0] RX_READ(0xFF)\n";
+   string cmd_1 = "UART[UART_0] RX_READ(0xFF 1 2 3 4 5 6 7 8 9 255 0xDD 0xFF 99 0xBD 0xCA 0xFF)\n";
 
    logic  sel;
-   assign sel = 0;
+   //assign sel = 0;
    
    assign line = (sel == 0) ? cmd_0 : cmd_1;
    
@@ -279,7 +281,8 @@ module tb_top
 
       i_tb_uart_class.INIT_UART_CHECKER(uart_checker_if);
       
-
+      sel = 0;
+      
       @(posedge rst_n);
       
       #1;
@@ -298,7 +301,25 @@ module tb_top
 				    uart_cmd_args);
       
       
+      #1500000;
       
+      sel = 1;
+
+      #1;
+      i_tb_uart_class.decod_scn_line(uart_checker_if,
+				     line, 
+				     UART_CMD_ARRAY, 
+				     command_exist,
+				     uart_alias,
+				     uart_cmd,
+				     uart_cmd_args);
+
+      #1;
+      
+      i_tb_uart_class.UART_RX_READ(uart_checker_if,
+				   uart_alias,
+				   uart_cmd,
+				   uart_cmd_args);
       
 
    end : UART_CLASS
