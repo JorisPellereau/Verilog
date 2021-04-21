@@ -143,6 +143,7 @@ src_v+=$(SRC_DIR)/set_injector_tb.sv
 src_v+=$(SRC_DIR)/set_injector_wrapper.sv
 src_v+=$(SRC_DIR)/wait_duration_wrapper.sv
 src_v+=$(SRC_DIR)/check_level_wrapper.sv
+src_v+=$(SRC_DIR)/tb_modules_custom_class.sv
 src_v+=$(SRC_DIR)/tb_tasks.sv
 src_v+=$(SRC_DIR)/tb_top.sv
 # ==================

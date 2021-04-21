@@ -9,11 +9,11 @@
 // Status          : Unknown, Use with caution!
 
 // TBD !
-`include "/home/jorisp/GitHub/Verilog/lib_tb_utils/tb_utils_class.sv"
+
 
 class tb_uart_class #(
-		      parameter G_NB_UART_CHECKER = 2,
-		      parameter G_DATA_WIDTH      = 8
+		      parameter int G_NB_UART_CHECKER = 2,
+		      parameter int G_DATA_WIDTH      = 8
 		      );
 
    // == VIRTUAL I/F ==
@@ -188,7 +188,7 @@ class tb_uart_class #(
 	 int i;
 	 for(i = 0 ; i < uart_checker_vif.G_NB_UART_CHECKER; i++) begin
 	    uart_checker_vif.start_tx[i] = 0;
-	    uart_checker_vif.tx_data[i] = 4'hAA; // TBD
+	    uart_checker_vif.tx_data[i] = 8'hAA; // TBD
 	    uart_checker_vif.s_rd_ptr_soft[i] = 0;
 	    
 	    // 	 

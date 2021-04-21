@@ -13,8 +13,8 @@ package fli;
     import "DPI-C" function mti_Cmd(input string cmd);
 endpackage // fli
 
-
-   
+`include "/home/jorisp/GitHub/Verilog/lib_testbench/tb_modules_custom_class.sv"
+`include "/home/jorisp/GitHub/Verilog/lib_tb_uart/uart_checker_wrapper.sv"
 
 class tb_class #(
         parameter ARGS_NB   = 5,
@@ -34,23 +34,44 @@ class tb_class #(
       );
 
 
+   // == CUSTOM TESTBENCH MODULES CLASS ==
+   tb_modules_custom_class tb_modules_custom_inst;   
+   // ====================================
+   
    // == VIRTUAL I/F ==
+
+   // == GENERIC VIRTUAL I/F ==
    virtual wait_event_intf     #(WAIT_SIZE, WAIT_WIDTH)     wait_event_vif;
    virtual set_injector_intf   #(SET_SIZE, SET_WIDTH)       set_injector_vif;
    virtual wait_duration_intf  wait_duration_vif;
-   virtual check_level_intf    #(CHECK_SIZE, CHECK_WIDTH)   check_level_vif;   
+   virtual check_level_intf    #(CHECK_SIZE, CHECK_WIDTH)   check_level_vif;
+   // =========================
+
+   // == OPTIONNAL VIRTUAL I/F ==
+   // UART Testbench modules
+   //virtual uart_checker_intf uart_checker_vif; 
+   // ===========================
+   
    // =================
+
+   
 
    // == Interface passed in Virtual I/F ==
    function new(virtual wait_event_intf     #(WAIT_SIZE, WAIT_WIDTH)    wait_nif, 
                 virtual set_injector_intf   #(SET_SIZE, SET_WIDTH)      set_nif, 
                 virtual wait_duration_intf  wait_duration_nif,
-                virtual check_level_intf    #(CHECK_SIZE, CHECK_WIDTH)  check_level_nif);
+                virtual check_level_intf    #(CHECK_SIZE, CHECK_WIDTH)  check_level_nif,
+		tb_modules_custom_class tb_modules_custom_inst);
       
       wait_event_vif    = wait_nif;
       set_injector_vif  = set_nif;
       wait_duration_vif = wait_duration_nif;
       check_level_vif   = check_level_nif;
+
+      // Custom Modules Class
+      tb_modules_custom_inst = tb_modules_custom_inst;
+      
+	
 
       // 
    endfunction // new
@@ -67,8 +88,8 @@ class tb_class #(
    */
    task tb_sequencer(
 
-        input string scn_file_path // SCENARIO FILE PATH
-
+        input string scn_file_path, // SCENARIO FILE PATH
+	input tb_modules_custom_class tb_modules_custom_inst // Custom tb_modules class
       );
       
      begin
@@ -90,6 +111,17 @@ class tb_class #(
       
       end_test    = 1'b0;
       line_status = 0;
+
+      // INIT CUSTOM TESTBENCH MODULES
+      if(tb_modules_custom_inst.UART_MODULES_EN == 1'b1) begin
+	 $display("UART TESTBENCH Modules Enable");
+
+	 tb_modules_custom_inst.
+      end
+	
+      //tb_modules_custom_inst = tb_modules_custom_inst.init_uart_class(2,8,8,uart_checker_if);
+
+	//tb_modules_custom_inst.init_uart_class(2,8,8,uart_checker_if);
 	
 
       // INIT SET INJECTOR

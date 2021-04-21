@@ -17,8 +17,8 @@
 `include "check_level_wrapper.sv"
 `include "tb_tasks.sv"
 
-`include "/home/jorisp/GitHub/Verilog/lib_tb_uart/tb_uart_class.sv"
-//`include "/home/jorisp/GitHub/Verilog/lib_tb_utils/tb_utils_class.sv"
+//`include "/home/jorisp/GitHub/Verilog/lib_tb_uart/tb_uart_class.sv"
+
 
 
 // TB TOP
@@ -214,6 +214,19 @@ module tb_top
    // ====================================
 
    assign s_rx_uart = s_tx_uart; // LOOP
+
+
+   bit 				     C_UART_MODULE_EN; 
+   assign C_UART_MODULE_EN = 1;
+   
+   
+   
+   
+   // Declare TB Module class type
+   tb_modules_custom_class tb_modules_custom_inst = new(1'b1/*C_UART_MODULE_EN*/);
+
+   // Init UART
+   
    
    // == TESTBENCH SEQUENCER ==
    
@@ -229,11 +242,14 @@ module tb_top
    tb_class_inst = new (s_wait_event_if, 
                         s_set_injector_if, 
                         s_wait_duration_if,
-                        s_check_level_if);
+                        s_check_level_if,
+			tb_modules_custom_inst);
    
    
    initial begin : TB_SEQUENCER
-      tb_class_inst.tb_sequencer(SCN_FILE_PATH);
+      tb_modules_custom_inst.tb_uart_class_inst = tb_modules_custom_inst.init_uart_class(2,8,8,uart_checker_if);
+      
+      tb_class_inst.tb_sequencer(SCN_FILE_PATH, tb_modules_custom_inst);
       
    end : TB_SEQUENCER
    
