@@ -212,7 +212,7 @@ module tb_top
     
     );
    // ====================================
-
+   assign uart_checker_if.clk = clk;
    assign s_rx_uart = s_tx_uart; // LOOP
 
 
@@ -247,7 +247,7 @@ module tb_top
    
    
    initial begin : TB_SEQUENCER
-      tb_modules_custom_inst.tb_uart_class_inst = tb_modules_custom_inst.init_uart_class(2,8,8,uart_checker_if);
+      /*tb_modules_custom_inst.tb_uart_class_inst = */tb_modules_custom_inst.init_uart_class(2,8,8,uart_checker_if);
       
       tb_class_inst.tb_sequencer(SCN_FILE_PATH, tb_modules_custom_inst);
       
@@ -285,7 +285,7 @@ module tb_top
    //assign line = "UART[UART_0] TX_START(0xFF)";
 
 
-   initial begin: UART_CLASS
+   /*initial begin: UART_CLASS
       // test UART checker class
       static tb_uart_class #(
 			     .G_NB_UART_CHECKER    (2),
@@ -338,7 +338,7 @@ module tb_top
 				   uart_cmd_args);
       
 
-   end : UART_CLASS
+   end : UART_CLASS*/
    
    
    

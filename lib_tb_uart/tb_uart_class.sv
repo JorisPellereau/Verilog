@@ -46,24 +46,79 @@ class tb_uart_class #(
    // ===========================
 
    const int 	   C_UART_CMD_NB = 2; // Number of Uart Command
-   int  UART_CMD_ARRAY [string] = '{
-			        "TX_START" : 0,
-			        "RX_READ"  : 1
-					      };
+   int 		   UART_CMD_ARRAY [string] = '{
+					       "TX_START" : 0,
+					       "RX_READ"  : 1
+					       };
    
+
+
+   // UART Testbench Command sequencer
+   task uart_tb_sequencer(
+			  virtual      uart_checker_intf #(G_NB_UART_CHECKER, G_DATA_WIDTH) uart_checker_vif,
+			  input string line,
+			  output logic o_command_exist,
+			  output logic o_route_uart_done
+			  );
+      begin
+
+	 // Internal signals
+	 logic s_command_exist; // Command UART exists flag
+	 logic s_route_uart_done;
+	 
+	 string s_uart_alias;
+	 string s_uart_cmd;
+	 string s_uart_cmd_args;
+	 
+
+	 //s_command_exist = 0;
+
+	 $display("UART_CMD_ARRAY : %p", this.UART_CMD_ARRAY);
+	 
+	 
+	 // Decod Scenario Line
+	 decod_scn_line (
+			 uart_checker_vif,
+			 line,
+			 this.UART_CMD_ARRAY,
+			 s_command_exist,
+			 s_uart_alias,
+			 s_uart_cmd,
+			 s_uart_cmd_args
+			 );
+
+	 $display("uart_tb_sequencer - s_command_exist : %0b", s_command_exist);
+	 
+
+	 // Route UART Command - Launch uart command if exists
+	 route_uart_command (
+			     uart_checker_vif,
+			     s_command_exist,
+			     s_uart_alias,
+			     s_uart_cmd,
+			     s_uart_cmd_args,
+			     s_route_uart_done			   
+			     );
+
+	 o_command_exist   = s_command_exist;
+	 o_route_uart_done = s_route_uart_done;
+	 
+	 
+      end
+   endtask // uart_tb_sequencer
    
    
 
    // Get line from scenarios - Check if alias exist - Check if command exsits and return args of command
 
-   task decod_scn_line(
-		       virtual 	     uart_checker_intf #(G_NB_UART_CHECKER, G_DATA_WIDTH) uart_checker_vif,
-		       input string  line,
-		       input int     uart_checker_cmd_list [string],
-		       logic 	     o_command_exist,
-		       output string o_uart_alias,
-		       output string o_uart_cmd,
-		       output string o_uart_cmd_args
+   task decod_scn_line (
+			virtual       uart_checker_intf #(G_NB_UART_CHECKER, G_DATA_WIDTH) uart_checker_vif,
+			input string  line,
+			input int     uart_checker_cmd_list [string],
+			output logic  o_command_exist,
+			output string o_uart_alias,
+			output string o_uart_cmd,
+			output string o_uart_cmd_args
 		       );
       begin
 
@@ -89,7 +144,7 @@ class tb_uart_class #(
 	 
 	 line_length = line.len();
 	 
-	 $display("Line : %s", line);
+	 //$display("Line : %s", line);
 
 	 // Check if command exist
 	 //$sscanf(line, "%s %s", uart_cmd_alias, uart_cmd_tmp);
@@ -172,12 +227,68 @@ class tb_uart_class #(
 	    
 	 end
 	 else begin
-	    $display("Error: Command not recognized");
+	    //$display("Error: Command not recognized");
 	    o_command_exist = 0;  // End of test => Command don't exist	    
 	 end // else: !if(line.substr(0, 3) == "UART")
       end
+
+      $display("o_command_exists - decod_scn_line : %b", o_command_exist);
+      
       
    endtask // decod_scn_line
+
+
+   // Task : Check if command exists and route to corerct Task
+   task route_uart_command (
+			    virtual 	 uart_checker_intf #(G_NB_UART_CHECKER, G_DATA_WIDTH) uart_checker_vif,
+			    logic 	 i_command_exist,
+			    input string i_uart_alias,
+			    input string i_uart_cmd,
+			    input string i_uart_cmd_args,
+			    logic 	 o_route_uart_done
+			    );
+      begin
+
+	 o_route_uart_done = 0;
+	 
+	 if(i_command_exist) begin
+	    case(i_uart_cmd)
+        
+	      "TX_START": begin
+		 $display("Run TX_START ...");
+		 
+		 UART_TX_START (
+				uart_checker_vif,
+				i_uart_alias,
+				i_uart_cmd,
+				i_uart_cmd_args		       
+				);	     
+	      end
+	      
+	      "RX_READ" : begin
+		 UART_RX_READ (
+			       uart_checker_vif,
+			       i_uart_alias,
+			       i_uart_cmd,
+			       i_uart_cmd_args
+			       );
+	      end
+
+	      default: $display("Error: wrong UART Command : %s", i_uart_cmd);
+	      
+	    endcase // case (i_uart_cmd)
+	    
+	    o_route_uart_done = 1;
+	      
+	 end
+	 else begin
+	    o_route_uart_done = 1;
+	 end
+	 
+	 
+      end
+   endtask // route_uart_command
+   
 
 
    // TASK : Init UART checker
@@ -194,6 +305,9 @@ class tb_uart_class #(
 	    // 	 
 	    //    
 	 end
+
+	 $display("Initialization of UART Testbench Module Done.");
+	 
 	 
       end
    endtask // INIT_UART_CHECKER
@@ -258,7 +372,7 @@ class tb_uart_class #(
 	 data_nb += 1; // Number of space + 1
 	 
 
-	 $display("data_nb : %d" , data_nb);
+	 //$display("data_nb : %d" , data_nb);
 	 data_array = new [data_nb]; // Create a dynamic array with the number of data
 	 
 
@@ -269,7 +383,7 @@ class tb_uart_class #(
 	       if(data_cnt < data_nb) begin
 		  data_array[data_cnt] = uart_cmd_args.substr(start_pos, space_position -1);
 		  data_cnt += 1;
-		  $display("data_cnt : %d" , data_cnt);
+		  //$display("data_cnt : %d" , data_cnt);
 		  
 	       end
 	       start_pos = space_position + 1; // Update Start Position       
@@ -280,7 +394,7 @@ class tb_uart_class #(
 	 // Fill Last data
 	 data_array[data_nb - 1] = uart_cmd_args.substr(start_pos, uart_cmd_args.len() - 1);
 
-	 $display("%p", data_array);
+	 //$display("%p", data_array);
 
 
 	 
@@ -299,13 +413,13 @@ class tb_uart_class #(
 	    end
 	    
 	    
-	    $display("data_tmp : %d", data_tmp);
+	    //$display("data_tmp : %d", data_tmp);
 
 	    // Generation of a pulse of TX UART[alias]
 	    @(posedge uart_checker_vif.clk);
 
 	    array_index = uart_checker_vif.uart_checker_alias[uart_alias];
-	    $display("array_index : %d", array_index);
+	    //$display("array_index : %d", array_index);
 	    
 	    uart_checker_vif.tx_data[array_index]  = data_tmp;
 	    uart_checker_vif.start_tx[array_index] = 1;
@@ -315,15 +429,15 @@ class tb_uart_class #(
 	    uart_checker_vif.start_tx[array_index] = 0;
 
 	    @(posedge uart_checker_vif.tx_done[array_index]); // Wait for UART[alias] tx_done
-	    $display("UART TX DONE !");
-	    $display("index i : %d", i);
+	    //$display("UART TX DONE !");
+	    //$display("index i : %d", i);
 	    
 	    
 	 end // for (i = 0 ; i < data_nb ; i ++)
 	 
 	 
 	 
-	 $display("End of TX_START");
+	 $display("UART TX DONE - %t", $time);
 	 
       end
    endtask // UART_TX_START

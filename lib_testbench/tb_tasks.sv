@@ -92,141 +92,148 @@ class tb_class #(
 	input tb_modules_custom_class tb_modules_custom_inst // Custom tb_modules class
       );
       
-     begin
-	
-         			 
+      begin
+			 
+	 // LOCAL VARIABLES
+	 int 	   scn_file;      
+	 string    line;
+	 string    line_tmp = ""; // Temporary Line for Modelsim Command execution
+	 
+	 // Flag from Custom Testbench Modules
+	 logic 	   s_cmd_custom_exists;
+	 logic 	   s_cmd_custom_done;
 
-      // LOCAL VARIABLES
-      int 	   scn_file;      
-      string 	   line;
-      string 	   line_tmp = ""; // Temporary Line for Modelsim Command execution
-	
-      logic 	   cmd_exists;      
-      string 	   args[ARGS_NB];
+	 // Flag from Generic Testbench Modules
+	 logic 	   cmd_exists;      
+	 string    args[ARGS_NB];
       
 
-      logic 	   end_test;
-      int 	   line_status;
+	 logic 	   end_test;
+	 int 	   line_status;
       
       
-      end_test    = 1'b0;
-      line_status = 0;
+	 end_test    = 1'b0;
+	 line_status = 0;
 
-      // INIT CUSTOM TESTBENCH MODULES
-      if(tb_modules_custom_inst.UART_MODULES_EN == 1'b1) begin
-	 $display("UART TESTBENCH Modules Enable");
+	 // INIT CUSTOM TESTBENCH MODULES
+	 if(tb_modules_custom_inst.UART_MODULES_EN == 1'b1) begin
+	    $display("UART TESTBENCH Modules Enable");
 
-	 tb_modules_custom_inst.
-      end
-	
-      //tb_modules_custom_inst = tb_modules_custom_inst.init_uart_class(2,8,8,uart_checker_if);
-
-	//tb_modules_custom_inst.init_uart_class(2,8,8,uart_checker_if);
-	
-
-      // INIT SET INJECTOR
-      set_injector_init(set_injector_vif);
-	
-      
-      // OPEN File
-      $display("Beginning of sequencer");
-      scn_file = $fopen(scn_file_path, "r");
-
-
-      
-      // While END_TEST not Reach
-      while(end_test == 1'b0) begin
-      
-	 // READ SCENARIO LINE and return status
-	 line_status = $fgets(line, scn_file);
-
-
-	 // Display if special commentary
-	 if( {line.getc(0), line.getc(1), line.getc(2), line.getc(3)}  == "//--") begin
-	    $display("%s", line);	    
+	    tb_modules_custom_inst.init_tb_modules();	 
 	 end
+	
+	 //tb_modules_custom_inst = tb_modules_custom_inst.init_uart_class(2,8,8,uart_checker_if);
+	 
+	 //tb_modules_custom_inst.init_uart_class(2,8,8,uart_checker_if);
+	
 
-	 // Filter Commentary
-	 else if( {line.getc(0), line.getc(1)} == "//" || {line.getc(0), line.getc(1)} == "--") begin
-	   // Ignore Line   
-	 end
+	 // INIT SET INJECTOR
+	 set_injector_init(set_injector_vif);
+	
+      
+	 // OPEN File
+	 $display("Beginning of sequencer");
+	 scn_file = $fopen(scn_file_path, "r");
+
+
+      
+	 // While END_TEST not Reach
+	 while(end_test == 1'b0) begin
+	    
+	    // READ SCENARIO LINE and return status
+	    line_status = $fgets(line, scn_file);
+
+
+	    // Display if special commentary
+	    if( {line.getc(0), line.getc(1), line.getc(2), line.getc(3)}  == "//--") begin
+	       $display("%s", line);	    
+	    end
+
+	    // Filter Commentary
+	    else if( {line.getc(0), line.getc(1)} == "//" || {line.getc(0), line.getc(1)} == "--") begin
+	       // Ignore Line   
+	    end
        
-	 // Line empty 
-	 else if(line.getc(0) == "\n") begin
-	    // Ignore Line if line empty
-	 end	 
+	    // Line empty 
+	    else if(line.getc(0) == "\n") begin
+	       // Ignore Line if line empty
+	    end	 
 
-	 // End of Test detected
-	 else if( {line.getc(0), line.getc(1), line.getc(2), line.getc(3), line.getc(4), line.getc(5), line.getc(6), line.getc(7)} == "END_TEST") begin
-	   $display("End of test");
-           $fclose(scn_file);
-	    end_test = 1'b1;
- 
-	   $finish;
-	 end
+	    // End of Test detected
+	    else if( {line.getc(0), line.getc(1), line.getc(2), line.getc(3), line.getc(4), line.getc(5), line.getc(6), line.getc(7)} == "END_TEST") begin
+	       $display("End of test");
+               $fclose(scn_file);
+	       end_test = 1'b1;
+	       
+	       $finish;
+	    end
 	 
-	 // Send line to Command Decoder
-	 else begin
-	    cmd_decoder(line, cmd_exists, args); // Command decoder off generic CMD
+	    // Send line to Command Decoder
+	    else begin
+	       // cmd_decoder(line, cmd_exists, args); // Command decoder off generic CMD
 
-	    // Command decoder of specific Testbench Modules
+	       // Command decoder of specific Testbench Modules
+	       tb_modules_custom_inst.run_seq_custom_tb_modules (
+								 line,
+								 s_cmd_custom_exists,
+								 s_cmd_custom_done
+								 );
 
-            if(cmd_exists) begin
-
-	       case(args[0])
-        
-		  "SET": begin
-		     set_injector(set_injector_vif, args);		     
-		  end
-
-		  "WTR": begin
-		     wait_event(wait_event_vif, args);		     
-		  end
-
-		  "WTF": begin
-		     wait_event(wait_event_vif, args);
-		  end
-
-                  "WAIT": begin
-		     wait_duration(wait_duration_vif, args);		     
-                  end
-
-		  "CHK" : begin
-		    check_level(check_level_vif, args);
-		  end
-
-		  "WTRS" : begin
-		    wait_event_soft(wait_event_vif, args);		    
-		   end
-
-		  "WTFS" : begin
-		    wait_event_soft(wait_event_vif, args);
-		  end
-
-		  "MODELSIM_CMD" : begin
-		     extract_line_double_quote(line, line_tmp);
-                     //line_tmp = "mem load -i /home/jorisp/GitHub/VHDL_code/MAX7219/stimulis/max7219_ram_pattern_3.mem -format mti /tb_top/i_dut/tdpram_inst_0/v_ram";
-		     $display($typename(line_tmp));
-		     
-		     
-		     
-		     modelsim_cmd_exec(line_tmp);		     
-		  end
-		 
-		 
-	 
+	       if(s_cmd_custom_exists == 0) begin
+		  cmd_decoder(line, cmd_exists, args); // Command decoder off generic CMD
 		  
-		  default: $display("");
-		 
-	       endcase // case (args[0])	       	       
-            end	    
-	 end // else: !if( {line.getc(0), line.getc(1), line.getc(2), line.getc(3), line.getc(4), line.getc(5), line.getc(6), line.getc(7)} == "END_TEST")
+		  if(cmd_exists) begin
+		     
+		     case(args[0])
+        
+		       "SET": begin
+			  set_injector(set_injector_vif, args);		     
+		       end
+		       
+		       "WTR": begin
+			  wait_event(wait_event_vif, args);		     
+		       end
+		       
+		       "WTF": begin
+			  wait_event(wait_event_vif, args);
+		       end
+		       
+                       "WAIT": begin
+			  wait_duration(wait_duration_vif, args);		     
+                       end
+		       
+		       "CHK" : begin
+			  check_level(check_level_vif, args);
+		       end
+		       
+		       "WTRS" : begin
+			  wait_event_soft(wait_event_vif, args);		    
+		       end
+		       
+		       "WTFS" : begin
+			  wait_event_soft(wait_event_vif, args);
+		       end
+		       
+		       "MODELSIM_CMD" : begin
+			  extract_line_double_quote(line, line_tmp);
+			  //line_tmp = "mem load -i /home/jorisp/GitHub/VHDL_code/MAX7219/stimulis/max7219_ram_pattern_3.mem -format mti /tb_top/i_dut/tdpram_inst_0/v_ram";
+			  $display($typename(line_tmp));			  	  
+			  modelsim_cmd_exec(line_tmp);		     
+		       end
+		       
+    
+		       default: $display("");
+		       
+		     endcase // case (args[0])	       	       
+		  end // if (cmd_exists)
+		  
+	       end // if (s_cmd_custom_exists == 0)
 
+	    end // else: !if( {line.getc(0), line.getc(1), line.getc(2), line.getc(3), line.getc(4), line.getc(5), line.getc(6), line.getc(7)} == "END_TEST")
+	    
+	 end // while (end_test == 1'b0)
 	 
-	 	 
-      end // while (end_test == 1'b0)
-      
-     end // task tb_sequencer(
+      end // task tb_sequencer(
       
                        
    endtask // tb_sequencer
