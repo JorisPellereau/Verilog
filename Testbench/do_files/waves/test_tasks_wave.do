@@ -21,6 +21,7 @@ add wave -noupdate -radix hexadecimal /tb_top/i3
 add wave -noupdate -radix hexadecimal /tb_top/i4
 add wave -noupdate -radix hexadecimal /tb_top/s_check_level_if/check_alias
 add wave -noupdate -radix hexadecimal -childformat {{{/tb_top/s_check_level_if/check_signals[0]} -radix hexadecimal} {{/tb_top/s_check_level_if/check_signals[1]} -radix hexadecimal} {{/tb_top/s_check_level_if/check_signals[2]} -radix hexadecimal} {{/tb_top/s_check_level_if/check_signals[3]} -radix hexadecimal} {{/tb_top/s_check_level_if/check_signals[4]} -radix hexadecimal}} -subitemconfig {{/tb_top/s_check_level_if/check_signals[0]} {-height 16 -radix hexadecimal} {/tb_top/s_check_level_if/check_signals[1]} {-height 16 -radix hexadecimal} {/tb_top/s_check_level_if/check_signals[2]} {-height 16 -radix hexadecimal} {/tb_top/s_check_level_if/check_signals[3]} {-height 16 -radix hexadecimal} {/tb_top/s_check_level_if/check_signals[4]} {-height 16 -radix hexadecimal}} /tb_top/s_check_level_if/check_signals
+<<<<<<< Updated upstream
 add wave -noupdate -radix hexadecimal /tb_top/i_uart_checker_wrapper/uart_checker_if/clk
 add wave -noupdate -radix hexadecimal /tb_top/i_uart_checker_wrapper/uart_checker_if/start_tx
 add wave -noupdate -expand -group {TX UART CHECKER 0} -radix hexadecimal {/tb_top/i_uart_checker_wrapper/i_tx_uart_checker[0]/reset_n}
@@ -84,6 +85,66 @@ add wave -noupdate /tb_top/sel
 add wave -noupdate /tb_top/line
 add wave -noupdate /tb_top/cmd_0
 add wave -noupdate /tb_top/cmd_1
+=======
+add wave -noupdate /tb_top/i_uart_checker_wrapper/uart_checker_if/clk
+add wave -noupdate /tb_top/i_uart_checker_wrapper/uart_checker_if/start_tx
+add wave -noupdate -expand -group {TX UART CHECKER 0} {/tb_top/i_uart_checker_wrapper/i_tx_uart_checker[0]/reset_n}
+add wave -noupdate -expand -group {TX UART CHECKER 0} {/tb_top/i_uart_checker_wrapper/i_tx_uart_checker[0]/clock}
+add wave -noupdate -expand -group {TX UART CHECKER 0} {/tb_top/i_uart_checker_wrapper/i_tx_uart_checker[0]/start_tx}
+add wave -noupdate -expand -group {TX UART CHECKER 0} {/tb_top/i_uart_checker_wrapper/i_tx_uart_checker[0]/tx_data}
+add wave -noupdate -expand -group {TX UART CHECKER 0} {/tb_top/i_uart_checker_wrapper/i_tx_uart_checker[0]/tx}
+add wave -noupdate -expand -group {TX UART CHECKER 0} {/tb_top/i_uart_checker_wrapper/i_tx_uart_checker[0]/tx_done}
+add wave -noupdate -expand -group {TX UART CHECKER 0} {/tb_top/i_uart_checker_wrapper/i_tx_uart_checker[0]/tx_fsm}
+add wave -noupdate -expand -group {TX UART CHECKER 0} {/tb_top/i_uart_checker_wrapper/i_tx_uart_checker[0]/latch_done_s}
+add wave -noupdate -expand -group {TX UART CHECKER 0} {/tb_top/i_uart_checker_wrapper/i_tx_uart_checker[0]/start_tx_s}
+add wave -noupdate -expand -group {TX UART CHECKER 0} {/tb_top/i_uart_checker_wrapper/i_tx_uart_checker[0]/start_tx_r_edge}
+add wave -noupdate -expand -group {TX UART CHECKER 0} {/tb_top/i_uart_checker_wrapper/i_tx_uart_checker[0]/tx_data_s}
+add wave -noupdate -expand -group {TX UART CHECKER 0} {/tb_top/i_uart_checker_wrapper/i_tx_uart_checker[0]/tx_s}
+add wave -noupdate -expand -group {TX UART CHECKER 0} {/tb_top/i_uart_checker_wrapper/i_tx_uart_checker[0]/cnt_bit_duration}
+add wave -noupdate -expand -group {TX UART CHECKER 0} {/tb_top/i_uart_checker_wrapper/i_tx_uart_checker[0]/tick_data}
+add wave -noupdate -expand -group {TX UART CHECKER 0} {/tb_top/i_uart_checker_wrapper/i_tx_uart_checker[0]/cnt_data}
+add wave -noupdate -expand -group {TX UART CHECKER 0} {/tb_top/i_uart_checker_wrapper/i_tx_uart_checker[0]/cnt_bit}
+add wave -noupdate -expand -group {TX UART CHECKER 0} {/tb_top/i_uart_checker_wrapper/i_tx_uart_checker[0]/cnt_stop_bit}
+add wave -noupdate -expand -group {TX UART CHECKER 0} {/tb_top/i_uart_checker_wrapper/i_tx_uart_checker[0]/tx_done_s}
+add wave -noupdate -expand -group {TX UART CHECKER 0} {/tb_top/i_uart_checker_wrapper/i_tx_uart_checker[0]/parity_value}
+add wave -noupdate -expand -group {TX UART CHECKER 1} {/tb_top/i_uart_checker_wrapper/i_tx_uart_checker[1]/reset_n}
+add wave -noupdate -expand -group {TX UART CHECKER 1} {/tb_top/i_uart_checker_wrapper/i_tx_uart_checker[1]/clock}
+add wave -noupdate -expand -group {TX UART CHECKER 1} {/tb_top/i_uart_checker_wrapper/i_tx_uart_checker[1]/start_tx}
+add wave -noupdate -expand -group {TX UART CHECKER 1} {/tb_top/i_uart_checker_wrapper/i_tx_uart_checker[1]/tx_data}
+add wave -noupdate -expand -group {TX UART CHECKER 1} {/tb_top/i_uart_checker_wrapper/i_tx_uart_checker[1]/tx}
+add wave -noupdate -expand -group {TX UART CHECKER 1} {/tb_top/i_uart_checker_wrapper/i_tx_uart_checker[1]/tx_done}
+add wave -noupdate -expand -group {TX UART CHECKER 1} {/tb_top/i_uart_checker_wrapper/i_tx_uart_checker[1]/tx_fsm}
+add wave -noupdate -expand -group {TX UART CHECKER 1} {/tb_top/i_uart_checker_wrapper/i_tx_uart_checker[1]/latch_done_s}
+add wave -noupdate -expand -group {TX UART CHECKER 1} {/tb_top/i_uart_checker_wrapper/i_tx_uart_checker[1]/start_tx_s}
+add wave -noupdate -expand -group {TX UART CHECKER 1} {/tb_top/i_uart_checker_wrapper/i_tx_uart_checker[1]/start_tx_r_edge}
+add wave -noupdate -expand -group {TX UART CHECKER 1} {/tb_top/i_uart_checker_wrapper/i_tx_uart_checker[1]/tx_data_s}
+add wave -noupdate -expand -group {TX UART CHECKER 1} {/tb_top/i_uart_checker_wrapper/i_tx_uart_checker[1]/tx_s}
+add wave -noupdate -expand -group {TX UART CHECKER 1} {/tb_top/i_uart_checker_wrapper/i_tx_uart_checker[1]/cnt_bit_duration}
+add wave -noupdate -expand -group {TX UART CHECKER 1} {/tb_top/i_uart_checker_wrapper/i_tx_uart_checker[1]/tick_data}
+add wave -noupdate -expand -group {TX UART CHECKER 1} {/tb_top/i_uart_checker_wrapper/i_tx_uart_checker[1]/cnt_data}
+add wave -noupdate -expand -group {TX UART CHECKER 1} {/tb_top/i_uart_checker_wrapper/i_tx_uart_checker[1]/cnt_bit}
+add wave -noupdate -expand -group {TX UART CHECKER 1} {/tb_top/i_uart_checker_wrapper/i_tx_uart_checker[1]/cnt_stop_bit}
+add wave -noupdate -expand -group {TX UART CHECKER 1} {/tb_top/i_uart_checker_wrapper/i_tx_uart_checker[1]/tx_done_s}
+add wave -noupdate -expand -group {TX UART CHECKER 1} {/tb_top/i_uart_checker_wrapper/i_tx_uart_checker[1]/parity_value}
+add wave -noupdate -expand -group {UART I/F} /tb_top/i_uart_checker_wrapper/uart_checker_if/clk
+add wave -noupdate -expand -group {UART I/F} /tb_top/i_uart_checker_wrapper/uart_checker_if/G_NB_UART_CHECKER
+add wave -noupdate -expand -group {UART I/F} /tb_top/i_uart_checker_wrapper/uart_checker_if/G_DATA_WIDTH
+add wave -noupdate -expand -group {UART I/F} /tb_top/i_uart_checker_wrapper/uart_checker_if/clk
+add wave -noupdate -expand -group {UART I/F} -expand /tb_top/i_uart_checker_wrapper/uart_checker_if/start_tx
+add wave -noupdate -expand -group {UART I/F} /tb_top/i_uart_checker_wrapper/uart_checker_if/tx_data
+add wave -noupdate -expand -group {UART I/F} {/tb_top/i_uart_checker_wrapper/uart_checker_if/tx_data[1]}
+add wave -noupdate -expand -group {UART I/F} {/tb_top/i_uart_checker_wrapper/uart_checker_if/tx_data[0]}
+add wave -noupdate -expand -group {UART I/F} /tb_top/i_uart_checker_wrapper/uart_checker_if/tx_done
+add wave -noupdate -expand -group {UART I/F} /tb_top/i_uart_checker_wrapper/uart_checker_if/rx_data
+add wave -noupdate -expand -group {UART I/F} /tb_top/i_uart_checker_wrapper/uart_checker_if/rx_done
+add wave -noupdate -expand -group {UART I/F} /tb_top/i_uart_checker_wrapper/uart_checker_if/parity_rcvd
+add wave -noupdate /tb_top/command_exist
+add wave -noupdate /tb_top/uart_alias
+add wave -noupdate /tb_top/uart_cmd
+add wave -noupdate /tb_top/uart_cmd_args
+add wave -noupdate /tb_top/i_uart_checker_wrapper/s_wr_ptr
+add wave -noupdate /tb_top/i_uart_checker_wrapper/s_buffer_rx
+>>>>>>> Stashed changes
 TreeUpdate [SetDefaultTree]
 WaveRestoreCursors {{Cursor 6} {3144151000 ps} 1} {{Cursor 2} {46642147 ps} 0}
 quietly wave cursor active 2
@@ -101,4 +162,8 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ms
 update
+<<<<<<< Updated upstream
 WaveRestoreZoom {0 ps} {473223450 ps}
+=======
+WaveRestoreZoom {0 ps} {582408750 ps}
+>>>>>>> Stashed changes
