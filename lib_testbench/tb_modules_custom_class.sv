@@ -17,7 +17,7 @@ class tb_modules_custom_class;
    // Testbench Infos
    logic UART_MODULES_EN;
 
-   //virtual uart_checker_intf #(G_NB_UART_CHECKER, G_DATA_WIDTH, G_BUFFER_ADDR_WIDTH) uart_checker_if;
+   virtual uart_checker_intf #(G_NB_UART_CHECKER, G_DATA_WIDTH, G_BUFFER_ADDR_WIDTH) uart_checker_vif;
    
    tb_uart_class tb_uart_class_inst;
 
@@ -33,9 +33,11 @@ class tb_modules_custom_class;
    function /*tb_uart_class*/ init_uart_class(int G_NB_UART_CHECKER,
 					      int     G_DATA_WIDTH,
 					      int     G_BUFFER_ADDR_WIDTH,
-					      virtual uart_checker_intf #(2, 8, 8) uart_checker_if);
+					      virtual uart_checker_intf #(G_NB_UART_CHECKER, G_DATA_WIDTH, G_BUFFER_ADDR_WIDTH) uart_checker_nif);
+      
+//					      virtual uart_checker_intf /*#(2, 8, 8)*/ uart_checker_if);
 //uart_checker_intf uart_checker_if);
-      tb_uart_class /*#( .G_NB_UART_CHECKER(G_NB_UART_CHECKER) , .G_DATA_WIDTH(G_DATA_WIDTH) )*/
+      tb_uart_class #( .G_NB_UART_CHECKER(G_NB_UART_CHECKER) , .G_DATA_WIDTH(G_DATA_WIDTH) , .G_BUFFER_ADDR_WIDTH(G_BUFFER_ADDR_WIDTH))
       tb_uart_class_inst = new(uart_checker_if);
       
       

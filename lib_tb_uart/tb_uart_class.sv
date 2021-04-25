@@ -13,18 +13,19 @@
 
 class tb_uart_class #(
 		      parameter int G_NB_UART_CHECKER = 2,
-		      parameter int G_DATA_WIDTH      = 8
+		      parameter int G_DATA_WIDTH = 8,
+		      parameter int G_BUFFER_ADDR_WIDTH = 8	
 		      );
 
    // == VIRTUAL I/F ==
-   virtual uart_checker_intf #(G_NB_UART_CHECKER, G_DATA_WIDTH) uart_checker_vif;   
+   virtual uart_checker_intf #(G_NB_UART_CHECKER, G_DATA_WIDTH, G_BUFFER_ADDR_WIDTH) uart_checker_vif;   
    // =================
 
    string  s_uart_checker_aliases [G_NB_UART_CHECKER];  // UART CHECKER ALIASES
    
 
    // == Interface passed in Virtual I/F ==
-   function new(virtual uart_checker_intf #(G_NB_UART_CHECKER, G_DATA_WIDTH) uart_checker_nif);
+   function new(virtual uart_checker_intf #(G_NB_UART_CHECKER, G_DATA_WIDTH, G_BUFFER_ADDR_WIDTH) uart_checker_nif);
       uart_checker_vif = uart_checker_nif; // New Virtual Interface
 
       // INIT ALIASES via Interface
@@ -55,7 +56,7 @@ class tb_uart_class #(
 
    // UART Testbench Command sequencer
    task uart_tb_sequencer(
-			  virtual      uart_checker_intf #(G_NB_UART_CHECKER, G_DATA_WIDTH) uart_checker_vif,
+			  virtual      uart_checker_intf #(G_NB_UART_CHECKER, G_DATA_WIDTH, G_BUFFER_ADDR_WIDTH) uart_checker_vif,
 			  input string line,
 			  output logic o_command_exist,
 			  output logic o_route_uart_done
@@ -112,7 +113,7 @@ class tb_uart_class #(
    // Get line from scenarios - Check if alias exist - Check if command exsits and return args of command
 
    task decod_scn_line (
-			virtual       uart_checker_intf #(G_NB_UART_CHECKER, G_DATA_WIDTH) uart_checker_vif,
+			virtual       uart_checker_intf #(G_NB_UART_CHECKER, G_DATA_WIDTH, G_BUFFER_ADDR_WIDTH) uart_checker_vif,
 			input string  line,
 			input int     uart_checker_cmd_list [string],
 			output logic  o_command_exist,
@@ -240,7 +241,7 @@ class tb_uart_class #(
 
    // Task : Check if command exists and route to corerct Task
    task route_uart_command (
-			    virtual 	 uart_checker_intf #(G_NB_UART_CHECKER, G_DATA_WIDTH) uart_checker_vif,
+			    virtual 	 uart_checker_intf #(G_NB_UART_CHECKER, G_DATA_WIDTH, G_BUFFER_ADDR_WIDTH) uart_checker_vif,
 			    logic 	 i_command_exist,
 			    input string i_uart_alias,
 			    input string i_uart_cmd,
@@ -292,7 +293,7 @@ class tb_uart_class #(
 
 
    // TASK : Init UART checker
-   task INIT_UART_CHECKER(virtual 	     uart_checker_intf #(G_NB_UART_CHECKER, G_DATA_WIDTH) uart_checker_vif);
+   task INIT_UART_CHECKER(virtual 	     uart_checker_intf #(G_NB_UART_CHECKER, G_DATA_WIDTH, G_BUFFER_ADDR_WIDTH) uart_checker_vif);
 
       begin
 
@@ -326,7 +327,7 @@ class tb_uart_class #(
     */
 
    task UART_TX_START (
-		       virtual 	     uart_checker_intf #(G_NB_UART_CHECKER, G_DATA_WIDTH) uart_checker_vif,
+		       virtual 	     uart_checker_intf #(G_NB_UART_CHECKER, G_DATA_WIDTH, G_BUFFER_ADDR_WIDTH) uart_checker_vif,
 		       input string uart_alias,
 		       input string uart_cmd,
 		       input string uart_cmd_args
@@ -450,7 +451,7 @@ class tb_uart_class #(
     */
 
    task UART_RX_READ(
-		     virtual 	  uart_checker_intf #(G_NB_UART_CHECKER, G_DATA_WIDTH) uart_checker_vif,
+		     virtual 	  uart_checker_intf #(G_NB_UART_CHECKER, G_DATA_WIDTH, G_BUFFER_ADDR_WIDTH) uart_checker_vif,
 		     input string uart_alias,
 		     input string uart_cmd,
 		     input string uart_cmd_args);
