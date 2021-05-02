@@ -18,28 +18,23 @@ typedef struct  {
 
 
 class tb_uart_class;
- /*#(
-		      parameter G_NB_UART_CHECKER = 2,
-		      parameter G_DATA_WIDTH = 8,
-		      parameter G_BUFFER_ADDR_WIDTH = 8	
-		      );*/
 
    // == VIRTUAL I/F ==
    // UART parameters
-   /*const*/ int 	 G_NB_UART_CHECKER;
-   /*const*/ int 	 G_DATA_WIDTH;
-   /*const*/ int 	 G_BUFFER_ADDR_WIDTH;
-   virtual uart_checker_intf /*#(G_NB_UART_CHECKER, G_DATA_WIDTH, G_BUFFER_ADDR_WIDTH)*/ uart_checker_vif;   
+   int 	  G_NB_UART_CHECKER;
+   int 	  G_DATA_WIDTH;
+   int 	  G_BUFFER_ADDR_WIDTH;
+   virtual uart_checker_intf  uart_checker_vif;   
    // =================
 
-   //string  s_uart_checker_aliases [G_NB_UART_CHECKER];  // UART CHECKER ALIASES
-   
+ 
 
    // == Interface passed in Virtual I/F ==
-   function new(int 	 G_NB_UART_CHECKER,
+   function new(int 	G_NB_UART_CHECKER,
 		int 	G_DATA_WIDTH,
 		int 	G_BUFFER_ADDR_WIDTH,
-		virtual uart_checker_intf #(G_NB_UART_CHECKER, G_DATA_WIDTH, G_BUFFER_ADDR_WIDTH) uart_checker_nif);
+		virtual uart_checker_intf uart_checker_nif);
+
       this.uart_checker_vif = uart_checker_nif; // New Virtual Interface
       this.G_NB_UART_CHECKER = G_NB_UART_CHECKER;
       this.G_DATA_WIDTH = G_DATA_WIDTH;
@@ -73,7 +68,7 @@ class tb_uart_class;
 
    // UART Testbench Command sequencer
    task uart_tb_sequencer(
-			  virtual      uart_checker_intf #(G_NB_UART_CHECKER, G_DATA_WIDTH, G_BUFFER_ADDR_WIDTH) uart_checker_vif,
+			  virtual      uart_checker_intf  uart_checker_vif,
 			  input string line,
 			  output logic o_command_exist,
 			  output logic o_route_uart_done
@@ -130,7 +125,7 @@ class tb_uart_class;
    // Get line from scenarios - Check if alias exist - Check if command exsits and return args of command
 
    task decod_scn_line (
-			virtual       uart_checker_intf #(G_NB_UART_CHECKER, G_DATA_WIDTH, G_BUFFER_ADDR_WIDTH) uart_checker_vif,
+			virtual       uart_checker_intf  uart_checker_vif,
 			input string  line,
 			input int     uart_checker_cmd_list [string],
 			output logic  o_command_exist,
@@ -258,7 +253,7 @@ class tb_uart_class;
 
    // Task : Check if command exists and route to corerct Task
    task route_uart_command (
-			    virtual 	 uart_checker_intf #(G_NB_UART_CHECKER, G_DATA_WIDTH, G_BUFFER_ADDR_WIDTH) uart_checker_vif,
+			    virtual 	 uart_checker_intf  uart_checker_vif,
 			    logic 	 i_command_exist,
 			    input string i_uart_alias,
 			    input string i_uart_cmd,
@@ -310,15 +305,15 @@ class tb_uart_class;
 
 
    // TASK : Init UART checker
-   task INIT_UART_CHECKER(virtual 	     uart_checker_intf #(G_NB_UART_CHECKER, G_DATA_WIDTH, G_BUFFER_ADDR_WIDTH) uart_checker_vif);
+   task INIT_UART_CHECKER(/*virtual 	     uart_checker_intf  uart_checker_vif*/);
 
       begin
 
 	 int i;
 	 for(i = 0 ; i < uart_checker_vif.G_NB_UART_CHECKER; i++) begin
-	    uart_checker_vif.start_tx[i] = 0;
-	    uart_checker_vif.tx_data[i] = 8'hAA; // TBD
-	    uart_checker_vif.s_rd_ptr_soft[i] = 0;
+	    this.uart_checker_vif.start_tx[i] = 0;
+	    this.uart_checker_vif.tx_data[i] = 8'hAA; // TBD
+	    this.uart_checker_vif.s_rd_ptr_soft[i] = 0;
 	    
 	    // 	 
 	    //    
@@ -344,7 +339,7 @@ class tb_uart_class;
     */
 
    task UART_TX_START (
-		       virtual 	     uart_checker_intf #(G_NB_UART_CHECKER, G_DATA_WIDTH, G_BUFFER_ADDR_WIDTH) uart_checker_vif,
+		       virtual 	     uart_checker_intf uart_checker_vif,
 		       input string uart_alias,
 		       input string uart_cmd,
 		       input string uart_cmd_args
@@ -468,7 +463,7 @@ class tb_uart_class;
     */
 
    task UART_RX_READ(
-		     virtual 	  uart_checker_intf #(G_NB_UART_CHECKER, G_DATA_WIDTH, G_BUFFER_ADDR_WIDTH) uart_checker_vif,
+		     virtual 	  uart_checker_intf uart_checker_vif,
 		     input string uart_alias,
 		     input string uart_cmd,
 		     input string uart_cmd_args);

@@ -40,10 +40,11 @@ class tb_class #(
 
 
    // == CUSTOM TESTBENCH MODULES CLASS ==
-//   extends ?????/
-   //tb_modules_custom_class #(G_NB_UART_CHECKER, G_DATA_WIDTH, G_BUFFER_ADDR_WIDTH)  tb_modules_custom_inst;   
-   // ====================================
+   tb_modules_custom_class tb_modules_custom_inst;
    
+   // ====================================
+
+
    // == VIRTUAL I/F ==
 
    // == GENERIC VIRTUAL I/F ==
@@ -66,41 +67,25 @@ class tb_class #(
    function new(virtual wait_event_intf     #(WAIT_SIZE, WAIT_WIDTH)    wait_nif, 
                 virtual set_injector_intf #(SET_SIZE, SET_WIDTH) set_nif, 
                 virtual wait_duration_intf wait_duration_nif,
-                virtual check_level_intf #(CHECK_SIZE, CHECK_WIDTH) check_level_nif/*,
-		tb_modules_custom_class #(G_NB_UART_CHECKER, G_DATA_WIDTH, G_BUFFER_ADDR_WIDTH)  tb_modules_custom_inst*/
-		//logic 	UART_MODULES_EN
-		
+                virtual check_level_intf #(CHECK_SIZE, CHECK_WIDTH) check_level_nif,
+		tb_modules_custom_class tb_modules_custom_inst//_new
 		);
       
-      wait_event_vif    = wait_nif;
-      set_injector_vif  = set_nif;
-      wait_duration_vif = wait_duration_nif;
-      check_level_vif   = check_level_nif;
+      this.wait_event_vif    = wait_nif;
+      this.set_injector_vif  = set_nif;
+      this.wait_duration_vif = wait_duration_nif;
+      this.check_level_vif   = check_level_nif;
+      this.tb_modules_custom_inst = tb_modules_custom_inst;
 
-      // Custom Modules Class
-      /*if(UART_MODULES_EN) begin
-	tb_modules_custom_inst = new(UART_MODULES_EN, uart_checker_vif);
-      end*/
       
       
-      
-      
-	
-
+       
       // 
    endfunction // new
 
    // ====================================
 
 
-   // == STATICS Functions ==
-   static function void display_tb_class_infos();
-      $display("tb_class infos : test");
-      
-   endfunction // display_tb_class_infos
-   
-   // =======================
-   
 
    // INIT tb_modules_custom_class extend
    
@@ -111,9 +96,8 @@ class tb_class #(
     * Send Args to the Decoder
    */
    task tb_sequencer(
-
-        input string scn_file_path, // SCENARIO FILE PATH
-	input tb_modules_custom_class tb_modules_custom_inst // Custom tb_modules class
+        input string scn_file_path/*,
+	input 	     tb_modules_custom_class tb_modules_custom_inst	*/
       );
       
       begin
@@ -139,12 +123,12 @@ class tb_class #(
 	 end_test    = 1'b0;
 	 line_status = 0;
 
-	 // INIT CUSTOM TESTBENCH MODULES
-	 /*if(tb_modules_custom_inst.UART_MODULES_EN == 1'b1) begin
-	    $display("UART TESTBENCH Modules Enable");
+	 $display("Avant init_tb_modeules()");
 
-	    tb_modules_custom_inst.init_tb_modules();	 
-	 end*/
+	 $display("tb_modules_custom_inst.G_DATA_WIDTH : %d", tb_modules_custom_inst.G_DATA_WIDTH);
+	 
+	 this.tb_modules_custom_inst.init_tb_modules();	 
+
 	
 	 //tb_modules_custom_inst = tb_modules_custom_inst.init_uart_class(2,8,8,uart_checker_if);
 	 

@@ -235,9 +235,11 @@ module tb_top
    
    
    // Declare TB Module class type
-   tb_modules_custom_class tb_modules_custom_class_inst = tb_modules_custom_class::create_custom_module_uart(1, uart_checker_if);
-   
-
+   //tb_modules_custom_class tb_modules_custom_class_inst = tb_modules_custom_class::create_custom_module_uart(uart_checker_if);
+   //tb_modules_custom_class tb_modules_custom_class_inst = new(); // a faire en static 
+   //   
+   tb_modules_custom_uart tb_modules_custom_class_inst = new(uart_checker_if); // a faire en static   
+   //tb_modules_custom_uart0 tb_modules_custom_class_inst = new(uart_checker_if); // a faire en static   
    
    //tb_modules_custom_class tb_modules_custom_inst = new(1'b1);
 
@@ -247,7 +249,7 @@ module tb_top
    // == TESTBENCH SEQUENCER ==
    
    // CREATE CLASS - Configure Parameters
-   /*static tb_class #( `C_CMD_ARGS_NB, 
+   static tb_class #( `C_CMD_ARGS_NB, 
                       `C_SET_SIZE, 
                       `C_SET_WIDTH,
                       `C_WAIT_ALIAS_NB,
@@ -258,9 +260,9 @@ module tb_top
    tb_class_inst = new (s_wait_event_if, 
                         s_set_injector_if, 
                         s_wait_duration_if,
-                        s_check_level_if);*/
-/*,
-			tb_modules_custom_inst);*/
+                        s_check_level_if,
+			tb_modules_custom_class_inst);
+   
    
    
    initial begin : TB_SEQUENCER
@@ -280,7 +282,9 @@ module tb_top
                       `C_CHECK_SIZE,
                       `C_CHECK_WIDTH) ::display_tb_class_infos();*/
       //tb_modules_custom_inst.display_info();
-      //tb_class_inst.tb_sequencer(SCN_FILE_PATH, tb_modules_custom_inst);
+      
+      tb_class_inst.tb_sequencer(SCN_FILE_PATH);
+//, tb_modules_custom_class_inst);
       
    end : TB_SEQUENCER
    
