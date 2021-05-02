@@ -17,25 +17,31 @@ endpackage // fli
 `include "/home/jorisp/GitHub/Verilog/lib_tb_uart/uart_checker_wrapper.sv"
 
 class tb_class #(
-        parameter ARGS_NB   = 5,
+		 parameter ARGS_NB   = 5,
+		 
+		 // SET INJECTOR PARAMETERS
+		 parameter SET_SIZE  = 5,
+		 parameter SET_WIDTH = 32,
+		 
+		 // WAIT EVENT PARAMETERS
+		 parameter WAIT_SIZE  = 5,
+		 parameter WAIT_WIDTH = 1,
+		 parameter CLK_PERIOD = 1000, // Unity : ps
+		 
+		 // CHECK LEVEL PARAMETER
+		 parameter CHECK_SIZE  = 5,
+		 parameter CHECK_WIDTH = 32/*,
 
-	// SET INJECTOR PARAMETERS
-        parameter SET_SIZE  = 5,
-        parameter SET_WIDTH = 32,
-
-	// WAIT EVENT PARAMETERS
-	parameter WAIT_SIZE  = 5,
-        parameter WAIT_WIDTH = 1,
-        parameter CLK_PERIOD = 1000, // Unity : ps
-
-	// CHECK LEVEL PARAMETER
-	parameter CHECK_SIZE  = 5,
-	parameter CHECK_WIDTH = 32
+		 // UART PARAMETER
+		 parameter G_NB_UART_CHECKER = 2,
+		 parameter G_DATA_WIDTH = 8,
+		 parameter G_BUFFER_ADDR_WIDTH = 8*/	 
       );
 
 
    // == CUSTOM TESTBENCH MODULES CLASS ==
-   tb_modules_custom_class tb_modules_custom_inst;   
+//   extends ?????/
+   //tb_modules_custom_class #(G_NB_UART_CHECKER, G_DATA_WIDTH, G_BUFFER_ADDR_WIDTH)  tb_modules_custom_inst;   
    // ====================================
    
    // == VIRTUAL I/F ==
@@ -49,7 +55,7 @@ class tb_class #(
 
    // == OPTIONNAL VIRTUAL I/F ==
    // UART Testbench modules
-   //virtual uart_checker_intf uart_checker_vif; 
+   //virtual uart_checker_intf #(G_NB_UART_CHECKER, G_DATA_WIDTH , G_BUFFER_ADDR_WIDTH) uart_checker_vif; 
    // ===========================
    
    // =================
@@ -58,10 +64,13 @@ class tb_class #(
 
    // == Interface passed in Virtual I/F ==
    function new(virtual wait_event_intf     #(WAIT_SIZE, WAIT_WIDTH)    wait_nif, 
-                virtual set_injector_intf   #(SET_SIZE, SET_WIDTH)      set_nif, 
-                virtual wait_duration_intf  wait_duration_nif,
-                virtual check_level_intf    #(CHECK_SIZE, CHECK_WIDTH)  check_level_nif,
-		tb_modules_custom_class tb_modules_custom_inst);
+                virtual set_injector_intf #(SET_SIZE, SET_WIDTH) set_nif, 
+                virtual wait_duration_intf wait_duration_nif,
+                virtual check_level_intf #(CHECK_SIZE, CHECK_WIDTH) check_level_nif/*,
+		tb_modules_custom_class #(G_NB_UART_CHECKER, G_DATA_WIDTH, G_BUFFER_ADDR_WIDTH)  tb_modules_custom_inst*/
+		//logic 	UART_MODULES_EN
+		
+		);
       
       wait_event_vif    = wait_nif;
       set_injector_vif  = set_nif;
@@ -69,7 +78,12 @@ class tb_class #(
       check_level_vif   = check_level_nif;
 
       // Custom Modules Class
-      tb_modules_custom_inst = tb_modules_custom_inst;
+      /*if(UART_MODULES_EN) begin
+	tb_modules_custom_inst = new(UART_MODULES_EN, uart_checker_vif);
+      end*/
+      
+      
+      
       
 	
 
@@ -77,8 +91,18 @@ class tb_class #(
    endfunction // new
 
    // ====================================
-   
+
+
+   // == STATICS Functions ==
+   static function void display_tb_class_infos();
+      $display("tb_class infos : test");
       
+   endfunction // display_tb_class_infos
+   
+   // =======================
+   
+
+   // INIT tb_modules_custom_class extend
    
    // == TASKS ==   
 
@@ -116,11 +140,11 @@ class tb_class #(
 	 line_status = 0;
 
 	 // INIT CUSTOM TESTBENCH MODULES
-	 if(tb_modules_custom_inst.UART_MODULES_EN == 1'b1) begin
+	 /*if(tb_modules_custom_inst.UART_MODULES_EN == 1'b1) begin
 	    $display("UART TESTBENCH Modules Enable");
 
 	    tb_modules_custom_inst.init_tb_modules();	 
-	 end
+	 end*/
 	
 	 //tb_modules_custom_inst = tb_modules_custom_inst.init_uart_class(2,8,8,uart_checker_if);
 	 
@@ -173,11 +197,11 @@ class tb_class #(
 	       // cmd_decoder(line, cmd_exists, args); // Command decoder off generic CMD
 
 	       // Command decoder of specific Testbench Modules
-	       tb_modules_custom_inst.run_seq_custom_tb_modules (
+	       /*tb_modules_custom_inst.run_seq_custom_tb_modules (
 								 line,
 								 s_cmd_custom_exists,
 								 s_cmd_custom_done
-								 );
+								 );*/
 
 	       if(s_cmd_custom_exists == 0) begin
 		  cmd_decoder(line, cmd_exists, args); // Command decoder off generic CMD

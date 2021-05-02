@@ -10,24 +10,41 @@
 
 // TBD !
 
+//
+typedef struct  {
+   logic UART_TB_ENABLE;
+   string UART_TB_INTERFACE_PATH;
+} uart_tb_info_struct;
 
-class tb_uart_class #(
-		      parameter int G_NB_UART_CHECKER = 2,
-		      parameter int G_DATA_WIDTH = 8,
-		      parameter int G_BUFFER_ADDR_WIDTH = 8	
-		      );
+
+class tb_uart_class;
+ /*#(
+		      parameter G_NB_UART_CHECKER = 2,
+		      parameter G_DATA_WIDTH = 8,
+		      parameter G_BUFFER_ADDR_WIDTH = 8	
+		      );*/
 
    // == VIRTUAL I/F ==
-   virtual uart_checker_intf #(G_NB_UART_CHECKER, G_DATA_WIDTH, G_BUFFER_ADDR_WIDTH) uart_checker_vif;   
+   // UART parameters
+   /*const*/ int 	 G_NB_UART_CHECKER;
+   /*const*/ int 	 G_DATA_WIDTH;
+   /*const*/ int 	 G_BUFFER_ADDR_WIDTH;
+   virtual uart_checker_intf /*#(G_NB_UART_CHECKER, G_DATA_WIDTH, G_BUFFER_ADDR_WIDTH)*/ uart_checker_vif;   
    // =================
 
-   string  s_uart_checker_aliases [G_NB_UART_CHECKER];  // UART CHECKER ALIASES
+   //string  s_uart_checker_aliases [G_NB_UART_CHECKER];  // UART CHECKER ALIASES
    
 
    // == Interface passed in Virtual I/F ==
-   function new(virtual uart_checker_intf #(G_NB_UART_CHECKER, G_DATA_WIDTH, G_BUFFER_ADDR_WIDTH) uart_checker_nif);
-      uart_checker_vif = uart_checker_nif; // New Virtual Interface
-
+   function new(int 	 G_NB_UART_CHECKER,
+		int 	G_DATA_WIDTH,
+		int 	G_BUFFER_ADDR_WIDTH,
+		virtual uart_checker_intf #(G_NB_UART_CHECKER, G_DATA_WIDTH, G_BUFFER_ADDR_WIDTH) uart_checker_nif);
+      this.uart_checker_vif = uart_checker_nif; // New Virtual Interface
+      this.G_NB_UART_CHECKER = G_NB_UART_CHECKER;
+      this.G_DATA_WIDTH = G_DATA_WIDTH;
+      this.G_BUFFER_ADDR_WIDTH = G_BUFFER_ADDR_WIDTH;
+      
       // INIT ALIASES via Interface
       //s_uart_checker_aliases = uart_checker_vif.uart_checker_alias;
       

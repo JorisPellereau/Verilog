@@ -35,3 +35,4 @@
 
 // UART CHECKER Configuration
 `define C_NB_UART_CHECKER 2
+`define C_UART_CHECKER_INTERFACE tb_top.uart_checker_if

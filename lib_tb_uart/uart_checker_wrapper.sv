@@ -9,7 +9,7 @@
 // Status          : Unknown, Use with caution!
 
 interface uart_checker_intf #(
-			      parameter G_NB_UART_CHECKER   = 1,
+			      parameter G_NB_UART_CHECKER   = 2,
 			      parameter G_DATA_WIDTH        = 8,
 			      parameter G_BUFFER_ADDR_WIDTH = 8			      
 			      );

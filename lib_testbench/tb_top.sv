@@ -168,6 +168,7 @@ module tb_top
    wire [`C_NB_UART_CHECKER - 1 : 0] s_tx_uart;
 
    // Create UART checker Interface
+
    uart_checker_intf #(
 		       .G_NB_UART_CHECKER    (`C_NB_UART_CHECKER),
 		       .G_DATA_WIDTH         (8),
@@ -177,11 +178,13 @@ module tb_top
 
 
    // Assign Alias of UART checker
-
    assign uart_checker_if.uart_checker_alias = '{
 						 "UART_0" : 0,
 						 "UART_1" : 1
 						 };
+   assign uart_checker_if.clk = clk;
+   
+ 
    
 /*   assign uart_checker_if.uart_checker_alias[0] = "UART_0";
    assign uart_checker_if.uart_checker_alias[1] = "UART_1";
@@ -189,6 +192,8 @@ module tb_top
  */
    
    // == HDL SPEFICIC TESTBENCH MODULES ==
+
+   
    uart_checker_wrapper #(
 
 			      .G_NB_UART_CHECKER    (`C_NB_UART_CHECKER),
@@ -211,19 +216,30 @@ module tb_top
 			   .uart_checker_if (uart_checker_if)
     
     );
+
+
+   
    // ====================================
-   assign uart_checker_if.clk = clk;
+   //assign uart_checker_if.clk = clk;
    assign s_rx_uart = s_tx_uart; // LOOP
 
 
    bit 				     C_UART_MODULE_EN; 
    assign C_UART_MODULE_EN = 1;
    
+   /*uart_tb_info_struct uart_tb_info;
+   
+   assign uart_tb_info = '{1, "tb_top/uart_checker_if"};*/
+   
    
    
    
    // Declare TB Module class type
-   tb_modules_custom_class tb_modules_custom_inst = new(1'b1/*C_UART_MODULE_EN*/);
+   tb_modules_custom_class tb_modules_custom_class_inst = tb_modules_custom_class::create_custom_module_uart(1, uart_checker_if);
+   
+
+   
+   //tb_modules_custom_class tb_modules_custom_inst = new(1'b1);
 
    // Init UART
    
@@ -231,7 +247,7 @@ module tb_top
    // == TESTBENCH SEQUENCER ==
    
    // CREATE CLASS - Configure Parameters
-   static tb_class #( `C_CMD_ARGS_NB, 
+   /*static tb_class #( `C_CMD_ARGS_NB, 
                       `C_SET_SIZE, 
                       `C_SET_WIDTH,
                       `C_WAIT_ALIAS_NB,
@@ -242,14 +258,29 @@ module tb_top
    tb_class_inst = new (s_wait_event_if, 
                         s_set_injector_if, 
                         s_wait_duration_if,
-                        s_check_level_if,
-			tb_modules_custom_inst);
+                        s_check_level_if);*/
+/*,
+			tb_modules_custom_inst);*/
    
    
    initial begin : TB_SEQUENCER
-      /*tb_modules_custom_inst.tb_uart_class_inst = */tb_modules_custom_inst.init_uart_class(2,8,8,uart_checker_if);
+
+      //uart_tb_info_struct = '{1, "tb_top.uart_checker_if"};
+      //tb_modules_custom_inst.tb_uart_class_inst(uart_checker_if);
       
-      tb_class_inst.tb_sequencer(SCN_FILE_PATH, tb_modules_custom_inst);
+ //tb_modules_custom_inst.init_uart_class(2,8,8,uart_checker_if);
+      //$display("uart_tb_info_struct : %p", uart_tb_info_struct);    
+      //
+      /*tb_class #( `C_CMD_ARGS_NB, 
+                      `C_SET_SIZE, 
+                      `C_SET_WIDTH,
+                      `C_WAIT_ALIAS_NB,
+                      `C_WAIT_WIDTH, 
+                      `C_TB_CLK_PERIOD,
+                      `C_CHECK_SIZE,
+                      `C_CHECK_WIDTH) ::display_tb_class_infos();*/
+      //tb_modules_custom_inst.display_info();
+      //tb_class_inst.tb_sequencer(SCN_FILE_PATH, tb_modules_custom_inst);
       
    end : TB_SEQUENCER
    
