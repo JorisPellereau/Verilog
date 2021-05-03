@@ -30,12 +30,7 @@ class tb_class #(
 		 
 		 // CHECK LEVEL PARAMETER
 		 parameter CHECK_SIZE  = 5,
-		 parameter CHECK_WIDTH = 32/*,
-
-		 // UART PARAMETER
-		 parameter G_NB_UART_CHECKER = 2,
-		 parameter G_DATA_WIDTH = 8,
-		 parameter G_BUFFER_ADDR_WIDTH = 8*/	 
+		 parameter CHECK_WIDTH = 32	 
       );
 
 
@@ -71,10 +66,10 @@ class tb_class #(
 		tb_modules_custom_class tb_modules_custom_inst//_new
 		);
       
-      this.wait_event_vif    = wait_nif;
-      this.set_injector_vif  = set_nif;
-      this.wait_duration_vif = wait_duration_nif;
-      this.check_level_vif   = check_level_nif;
+      this.wait_event_vif         = wait_nif;
+      this.set_injector_vif       = set_nif;
+      this.wait_duration_vif      = wait_duration_nif;
+      this.check_level_vif        = check_level_nif;
       this.tb_modules_custom_inst = tb_modules_custom_inst;
 
       
@@ -96,8 +91,7 @@ class tb_class #(
     * Send Args to the Decoder
    */
    task tb_sequencer(
-        input string scn_file_path/*,
-	input 	     tb_modules_custom_class tb_modules_custom_inst	*/
+        input string scn_file_path
       );
       
       begin
@@ -126,18 +120,14 @@ class tb_class #(
 	 $display("Avant init_tb_modeules()");
 
 	 $display("tb_modules_custom_inst.G_DATA_WIDTH : %d", tb_modules_custom_inst.G_DATA_WIDTH);
-	 
+
+	 // Initialization of Custom TB Modules if needed
 	 this.tb_modules_custom_inst.init_tb_modules();	 
-
-	
-	 //tb_modules_custom_inst = tb_modules_custom_inst.init_uart_class(2,8,8,uart_checker_if);
-	 
-	 //tb_modules_custom_inst.init_uart_class(2,8,8,uart_checker_if);
-	
-
+       
 	 // INIT SET INJECTOR
 	 set_injector_init(set_injector_vif);
-	
+
+	 
       
 	 // OPEN File
 	 $display("Beginning of sequencer");
@@ -180,13 +170,17 @@ class tb_class #(
 	    else begin
 	       // cmd_decoder(line, cmd_exists, args); // Command decoder off generic CMD
 
+	       
 	       // Command decoder of specific Testbench Modules
-	       /*tb_modules_custom_inst.run_seq_custom_tb_modules (
-								 line,
-								 s_cmd_custom_exists,
-								 s_cmd_custom_done
-								 );*/
+	       $display("avant this.tb_modules_custom_inst.run_seq_custom_tb_modules");	       
+	       this.tb_modules_custom_inst.run_seq_custom_tb_modules (
+								      line,
+								      s_cmd_custom_exists,
+								      s_cmd_custom_done
+								      );
 
+
+	       
 	       if(s_cmd_custom_exists == 0) begin
 		  cmd_decoder(line, cmd_exists, args); // Command decoder off generic CMD
 		  
