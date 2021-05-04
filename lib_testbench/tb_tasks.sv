@@ -62,7 +62,7 @@ class tb_class #(
    function new(virtual wait_event_intf     #(WAIT_SIZE, WAIT_WIDTH)    wait_nif, 
                 virtual set_injector_intf #(SET_SIZE, SET_WIDTH) set_nif, 
                 virtual wait_duration_intf wait_duration_nif,
-                virtual check_level_intf #(CHECK_SIZE, CHECK_WIDTH) check_level_nif,
+                virtual check_level_intf #(CHECK_SIZE, CHECK_WIDTH) check_level_nif,		
 		tb_modules_custom_class tb_modules_custom_inst//_new
 		);
       
@@ -72,6 +72,7 @@ class tb_class #(
       this.check_level_vif        = check_level_nif;
       this.tb_modules_custom_inst = tb_modules_custom_inst;
 
+      $display("NEW tb_task - %p", this.tb_modules_custom_inst);
       
       
        
@@ -119,7 +120,7 @@ class tb_class #(
 
 	 $display("Avant init_tb_modeules()");
 
-	 $display("tb_modules_custom_inst.G_DATA_WIDTH : %d", tb_modules_custom_inst.G_DATA_WIDTH);
+	 $display("tb_modules_custom_inst.G_DATA_WIDTH : %d", this.tb_modules_custom_inst.G_DATA_WIDTH);
 
 	 // Initialization of Custom TB Modules if needed
 	 this.tb_modules_custom_inst.init_tb_modules();	 

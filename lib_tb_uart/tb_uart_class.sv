@@ -31,6 +31,9 @@ class tb_uart_class;
       this.G_NB_UART_CHECKER   = G_NB_UART_CHECKER;
       this.G_DATA_WIDTH        = G_DATA_WIDTH;
       this.G_BUFFER_ADDR_WIDTH = G_BUFFER_ADDR_WIDTH;
+
+      $display("this.uart_checker_vif : %p", this.uart_checker_vif);
+      
       
       // INIT ALIASES via Interface
       //s_uart_checker_aliases = uart_checker_vif.uart_checker_alias;
@@ -91,7 +94,8 @@ class tb_uart_class;
 	 
 
 	 // Route UART Command - Launch uart command if exists
-	 route_uart_command (s_command_exist,
+	 route_uart_command (uart_checker_vif,
+			     s_command_exist,
 			     s_uart_alias,
 			     s_uart_cmd,
 			     s_uart_cmd_args,
@@ -238,7 +242,7 @@ class tb_uart_class;
 
    // Task : Check if command exists and route to corerct Task
    task route_uart_command (
-			    /*virtual 	 uart_checker_intf  uart_checker_vif,*/
+			    virtual 	 uart_checker_intf  uart_checker_vif,
 			    logic 	 i_command_exist,
 			    input string i_uart_alias,
 			    input string i_uart_cmd,
@@ -255,7 +259,8 @@ class tb_uart_class;
 	      "TX_START": begin
 		 $display("Run TX_START ...");
 		 
-		 UART_TX_START (i_uart_alias,
+		 UART_TX_START (uart_checker_vif,
+				i_uart_alias,
 				i_uart_cmd,
 				i_uart_cmd_args		       
 				);	     
@@ -295,6 +300,7 @@ class tb_uart_class;
 	    this.uart_checker_vif.start_tx[i] = 0;
 	    this.uart_checker_vif.tx_data[i] = 8'hAA; // TBD
 	    this.uart_checker_vif.s_rd_ptr_soft[i] = 0;
+	    $display("dans le for");
 	    
 	    // 	 
 	    //    
@@ -320,7 +326,7 @@ class tb_uart_class;
     */
 
    task UART_TX_START (
-		       /*virtual 	     uart_checker_intf uart_checker_vif,*/
+		       virtual 	     uart_checker_intf uart_checker_vif,
 		       input string uart_alias,
 		       input string uart_cmd,
 		       input string uart_cmd_args
@@ -407,7 +413,7 @@ class tb_uart_class;
 	    end
 	    
 	    
-	    //$display("data_tmp : %d", data_tmp);
+	    $display("data_tmp : %d", data_tmp);
 
 	    // Generation of a pulse of TX UART[alias]
 	    @(posedge this.uart_checker_vif.clk);

@@ -185,12 +185,6 @@ module tb_top
    assign uart_checker_if.clk = clk;
    
  
-   
-/*   assign uart_checker_if.uart_checker_alias[0] = "UART_0";
-   assign uart_checker_if.uart_checker_alias[1] = "UART_1";
-
- */
-   
    // == HDL SPEFICIC TESTBENCH MODULES ==
 
    
@@ -234,18 +228,10 @@ module tb_top
    
    
    
-   // Declare TB Module class type
-   //tb_modules_custom_class tb_modules_custom_class_inst = tb_modules_custom_class::create_custom_module_uart(uart_checker_if);
-   //tb_modules_custom_class tb_modules_custom_class_inst = new(); // a faire en static 
-   //   
-   tb_modules_custom_uart tb_modules_custom_class_inst = new(uart_checker_if); // a faire en static   
-   //tb_modules_custom_uart0 tb_modules_custom_class_inst = new(uart_checker_if); // a faire en static   
-   
-   //tb_modules_custom_class tb_modules_custom_inst = new(1'b1);
+   // Declare TB Module class type   
+   tb_modules_custom_uart tb_modules_custom_class_inst = new(uart_checker_if, 1, 8, 8); // a faire en static
 
- 
-   
-   
+
    // == TESTBENCH SEQUENCER ==
    
    // CREATE CLASS - Configure Parameters
@@ -261,30 +247,12 @@ module tb_top
                         s_set_injector_if, 
                         s_wait_duration_if,
                         s_check_level_if,
-			tb_modules_custom_class_inst);
+  			tb_modules_custom_class_inst);
    
-   
-   
+    
    initial begin : TB_SEQUENCER
-
-      //uart_tb_info_struct = '{1, "tb_top.uart_checker_if"};
-      //tb_modules_custom_inst.tb_uart_class_inst(uart_checker_if);
-      
- //tb_modules_custom_inst.init_uart_class(2,8,8,uart_checker_if);
-      //$display("uart_tb_info_struct : %p", uart_tb_info_struct);    
-      //
-      /*tb_class #( `C_CMD_ARGS_NB, 
-                      `C_SET_SIZE, 
-                      `C_SET_WIDTH,
-                      `C_WAIT_ALIAS_NB,
-                      `C_WAIT_WIDTH, 
-                      `C_TB_CLK_PERIOD,
-                      `C_CHECK_SIZE,
-                      `C_CHECK_WIDTH) ::display_tb_class_infos();*/
-      //tb_modules_custom_inst.display_info();
-      
+       
       tb_class_inst.tb_sequencer(SCN_FILE_PATH);
-//, tb_modules_custom_class_inst);
       
    end : TB_SEQUENCER
    

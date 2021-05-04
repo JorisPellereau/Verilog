@@ -45,20 +45,23 @@ class tb_modules_custom_class;
     */
 
    // Initialization of Enabled Testbench Modules
-   function void init_tb_modules();     
-      // By Default => No Custom Modules
-   endfunction // init_tb_modules
+   virtual task init_tb_modules(); 
+      begin
+	 // By Default => No Custom Modules
+	 $display("init_tb_modules - Parent Class");
+      end      
+   endtask // init_tb_modules
 
 
    // Launch Sequencer of Custom Testbench Modules
-   task run_seq_custom_tb_modules (input string line,
+   virtual task run_seq_custom_tb_modules (input string line,
 				   output logic o_cmd_custom_exists,
 				   output logic o_cmd_custom_done
 				   );
       begin
 	// By Default => No Custom Modules
 
-	 //$display("run_seq_custom_tb_modules - tb_modules_custom_class done");	 
+	 $display("run_seq_custom_tb_modules - PARENT CLASS tb_modules_custom_class done");	 
       end      
    endtask // run_seq_custom_tb_modules
         
@@ -106,25 +109,29 @@ class tb_modules_custom_uart extends tb_modules_custom_class;
     */
 
    // INIT UART TESTBENCH CHECKER
-   function void init_tb_modules();
+   task init_tb_modules();
+      begin
+
+	 $display("Init tb modules - CHILD UART class");
+      
 	 this.tb_uart_class_inst.INIT_UART_CHECKER();       // this ?
-   endfunction // init_tb_modules
+      end      
+   endtask // init_tb_modules
+   
 
 
    /* Launch UART SEQUENCER
     * Execute UART Command if exist else do nothing
     * Set o_cmd_custom_done at the end
     */
-   
+ 
    task run_seq_custom_tb_modules (input string line,
 				   output logic o_cmd_custom_exists,
-				   output logic o_cmd_custom_done);
+				   output logic o_cmd_custom_done
+				   );
       begin
 
-	 // Link with Parent Task
-	 /*super.run_seq_custom_tb_modules (line,
-					  o_cmd_custom_exists,
-					  o_cmd_custom_done);*/
+	 //$display("run_seq_custom_tb_modules - Extend UART");
 	 
 	 logic 	s_command_exist;	 	 
 	 logic 	s_route_uart_done;	 
@@ -132,6 +139,9 @@ class tb_modules_custom_uart extends tb_modules_custom_class;
 	 o_cmd_custom_exists = 0;
 	 o_cmd_custom_done   = 0;
 
+
+	 $display("run_seq_custom_tb_modules - Extend UART");
+	 
 	 // Lauch UART Sequencer
 	 this.tb_uart_class_inst.uart_tb_sequencer (line,
 						    s_command_exist,
@@ -158,7 +168,10 @@ class tb_modules_custom_uart extends tb_modules_custom_class;
    function void init_uart_class(virtual uart_checker_intf uart_checker_nif);      
       this.tb_uart_class_inst = new(G_NB_UART_CHECKER,
 				    G_DATA_WIDTH,
-				    G_BUFFER_ADDR_WIDTH,uart_checker_nif);                     
+				    G_BUFFER_ADDR_WIDTH,
+				    uart_checker_nif);    
+      $display("init_uart_class - uart extend");
+      
    endfunction // init_uart_class
    
 endclass // tb_modules_custom_uart
