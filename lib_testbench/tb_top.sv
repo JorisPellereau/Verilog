@@ -171,8 +171,8 @@ module tb_top
 
    uart_checker_intf #(
 		       .G_NB_UART_CHECKER    (`C_NB_UART_CHECKER),
-		       .G_DATA_WIDTH         (8),
-		       .G_BUFFER_ADDR_WIDTH  (8)
+		       .G_DATA_WIDTH         (`C_UART_DATA_WIDTH),
+		       .G_BUFFER_ADDR_WIDTH  (`C_UART_BUFFER_ADDR_WIDTH)
 		       ) 
    uart_checker_if();
 
@@ -195,10 +195,10 @@ module tb_top
 			      .G_POLARITY           (4'd3),
 			      .G_PARITY             (0),
 			      .G_BAUDRATE           (9),
-			      .G_DATA_WIDTH         (8),
+			      .G_DATA_WIDTH         (`C_UART_DATA_WIDTH),
 			      .G_FIRST_BIT          (0),
 			      .G_CLOCK_FREQ         (20000000),
-			      .G_BUFFER_ADDR_WIDTH  (8)
+			      .G_BUFFER_ADDR_WIDTH  (`C_UART_BUFFER_ADDR_WIDTH)
    )
    i_uart_checker_wrapper (
 			   .clk    (clk),

@@ -34,5 +34,6 @@
 
 
 // UART CHECKER Configuration
-`define C_NB_UART_CHECKER 2
-`define C_UART_CHECKER_INTERFACE tb_top.uart_checker_if
+`define C_NB_UART_CHECKER         2
+`define C_UART_DATA_WIDTH         8
+`define C_UART_BUFFER_ADDR_WIDTH  8

@@ -18,9 +18,7 @@ class tb_modules_custom_class;
    int 	 G_NB_UART_CHECKER;
    int 	 G_DATA_WIDTH;
    int 	 G_BUFFER_ADDR_WIDTH;
-   
-   
-
+      
  
    /* =================
     * == CONSTRUCTOR ==
@@ -48,20 +46,19 @@ class tb_modules_custom_class;
    virtual task init_tb_modules(); 
       begin
 	 // By Default => No Custom Modules
-	 $display("init_tb_modules - Parent Class");
+
       end      
    endtask // init_tb_modules
 
 
    // Launch Sequencer of Custom Testbench Modules
    virtual task run_seq_custom_tb_modules (input string line,
-				   output logic o_cmd_custom_exists,
-				   output logic o_cmd_custom_done
-				   );
+					   output logic o_cmd_custom_exists,
+					   output logic o_cmd_custom_done
+					   );
       begin
 	// By Default => No Custom Modules
-
-	 $display("run_seq_custom_tb_modules - PARENT CLASS tb_modules_custom_class done");	 
+	 
       end      
    endtask // run_seq_custom_tb_modules
         
@@ -95,11 +92,6 @@ class tb_modules_custom_uart extends tb_modules_custom_class;
 
       init_uart_class(uart_checker_nif);
 
-      //super.run_seq_custom_tb_modules();
-      
-      
- 
-
    endfunction // new
 
 
@@ -111,10 +103,9 @@ class tb_modules_custom_uart extends tb_modules_custom_class;
    // INIT UART TESTBENCH CHECKER
    task init_tb_modules();
       begin
-
-	 $display("Init tb modules - CHILD UART class");
-      
-	 this.tb_uart_class_inst.INIT_UART_CHECKER();       // this ?
+     
+	 this.tb_uart_class_inst.INIT_UART_CHECKER();
+	 
       end      
    endtask // init_tb_modules
    
@@ -130,8 +121,6 @@ class tb_modules_custom_uart extends tb_modules_custom_class;
 				   output logic o_cmd_custom_done
 				   );
       begin
-
-	 //$display("run_seq_custom_tb_modules - Extend UART");
 	 
 	 logic 	s_command_exist;	 	 
 	 logic 	s_route_uart_done;	 
@@ -139,9 +128,6 @@ class tb_modules_custom_uart extends tb_modules_custom_class;
 	 o_cmd_custom_exists = 0;
 	 o_cmd_custom_done   = 0;
 
-
-	 $display("run_seq_custom_tb_modules - Extend UART");
-	 
 	 // Lauch UART Sequencer
 	 this.tb_uart_class_inst.uart_tb_sequencer (line,
 						    s_command_exist,
@@ -153,7 +139,6 @@ class tb_modules_custom_uart extends tb_modules_custom_class;
 	 end	 
 	 o_cmd_custom_done = 1;
 
-	 $display("run_seq_custom_tb_modules - UART extends done");	 
 	 
       end                  
    endtask // run_seq_custom_tb_modules
@@ -165,13 +150,13 @@ class tb_modules_custom_uart extends tb_modules_custom_class;
     */
 
    // INIT UART TESTBENCH CLASS
-   function void init_uart_class(virtual uart_checker_intf uart_checker_nif);      
+   function void init_uart_class(virtual uart_checker_intf uart_checker_nif);
+  
       this.tb_uart_class_inst = new(G_NB_UART_CHECKER,
 				    G_DATA_WIDTH,
 				    G_BUFFER_ADDR_WIDTH,
 				    uart_checker_nif);    
-      $display("init_uart_class - uart extend");
-      
+
    endfunction // init_uart_class
    
 endclass // tb_modules_custom_uart

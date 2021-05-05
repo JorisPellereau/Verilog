@@ -14,7 +14,7 @@ package fli;
 endpackage // fli
 
 `include "/home/jorisp/GitHub/Verilog/lib_testbench/tb_modules_custom_class.sv"
-`include "/home/jorisp/GitHub/Verilog/lib_tb_uart/uart_checker_wrapper.sv"
+//`include "/home/jorisp/GitHub/Verilog/lib_tb_uart/uart_checker_wrapper.sv"
 
 class tb_class #(
 		 parameter ARGS_NB   = 5,
@@ -72,11 +72,7 @@ class tb_class #(
       this.check_level_vif        = check_level_nif;
       this.tb_modules_custom_inst = tb_modules_custom_inst;
 
-      $display("NEW tb_task - %p", this.tb_modules_custom_inst);
-      
-      
-       
-      // 
+
    endfunction // new
 
    // ====================================
@@ -110,17 +106,13 @@ class tb_class #(
 	 logic 	   cmd_exists;      
 	 string    args[ARGS_NB];
       
-
 	 logic 	   end_test;
 	 int 	   line_status;
-      
-      
+
+	 // INIT Variables
 	 end_test    = 1'b0;
 	 line_status = 0;
 
-	 $display("Avant init_tb_modeules()");
-
-	 $display("tb_modules_custom_inst.G_DATA_WIDTH : %d", this.tb_modules_custom_inst.G_DATA_WIDTH);
 
 	 // Initialization of Custom TB Modules if needed
 	 this.tb_modules_custom_inst.init_tb_modules();	 
@@ -169,19 +161,13 @@ class tb_class #(
 	 
 	    // Send line to Command Decoder
 	    else begin
-	       // cmd_decoder(line, cmd_exists, args); // Command decoder off generic CMD
 
-	       
-	       // Command decoder of specific Testbench Modules
-	       $display("avant this.tb_modules_custom_inst.run_seq_custom_tb_modules");	       
-	       this.tb_modules_custom_inst.run_seq_custom_tb_modules (
-								      line,
+	       // Command decoder of specific Testbench Modules       
+	       this.tb_modules_custom_inst.run_seq_custom_tb_modules (line,
 								      s_cmd_custom_exists,
 								      s_cmd_custom_done
 								      );
 
-
-	       
 	       if(s_cmd_custom_exists == 0) begin
 		  cmd_decoder(line, cmd_exists, args); // Command decoder off generic CMD
 		  
