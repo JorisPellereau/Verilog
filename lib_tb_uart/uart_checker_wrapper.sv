@@ -93,7 +93,6 @@ module uart_checker_wrapper #(
    // Assign UART_CHECKER INTERFACE CLOCK - Same clock for all UART instances
    assign uart_checker_if.clk = clk;
 
-
    // RX UART INST
    rx_uart #(
 	     .stop_bit_number (G_STOP_BIT_NUMBER),

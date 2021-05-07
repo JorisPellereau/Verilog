@@ -22,7 +22,6 @@ class generic_tb_uart_cmd_class:
     # alias : Alias of UART module - A string
     # data_list : a list of Hex data to write via UART
     def TX_START(self, alias, data_list):
-
         line_to_print = ""
         for i in range(0, len(data_list) - 1):
             line_to_print = line_to_print + str(data_list[i]) + " "
@@ -40,4 +39,16 @@ class generic_tb_uart_cmd_class:
             line_to_print = line_to_print + str(data_list[i]) + " "
         
         line_to_print = "UART[" + alias + "] RX_READ(" + line_to_print + str(data_list[len(data_list) - 1]) + ")\n"
+        self.f.write(line_to_print)
+
+
+    # UART RX_WAIT_DATA
+    # alias : Alias of UART module - A string
+    # data list : a list of Hex data to read from UART
+    def RX_WAIT_DATA(self, alias, data_list):
+        line_to_print = ""
+        for i in range(0, len(data_list) - 1):
+            line_to_print = line_to_print + str(data_list[i]) + " "
+            
+        line_to_print = "UART[" + alias + "] RX_WAIT_DATA(" + line_to_print + str(data_list[len(data_list) - 1]) + ")\n"
         self.f.write(line_to_print)
