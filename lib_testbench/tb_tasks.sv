@@ -14,11 +14,11 @@ package fli;
 endpackage // fli
 
 `include "/home/jorisp/GitHub/Verilog/lib_testbench/tb_modules_custom_class.sv"
-//`include "/home/jorisp/GitHub/Verilog/lib_tb_uart/uart_checker_wrapper.sv"
 
+
+`define ARGS_NB 5 
+ 
 class tb_class #(
-		 parameter ARGS_NB   = 5,
-		 
 		 // SET INJECTOR PARAMETERS
 		 parameter SET_SIZE  = 5,
 		 parameter SET_WIDTH = 32,
@@ -31,12 +31,11 @@ class tb_class #(
 		 // CHECK LEVEL PARAMETER
 		 parameter CHECK_SIZE  = 5,
 		 parameter CHECK_WIDTH = 32	 
-      );
+		 );
 
 
    // == CUSTOM TESTBENCH MODULES CLASS ==
    tb_modules_custom_class tb_modules_custom_inst;
-   
    // ====================================
 
 
@@ -49,11 +48,7 @@ class tb_class #(
    virtual check_level_intf    #(CHECK_SIZE, CHECK_WIDTH)   check_level_vif;
    // =========================
 
-   // == OPTIONNAL VIRTUAL I/F ==
-   // UART Testbench modules
-   //virtual uart_checker_intf #(G_NB_UART_CHECKER, G_DATA_WIDTH , G_BUFFER_ADDR_WIDTH) uart_checker_vif; 
-   // ===========================
-   
+ 
    // =================
 
    
@@ -63,15 +58,15 @@ class tb_class #(
                 virtual set_injector_intf #(SET_SIZE, SET_WIDTH) set_nif, 
                 virtual wait_duration_intf wait_duration_nif,
                 virtual check_level_intf #(CHECK_SIZE, CHECK_WIDTH) check_level_nif,		
-		tb_modules_custom_class tb_modules_custom_inst//_new
+		tb_modules_custom_class tb_modules_custom_inst
 		);
+
       
       this.wait_event_vif         = wait_nif;
       this.set_injector_vif       = set_nif;
       this.wait_duration_vif      = wait_duration_nif;
       this.check_level_vif        = check_level_nif;
       this.tb_modules_custom_inst = tb_modules_custom_inst;
-
 
    endfunction // new
 
@@ -104,7 +99,7 @@ class tb_class #(
 
 	 // Flag from Generic Testbench Modules
 	 logic 	   cmd_exists;      
-	 string    args[ARGS_NB];
+	 string    args[`ARGS_NB];
       
 	 logic 	   end_test;
 	 int 	   line_status;
@@ -205,7 +200,6 @@ class tb_class #(
 		       
 		       "MODELSIM_CMD" : begin
 			  extract_line_double_quote(line, line_tmp);
-			  //line_tmp = "mem load -i /home/jorisp/GitHub/VHDL_code/MAX7219/stimulis/max7219_ram_pattern_3.mem -format mti /tb_top/i_dut/tdpram_inst_0/v_ram";
 			  $display($typename(line_tmp));			  	  
 			  modelsim_cmd_exec(line_tmp);		     
 		       end
@@ -235,7 +229,7 @@ class tb_class #(
    task cmd_decoder(
       input string  line,
       output logic  o_cmd_exists,		    
-      output string args [ARGS_NB]);
+      output string args [`ARGS_NB]);
       
       begin
        
@@ -298,7 +292,7 @@ class tb_class #(
     */
    task set_injector(
      virtual set_injector_intf #(SET_SIZE, SET_WIDTH) set_injector_vif,
-     input string 		      i_args [ARGS_NB]
+     input string 		      i_args [`ARGS_NB]
    );
       begin
 
@@ -340,7 +334,7 @@ class tb_class #(
    task wait_event (
 
      virtual           wait_event_intf #(WAIT_SIZE, WAIT_WIDTH) wait_event_vif,		    
-     input string      i_args [ARGS_NB]
+     input string      i_args [`ARGS_NB]
    );
       begin
 
@@ -433,7 +427,7 @@ class tb_class #(
    
    task wait_duration (
 	virtual      wait_duration_intf wait_duration_vif, 	       
-        input string i_args [ARGS_NB]       	              		       
+        input string i_args [`ARGS_NB]       	              		       
    );
       
       begin
@@ -511,7 +505,7 @@ class tb_class #(
    
    task check_level (
         virtual check_level_intf #(CHECK_SIZE, CHECK_WIDTH) check_level_vif,
-        input string i_args [ARGS_NB]
+        input string i_args [`ARGS_NB]
    );
       begin
 
@@ -587,7 +581,7 @@ class tb_class #(
    
    task wait_event_soft (
 			virtual           wait_event_intf #(WAIT_SIZE, WAIT_WIDTH) wait_event_vif,		    
-                        input string      i_args [ARGS_NB]
+                        input string      i_args [`ARGS_NB]
    );
       begin
 
@@ -655,8 +649,8 @@ class tb_class #(
     *
     * */
    task modelsim_cmd_exec (
-			  input string      line
-      );
+			   input string line
+			   );
       begin
 
 	 int 	status;
@@ -664,8 +658,7 @@ class tb_class #(
 	 
 	 $display("Modelsim Command Exec : %s", line);
 	 status = mti_fli::mti_Cmd(line);
-	 //$display("status : %d", status);
-	 
+
       end
    endtask // modelsim_cmd_exec
    

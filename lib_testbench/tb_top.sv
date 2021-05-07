@@ -17,9 +17,6 @@
 `include "check_level_wrapper.sv"
 `include "tb_tasks.sv"
 
-//`include "/home/jorisp/GitHub/Verilog/lib_tb_uart/tb_uart_class.sv"
-
-
 
 // TB TOP
 module tb_top
@@ -140,7 +137,7 @@ module tb_top
 
    // WAIT EVENT TB WRAPPER INST
    wait_event_wrapper #(
-			.ARGS_NB    (`C_CMD_ARGS_NB),
+			//.ARGS_NB    (`C_CMD_ARGS_NB),
 			.CLK_PERIOD (`C_TB_CLK_PERIOD)
    )
    i_wait_event_wrapper (
@@ -152,7 +149,7 @@ module tb_top
 
    // SET INJECTOR TB WRAPPER INST
    set_injector_wrapper #(
-			  .ARGS_NB(`C_CMD_ARGS_NB) 
+			  //.ARGS_NB(`C_CMD_ARGS_NB) 
    )
    i_set_injector_wrapper (
        .clk              (clk),
@@ -177,13 +174,6 @@ module tb_top
    uart_checker_if();
 
 
-   // Assign Alias of UART checker
-   assign uart_checker_if.uart_checker_alias = '{
-						 "UART_0" : 0,
-						 "UART_1" : 1
-						 };
-   assign uart_checker_if.clk = clk;
-   
  
    // == HDL SPEFICIC TESTBENCH MODULES ==
 
@@ -221,28 +211,28 @@ module tb_top
    bit 				     C_UART_MODULE_EN; 
    assign C_UART_MODULE_EN = 1;
    
-   /*uart_tb_info_struct uart_tb_info;
-   
-   assign uart_tb_info = '{1, "tb_top/uart_checker_if"};*/
-   
-   
+
    
    
    // Declare TB Module class type   
-   tb_modules_custom_uart tb_modules_custom_class_inst = new(uart_checker_if, 1, 8, 8); // a faire en static
+   tb_modules_custom_uart #(
+			    .G_NB_UART_CHECKER     (`C_NB_UART_CHECKER),
+			    .G_DATA_WIDTH          (`C_UART_DATA_WIDTH),
+			    .G_BUFFER_ADDR_WIDTH   (`C_UART_BUFFER_ADDR_WIDTH)
+			    ) tb_modules_custom_class_inst = new(uart_checker_if);
 
 
    // == TESTBENCH SEQUENCER ==
    
    // CREATE CLASS - Configure Parameters
-   static tb_class #( `C_CMD_ARGS_NB, 
-                      `C_SET_SIZE, 
-                      `C_SET_WIDTH,
-                      `C_WAIT_ALIAS_NB,
-                      `C_WAIT_WIDTH, 
-                      `C_TB_CLK_PERIOD,
-                      `C_CHECK_SIZE,
-                      `C_CHECK_WIDTH) 
+   static tb_class #(`C_SET_SIZE, 
+                     `C_SET_WIDTH,
+                     `C_WAIT_ALIAS_NB,
+                     `C_WAIT_WIDTH, 
+                     `C_TB_CLK_PERIOD,
+                     `C_CHECK_SIZE,
+                     `C_CHECK_WIDTH)
+   
    tb_class_inst = new (s_wait_event_if, 
                         s_set_injector_if, 
                         s_wait_duration_if,
@@ -251,7 +241,15 @@ module tb_top
    
     
    initial begin : TB_SEQUENCER
-       
+
+
+      // Add Alias of Custom TB Modules
+      tb_modules_custom_class_inst.ADD_TB_CUSTOM_MODULES_ALIAS("UART_0", 0);      
+      tb_modules_custom_class_inst.ADD_TB_CUSTOM_MODULES_ALIAS("UART_1", 1);
+      tb_modules_custom_class_inst.ADD_TB_CUSTOM_MODULES_ALIAS("UART_2", 2);
+      
+
+      // Run TB Sequencer
       tb_class_inst.tb_sequencer(SCN_FILE_PATH);
       
    end : TB_SEQUENCER
@@ -264,6 +262,7 @@ module tb_top
    // == DUT INST ==
    
    // ==============
+
 
    
 endmodule // tb_top

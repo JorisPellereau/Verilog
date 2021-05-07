@@ -13,27 +13,13 @@
 
 class tb_modules_custom_class;
 
-
-   // UART parameters
-   int 	 G_NB_UART_CHECKER;
-   int 	 G_DATA_WIDTH;
-   int 	 G_BUFFER_ADDR_WIDTH;
-      
  
    /* =================
     * == CONSTRUCTOR ==
     * =================
     */
-   function new (int G_NB_UART_CHECKER_new   = 1,
-		 int G_DATA_WIDTH_new        = 8,
-		 int G_BUFFER_ADDR_WIDTH_new = 8
-		 );
+   function new ();
 
-      // UART TESTBENCH PARAMETERS
-      this.G_NB_UART_CHECKER   = G_NB_UART_CHECKER_new;
-      this.G_DATA_WIDTH        = G_DATA_WIDTH_new;
-      this.G_BUFFER_ADDR_WIDTH = G_BUFFER_ADDR_WIDTH_new;
-      
    endfunction // new
 
 
@@ -61,6 +47,13 @@ class tb_modules_custom_class;
 	 
       end      
    endtask // run_seq_custom_tb_modules
+
+
+   // Add Alias in associative array
+   function void ADD_TB_CUSTOM_MODULES_ALIAS();
+      
+   endfunction // ADD_TB_CUSTOM_MODULES_ALIAS
+   
         
   
 endclass // tb_modules_custom_class
@@ -73,22 +66,25 @@ endclass // tb_modules_custom_class
  * ==================
  */
 
-class tb_modules_custom_uart extends tb_modules_custom_class;
+// tb_modules_custom_uart - Class for initialization of UART testbench module
+class tb_modules_custom_uart #(parameter G_NB_UART_CHECKER   = 2,
+			       parameter G_DATA_WIDTH        = 8,
+			       parameter G_BUFFER_ADDR_WIDTH = 8
+			       ) 
+   extends tb_modules_custom_class;
 
 
-   tb_uart_class tb_uart_class_inst = null;
+   tb_uart_class #(G_NB_UART_CHECKER,
+		   G_DATA_WIDTH,
+		   G_BUFFER_ADDR_WIDTH
+		   )
+   tb_uart_class_inst = null;
 
    // Constructor of the class - Infos of Used modules
-   function new (virtual uart_checker_intf uart_checker_nif,
-		 int G_NB_UART_CHECKER_new   = 1,
-		 int G_DATA_WIDTH_new        = 8,
-		 int G_BUFFER_ADDR_WIDTH_new = 8		
-		 );
+   function new (virtual uart_checker_intf #(G_NB_UART_CHECKER, G_DATA_WIDTH, G_BUFFER_ADDR_WIDTH) uart_checker_nif);
 
       // CONSTRUCTOR
-      super.new(G_NB_UART_CHECKER_new,
-		G_DATA_WIDTH_new,
-		G_BUFFER_ADDR_WIDTH_new);          
+      super.new();          
 
       init_uart_class(uart_checker_nif);
 
@@ -142,6 +138,14 @@ class tb_modules_custom_uart extends tb_modules_custom_class;
 	 
       end                  
    endtask // run_seq_custom_tb_modules
+
+   /* Add Alias in associative array
+    *
+    * 
+    */
+   function void ADD_TB_CUSTOM_MODULES_ALIAS(string ALIAS, int alias_index);
+      this.tb_uart_class_inst.UART_TB_ADD_ALIAS(ALIAS, alias_index);      
+   endfunction // ADD_TB_CUSTOM_MODULES_ALIAS
    
 
    /* =====================
@@ -150,12 +154,9 @@ class tb_modules_custom_uart extends tb_modules_custom_class;
     */
 
    // INIT UART TESTBENCH CLASS
-   function void init_uart_class(virtual uart_checker_intf uart_checker_nif);
+   function void init_uart_class(virtual uart_checker_intf #(G_NB_UART_CHECKER, G_DATA_WIDTH, G_BUFFER_ADDR_WIDTH) uart_checker_nif);
   
-      this.tb_uart_class_inst = new(G_NB_UART_CHECKER,
-				    G_DATA_WIDTH,
-				    G_BUFFER_ADDR_WIDTH,
-				    uart_checker_nif);    
+      this.tb_uart_class_inst  = new(uart_checker_nif);    
 
    endfunction // init_uart_class
    

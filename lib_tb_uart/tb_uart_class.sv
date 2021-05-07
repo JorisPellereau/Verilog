@@ -9,29 +9,23 @@
 // Status          : Unknown, Use with caution!
 
 
-class tb_uart_class;
+class tb_uart_class #(parameter G_NB_UART_CHECKER   = 2,
+		      parameter G_DATA_WIDTH        = 8,
+		      parameter G_BUFFER_ADDR_WIDTH = 8
+		      );
 
    // == VIRTUAL I/F ==
-   // UART parameters
-   int 	  G_NB_UART_CHECKER;
-   int 	  G_DATA_WIDTH;
-   int 	  G_BUFFER_ADDR_WIDTH;
-   virtual uart_checker_intf  uart_checker_vif;   
+   // UART Checker interface
+   virtual uart_checker_intf  #(G_NB_UART_CHECKER, G_DATA_WIDTH, G_BUFFER_ADDR_WIDTH) uart_checker_vif;   
    // =================
 
  
 
    // == Interface passed in Virtual I/F ==
-   function new(int 	G_NB_UART_CHECKER,
-		int 	G_DATA_WIDTH,
-		int 	G_BUFFER_ADDR_WIDTH,
-		virtual uart_checker_intf uart_checker_nif);
+   function new(virtual uart_checker_intf #(G_NB_UART_CHECKER, G_DATA_WIDTH, G_BUFFER_ADDR_WIDTH) uart_checker_nif);
 
       this.uart_checker_vif    = uart_checker_nif; // New Virtual Interface
-      this.G_NB_UART_CHECKER   = G_NB_UART_CHECKER;
-      this.G_DATA_WIDTH        = G_DATA_WIDTH;
-      this.G_BUFFER_ADDR_WIDTH = G_BUFFER_ADDR_WIDTH;
-
+      
    endfunction // new
    // ====================================
 
@@ -293,7 +287,7 @@ class tb_uart_class;
 
 	 int 	array_index = 0;
 
-	 $display("Run UART_TX_START ... - %t", $time);
+	 $display("Run UART[%s] TX_START(%s) ... - %t", uart_alias, uart_cmd_args, $time);
 	 	 
 	 // Get the number of data in uart_cmd_args
 	 for(i = 0 ; i < uart_cmd_args.len() ; i ++) begin
@@ -461,6 +455,15 @@ class tb_uart_class;
 	 	 
       end
    endtask // UART_RX_READ
+
+
+
+   // == ADD ALIAS in Associative Array ==
+   function void UART_TB_ADD_ALIAS(string ALIAS, int alias_index);
+      this.uart_checker_vif.uart_checker_alias[ALIAS] = alias_index;      
+   endfunction // UART_TB_ADD_ALIAS
+   
+   // ====================================
    
          
 endclass // tb_uart_class
