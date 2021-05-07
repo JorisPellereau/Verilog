@@ -8,6 +8,8 @@
 // Update Count    : 0
 // Status          : Unknown, Use with caution!
 
+// Limitation : Same clock for all UART TB Modules
+
 interface uart_checker_intf #(
 			      parameter G_NB_UART_CHECKER   = 2,
 			      parameter G_DATA_WIDTH        = 8,
@@ -64,10 +66,6 @@ module uart_checker_wrapper #(
 
 
    // INTERNAL SIGNALS
-   //reg [G_BUFFER_ADDR_WIDTH - 1 :0]    s_wr_ptr [G_NB_UART_CHECKER - 1 : 0];
-   
-   //reg [G_DATA_WIDTH - 1 :0]  s_buffer_rx [G_NB_UART_CHECKER - 1 : 0][2**G_BUFFER_ADDR_WIDTH - 1 :0];
-
    reg 			      s_rx_done_p [G_NB_UART_CHECKER - 1 : 0];   
    wire 		      s_rx_done_r_edge [G_NB_UART_CHECKER - 1 : 0];
    
@@ -91,7 +89,9 @@ module uart_checker_wrapper #(
 								  .tx       (o_tx),
 								  .tx_done  (uart_checker_if.tx_done)
 								  );
-   
+
+   // Assign UART_CHECKER INTERFACE CLOCK - Same clock for all UART instances
+   assign uart_checker_if.clk = clk;
 
 
    // RX UART INST
@@ -146,9 +146,5 @@ module uart_checker_wrapper #(
       end
    endgenerate
 
-
-   // Assign s_buffer_rx_soft to current s_buffer_rx
-   //assign uart_checker_if.s_buffer_rx_soft = s_buffer_rx;
-   
    
 endmodule // uart_checker_wrapper

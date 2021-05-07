@@ -17,9 +17,6 @@
 `include "check_level_wrapper.sv"
 `include "tb_tasks.sv"
 
-//`include "/home/jorisp/GitHub/Verilog/lib_tb_uart/tb_uart_class.sv"
-
-
 
 // TB TOP
 module tb_top
@@ -140,7 +137,7 @@ module tb_top
 
    // WAIT EVENT TB WRAPPER INST
    wait_event_wrapper #(
-			.ARGS_NB    (`C_CMD_ARGS_NB),
+			//.ARGS_NB    (`C_CMD_ARGS_NB),
 			.CLK_PERIOD (`C_TB_CLK_PERIOD)
    )
    i_wait_event_wrapper (
@@ -152,7 +149,7 @@ module tb_top
 
    // SET INJECTOR TB WRAPPER INST
    set_injector_wrapper #(
-			  .ARGS_NB(`C_CMD_ARGS_NB) 
+			  //.ARGS_NB(`C_CMD_ARGS_NB) 
    )
    i_set_injector_wrapper (
        .clk              (clk),
@@ -171,26 +168,13 @@ module tb_top
 
    uart_checker_intf #(
 		       .G_NB_UART_CHECKER    (`C_NB_UART_CHECKER),
-		       .G_DATA_WIDTH         (8),
-		       .G_BUFFER_ADDR_WIDTH  (8)
+		       .G_DATA_WIDTH         (`C_UART_DATA_WIDTH),
+		       .G_BUFFER_ADDR_WIDTH  (`C_UART_BUFFER_ADDR_WIDTH)
 		       ) 
    uart_checker_if();
 
 
-   // Assign Alias of UART checker
-   assign uart_checker_if.uart_checker_alias = '{
-						 "UART_0" : 0,
-						 "UART_1" : 1
-						 };
-   assign uart_checker_if.clk = clk;
-   
  
-   
-/*   assign uart_checker_if.uart_checker_alias[0] = "UART_0";
-   assign uart_checker_if.uart_checker_alias[1] = "UART_1";
-
- */
-   
    // == HDL SPEFICIC TESTBENCH MODULES ==
 
    
@@ -201,10 +185,10 @@ module tb_top
 			      .G_POLARITY           (4'd3),
 			      .G_PARITY             (0),
 			      .G_BAUDRATE           (9),
-			      .G_DATA_WIDTH         (8),
+			      .G_DATA_WIDTH         (`C_UART_DATA_WIDTH),
 			      .G_FIRST_BIT          (0),
 			      .G_CLOCK_FREQ         (20000000),
-			      .G_BUFFER_ADDR_WIDTH  (8)
+			      .G_BUFFER_ADDR_WIDTH  (`C_UART_BUFFER_ADDR_WIDTH)
    )
    i_uart_checker_wrapper (
 			   .clk    (clk),
@@ -227,151 +211,50 @@ module tb_top
    bit 				     C_UART_MODULE_EN; 
    assign C_UART_MODULE_EN = 1;
    
-   /*uart_tb_info_struct uart_tb_info;
-   
-   assign uart_tb_info = '{1, "tb_top/uart_checker_if"};*/
-   
-   
-   
-   
-   // Declare TB Module class type
-   tb_modules_custom_class tb_modules_custom_class_inst = tb_modules_custom_class::create_custom_module_uart(1, uart_checker_if);
-   
 
    
-   //tb_modules_custom_class tb_modules_custom_inst = new(1'b1);
+   
+   // Declare TB Module class type   
+   tb_modules_custom_uart #(
+			    .G_NB_UART_CHECKER     (`C_NB_UART_CHECKER),
+			    .G_DATA_WIDTH          (`C_UART_DATA_WIDTH),
+			    .G_BUFFER_ADDR_WIDTH   (`C_UART_BUFFER_ADDR_WIDTH)
+			    ) tb_modules_custom_class_inst = new(uart_checker_if);
 
-   // Init UART
-   
-   
+
    // == TESTBENCH SEQUENCER ==
    
    // CREATE CLASS - Configure Parameters
-   /*static tb_class #( `C_CMD_ARGS_NB, 
-                      `C_SET_SIZE, 
-                      `C_SET_WIDTH,
-                      `C_WAIT_ALIAS_NB,
-                      `C_WAIT_WIDTH, 
-                      `C_TB_CLK_PERIOD,
-                      `C_CHECK_SIZE,
-                      `C_CHECK_WIDTH) 
+   static tb_class #(`C_SET_SIZE, 
+                     `C_SET_WIDTH,
+                     `C_WAIT_ALIAS_NB,
+                     `C_WAIT_WIDTH, 
+                     `C_TB_CLK_PERIOD,
+                     `C_CHECK_SIZE,
+                     `C_CHECK_WIDTH)
+   
    tb_class_inst = new (s_wait_event_if, 
                         s_set_injector_if, 
                         s_wait_duration_if,
-                        s_check_level_if);*/
-/*,
-			tb_modules_custom_inst);*/
+                        s_check_level_if,
+  			tb_modules_custom_class_inst);
    
-   
+    
    initial begin : TB_SEQUENCER
 
-      //uart_tb_info_struct = '{1, "tb_top.uart_checker_if"};
-      //tb_modules_custom_inst.tb_uart_class_inst(uart_checker_if);
+
+      // Add Alias of Custom TB Modules
+      tb_modules_custom_class_inst.ADD_TB_CUSTOM_MODULES_ALIAS("UART_0", 0);      
+      tb_modules_custom_class_inst.ADD_TB_CUSTOM_MODULES_ALIAS("UART_1", 1);
+      tb_modules_custom_class_inst.ADD_TB_CUSTOM_MODULES_ALIAS("UART_2", 2);
       
- //tb_modules_custom_inst.init_uart_class(2,8,8,uart_checker_if);
-      //$display("uart_tb_info_struct : %p", uart_tb_info_struct);    
-      //
-      /*tb_class #( `C_CMD_ARGS_NB, 
-                      `C_SET_SIZE, 
-                      `C_SET_WIDTH,
-                      `C_WAIT_ALIAS_NB,
-                      `C_WAIT_WIDTH, 
-                      `C_TB_CLK_PERIOD,
-                      `C_CHECK_SIZE,
-                      `C_CHECK_WIDTH) ::display_tb_class_infos();*/
-      //tb_modules_custom_inst.display_info();
-      //tb_class_inst.tb_sequencer(SCN_FILE_PATH, tb_modules_custom_inst);
+
+      // Run TB Sequencer
+      tb_class_inst.tb_sequencer(SCN_FILE_PATH);
       
    end : TB_SEQUENCER
    
    // ========================
-
-   //string line = "UART[UART_1] TX_START(0xFF 14 55 99 56 44)\n";
-   string line; // = "UART[UART_0] TX_START(0xFF)\n";
-
-   string cmd_0 = "UART[UART_0] TX_START(0xFF 1 2 3 4 5 6 7 8 9 255 0xDD 0xFF 99 0xBD 0xCA 0xFF 0x32)\n";
-   string cmd_1 = "UART[UART_0] RX_READ(0xFF 1 2 3 4 5 6 7 8 9 255 0xDD 0xFF 99 0xBD 0xCA 0xFF)\n";
-
-   logic  sel;
-   //assign sel = 0;
-   
-   assign line = (sel == 0) ? cmd_0 : cmd_1;
-   
-   
-   string uart_checker_cmd_list [2];
-   logic   command_exist;
-
-   string  uart_alias;
-   string  uart_cmd;
-   string  uart_cmd_args;
-   
-      
-
-   int  UART_CMD_ARRAY [string] = '{
-			        "TX_START" : 0,
-			        "RX_READ"  : 1
-					      };
-   
-
-   //assign line = "UART[UART_0] TX_START(0xFF)";
-
-
-   /*initial begin: UART_CLASS
-      // test UART checker class
-      static tb_uart_class #(
-			     .G_NB_UART_CHECKER    (2),
-			     .G_DATA_WIDTH         (8)
-			     )
-      i_tb_uart_class = new(uart_checker_if);
-
-      assign uart_checker_if.clk = clk;
-
-      i_tb_uart_class.INIT_UART_CHECKER(uart_checker_if);
-      
-      sel = 0;
-      
-      @(posedge rst_n);
-      
-      #1;
-      i_tb_uart_class.decod_scn_line(uart_checker_if,
-				     line, 
-				     UART_CMD_ARRAY, 
-				     command_exist,
-				     uart_alias,
-				     uart_cmd,
-				     uart_cmd_args);
-
-      #1;
-      i_tb_uart_class.UART_TX_START(uart_checker_if,
-				    uart_alias,
-				    uart_cmd,
-				    uart_cmd_args);
-      
-      
-      #1500000;
-      
-      sel = 1;
-
-      #1;
-      i_tb_uart_class.decod_scn_line(uart_checker_if,
-				     line, 
-				     UART_CMD_ARRAY, 
-				     command_exist,
-				     uart_alias,
-				     uart_cmd,
-				     uart_cmd_args);
-
-      #1;
-      
-      i_tb_uart_class.UART_RX_READ(uart_checker_if,
-				   uart_alias,
-				   uart_cmd,
-				   uart_cmd_args);
-      
-
-   end : UART_CLASS*/
-   
-   
    
 
 
@@ -379,6 +262,7 @@ module tb_top
    // == DUT INST ==
    
    // ==============
+
 
    
 endmodule // tb_top

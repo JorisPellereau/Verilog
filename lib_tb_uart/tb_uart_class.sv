@@ -8,45 +8,23 @@
 // Update Count    : 0
 // Status          : Unknown, Use with caution!
 
-// TBD !
 
-//
-typedef struct  {
-   logic UART_TB_ENABLE;
-   string UART_TB_INTERFACE_PATH;
-} uart_tb_info_struct;
-
-
-class tb_uart_class;
- /*#(
-		      parameter G_NB_UART_CHECKER = 2,
-		      parameter G_DATA_WIDTH = 8,
-		      parameter G_BUFFER_ADDR_WIDTH = 8	
-		      );*/
+class tb_uart_class #(parameter G_NB_UART_CHECKER   = 2,
+		      parameter G_DATA_WIDTH        = 8,
+		      parameter G_BUFFER_ADDR_WIDTH = 8
+		      );
 
    // == VIRTUAL I/F ==
-   // UART parameters
-   /*const*/ int 	 G_NB_UART_CHECKER;
-   /*const*/ int 	 G_DATA_WIDTH;
-   /*const*/ int 	 G_BUFFER_ADDR_WIDTH;
-   virtual uart_checker_intf /*#(G_NB_UART_CHECKER, G_DATA_WIDTH, G_BUFFER_ADDR_WIDTH)*/ uart_checker_vif;   
+   // UART Checker interface
+   virtual uart_checker_intf  #(G_NB_UART_CHECKER, G_DATA_WIDTH, G_BUFFER_ADDR_WIDTH) uart_checker_vif;   
    // =================
 
-   //string  s_uart_checker_aliases [G_NB_UART_CHECKER];  // UART CHECKER ALIASES
-   
+ 
 
    // == Interface passed in Virtual I/F ==
-   function new(int 	 G_NB_UART_CHECKER,
-		int 	G_DATA_WIDTH,
-		int 	G_BUFFER_ADDR_WIDTH,
-		virtual uart_checker_intf #(G_NB_UART_CHECKER, G_DATA_WIDTH, G_BUFFER_ADDR_WIDTH) uart_checker_nif);
-      this.uart_checker_vif = uart_checker_nif; // New Virtual Interface
-      this.G_NB_UART_CHECKER = G_NB_UART_CHECKER;
-      this.G_DATA_WIDTH = G_DATA_WIDTH;
-      this.G_BUFFER_ADDR_WIDTH = G_BUFFER_ADDR_WIDTH;
-      
-      // INIT ALIASES via Interface
-      //s_uart_checker_aliases = uart_checker_vif.uart_checker_alias;
+   function new(virtual uart_checker_intf #(G_NB_UART_CHECKER, G_DATA_WIDTH, G_BUFFER_ADDR_WIDTH) uart_checker_nif);
+
+      this.uart_checker_vif    = uart_checker_nif; // New Virtual Interface
       
    endfunction // new
    // ====================================
@@ -63,18 +41,16 @@ class tb_uart_class;
    
    // ===========================
 
-   const int 	   C_UART_CMD_NB = 2; // Number of Uart Command
-   int 		   UART_CMD_ARRAY [string] = '{
-					       "TX_START" : 0,
-					       "RX_READ"  : 1
-					       };
+   // Associative Array of UART Commands
+   int UART_CMD_ARRAY [string] = '{
+				   "TX_START" : 0,
+				   "RX_READ"  : 1
+				   };
    
 
 
    // UART Testbench Command sequencer
-   task uart_tb_sequencer(
-			  virtual      uart_checker_intf #(G_NB_UART_CHECKER, G_DATA_WIDTH, G_BUFFER_ADDR_WIDTH) uart_checker_vif,
-			  input string line,
+   task uart_tb_sequencer(input string line,
 			  output logic o_command_exist,
 			  output logic o_route_uart_done
 			  );
@@ -89,15 +65,9 @@ class tb_uart_class;
 	 string s_uart_cmd_args;
 	 
 
-	 //s_command_exist = 0;
 
-	 $display("UART_CMD_ARRAY : %p", this.UART_CMD_ARRAY);
-	 
-	 
 	 // Decod Scenario Line
-	 decod_scn_line (
-			 uart_checker_vif,
-			 line,
+	 decod_scn_line (line,
 			 this.UART_CMD_ARRAY,
 			 s_command_exist,
 			 s_uart_alias,
@@ -105,13 +75,8 @@ class tb_uart_class;
 			 s_uart_cmd_args
 			 );
 
-	 $display("uart_tb_sequencer - s_command_exist : %0b", s_command_exist);
-	 
-
 	 // Route UART Command - Launch uart command if exists
-	 route_uart_command (
-			     uart_checker_vif,
-			     s_command_exist,
+	 route_uart_command (s_command_exist,
 			     s_uart_alias,
 			     s_uart_cmd,
 			     s_uart_cmd_args,
@@ -121,17 +86,13 @@ class tb_uart_class;
 	 o_command_exist   = s_command_exist;
 	 o_route_uart_done = s_route_uart_done;
 	 
-	 
       end
    endtask // uart_tb_sequencer
    
    
 
    // Get line from scenarios - Check if alias exist - Check if command exsits and return args of command
-
-   task decod_scn_line (
-			virtual       uart_checker_intf #(G_NB_UART_CHECKER, G_DATA_WIDTH, G_BUFFER_ADDR_WIDTH) uart_checker_vif,
-			input string  line,
+   task decod_scn_line (input string  line,
 			input int     uart_checker_cmd_list [string],
 			output logic  o_command_exist,
 			output string o_uart_alias,
@@ -158,14 +119,9 @@ class tb_uart_class;
 	 int 	pos_1 = 0;
 
 	 o_command_exist = 0;
-	 
-	 
+	 	 
 	 line_length = line.len();
 	 
-	 //$display("Line : %s", line);
-
-	 // Check if command exist
-	 //$sscanf(line, "%s %s", uart_cmd_alias, uart_cmd_tmp);
 	 
 	 // Check if Command exists
 	 if(line.substr(0, 3) == "UART") begin
@@ -185,20 +141,14 @@ class tb_uart_class;
 	    
 	    space_position = pos_1 + 1;
 	    uart_cmd_tmp = line.substr(space_position + 1, line.len() - 1);
-	    	    
-	    
-
+	    	    	    
 	    alias_tmp = line.substr(pos_0 + 1, pos_1 - 1); // RM "[" and "]"	    
-	    $display("Alias_tmp : %s", alias_tmp);
 
 	    
 	    // Check if alias exist
-	    if(uart_checker_vif.uart_checker_alias.exists(alias_tmp)) begin
-	       $display("Alias Exist !");
+	    if(this.uart_checker_vif.uart_checker_alias.exists(alias_tmp)) begin
 
 	       // Check if command exist
-	       $display("cmd_type :%s uart_cmd_tmp :%s", uart_cmd_alias, uart_cmd_tmp);
-
 
 	       // Position of ()
 	       for(i = 0; i < uart_cmd_tmp.len() ; i ++) begin
@@ -211,13 +161,9 @@ class tb_uart_class;
 		  end		  
 	       end
 
-
 	       uart_cmd = uart_cmd_tmp.substr(0, pos_0 - 1); // Get UART command
-	       $display("pos_0 = %d  pos_1 : %d uart_cmd : %s", pos_0, pos_1, uart_cmd);
-	       
 	       
 	       if(uart_checker_cmd_list.exists(uart_cmd)) begin
-		  $display("UART command exist ! %s", uart_cmd);
 
 		  // Get Args inside () if exist
 		  uart_cmd_args = uart_cmd_tmp.substr(pos_0 + 1, pos_1 - 1);// RM "(" and ")"
@@ -230,40 +176,35 @@ class tb_uart_class;
 		  
 		  
 	       end
-	       else begin
-		  $display("UART command doesn't exist ! %s", uart_cmd);
+	       else begin		  
 		  o_command_exist = 0;  // End of test => Command don't exist
 	       end
 	       
 	       
 	    end
 	    else begin
-	       $display("Alias Doesn't Exist !");
+	       $display("UART Testbench Alias Doesn't Exist !");
 	       o_command_exist = 0;  // End of test => Command don't exist
 	    end
 	    
 	    
 	 end
 	 else begin
-	    //$display("Error: Command not recognized");
+
 	    o_command_exist = 0;  // End of test => Command don't exist	    
 	 end // else: !if(line.substr(0, 3) == "UART")
       end
-
-      $display("o_command_exists - decod_scn_line : %b", o_command_exist);
-      
+ 
       
    endtask // decod_scn_line
 
 
    // Task : Check if command exists and route to corerct Task
-   task route_uart_command (
-			    virtual 	 uart_checker_intf #(G_NB_UART_CHECKER, G_DATA_WIDTH, G_BUFFER_ADDR_WIDTH) uart_checker_vif,
-			    logic 	 i_command_exist,
+   task route_uart_command (logic 	 i_command_exist,
 			    input string i_uart_alias,
 			    input string i_uart_cmd,
 			    input string i_uart_cmd_args,
-			    logic 	 o_route_uart_done
+			    output logic o_route_uart_done
 			    );
       begin
 
@@ -273,20 +214,14 @@ class tb_uart_class;
 	    case(i_uart_cmd)
         
 	      "TX_START": begin
-		 $display("Run TX_START ...");
-		 
-		 UART_TX_START (
-				uart_checker_vif,
-				i_uart_alias,
+		 UART_TX_START (i_uart_alias,
 				i_uart_cmd,
 				i_uart_cmd_args		       
 				);	     
 	      end
 	      
 	      "RX_READ" : begin
-		 UART_RX_READ (
-			       uart_checker_vif,
-			       i_uart_alias,
+		 UART_RX_READ (i_uart_alias,
 			       i_uart_cmd,
 			       i_uart_cmd_args
 			       );
@@ -301,8 +236,7 @@ class tb_uart_class;
 	 end
 	 else begin
 	    o_route_uart_done = 1;
-	 end
-	 
+	 end // else: !if(i_command_exist)
 	 
       end
    endtask // route_uart_command
@@ -310,54 +244,32 @@ class tb_uart_class;
 
 
    // TASK : Init UART checker
-   task INIT_UART_CHECKER(virtual 	     uart_checker_intf #(G_NB_UART_CHECKER, G_DATA_WIDTH, G_BUFFER_ADDR_WIDTH) uart_checker_vif);
-
+   task INIT_UART_CHECKER();
       begin
 
 	 int i;
-	 for(i = 0 ; i < uart_checker_vif.G_NB_UART_CHECKER; i++) begin
-	    uart_checker_vif.start_tx[i] = 0;
-	    uart_checker_vif.tx_data[i] = 8'hAA; // TBD
-	    uart_checker_vif.s_rd_ptr_soft[i] = 0;
-	    
-	    // 	 
-	    //    
+	 for(i = 0 ; i < this.uart_checker_vif.G_NB_UART_CHECKER; i++) begin
+	    this.uart_checker_vif.start_tx[i] = 0;
+	    this.uart_checker_vif.tx_data[i] = 8'hAA; // TBD
+	    this.uart_checker_vif.s_rd_ptr_soft[i] = 0;   
 	 end
 
 	 $display("Initialization of UART Testbench Module Done.");
-	 
-	 
+	 	 
       end
    endtask // INIT_UART_CHECKER
    
 
-   /*utils_class utils;
-   utils = new ();*/
-
-   //static tb_utils_class toto;
-   //toto = new();
-   
-   
    /* Task : TX_START - Send a byte or multiple bytes on TX UART
     * * BLOCKING COMMAND
     * 
     */
-
-   task UART_TX_START (
-		       virtual 	     uart_checker_intf #(G_NB_UART_CHECKER, G_DATA_WIDTH, G_BUFFER_ADDR_WIDTH) uart_checker_vif,
-		       input string uart_alias,
+   task UART_TX_START (input string uart_alias,
 		       input string uart_cmd,
-		       input string uart_cmd_args
-		       
+		       input string uart_cmd_args		       
 		       );
       begin
 
-	 /*tb_utils_class toto;
-	 
-
-	 utils = new (8);*/
-	 
-	 
 	 // Internal Variables
 	 int data_nb = 0;
 	 int i = 0;
@@ -367,19 +279,16 @@ class tb_uart_class;
 	 int 	start_pos = 0;
 	 
 	 int 	data_cnt = 0;
-
 	 int 	data_int = 0;
-	 
-	 
+	 	 
 	 int data_tmp;
 	 
 	 string str_tmp;
 
 	 int 	array_index = 0;
-	 
-	 
-	 
-	 
+
+	 $display("Run UART[%s] TX_START(%s) ... - %t", uart_alias, uart_cmd_args, $time);
+	 	 
 	 // Get the number of data in uart_cmd_args
 	 for(i = 0 ; i < uart_cmd_args.len() ; i ++) begin
 	    if(uart_cmd_args.getc(i) == " ") begin
@@ -389,8 +298,6 @@ class tb_uart_class;
 
 	 data_nb += 1; // Number of space + 1
 	 
-
-	 //$display("data_nb : %d" , data_nb);
 	 data_array = new [data_nb]; // Create a dynamic array with the number of data
 	 
 
@@ -401,7 +308,6 @@ class tb_uart_class;
 	       if(data_cnt < data_nb) begin
 		  data_array[data_cnt] = uart_cmd_args.substr(start_pos, space_position -1);
 		  data_cnt += 1;
-		  //$display("data_cnt : %d" , data_cnt);
 		  
 	       end
 	       start_pos = space_position + 1; // Update Start Position       
@@ -411,9 +317,6 @@ class tb_uart_class;
 
 	 // Fill Last data
 	 data_array[data_nb - 1] = uart_cmd_args.substr(start_pos, uart_cmd_args.len() - 1);
-
-	 //$display("%p", data_array);
-
 
 	 
 	 for(i = 0 ; i < data_nb ; i ++) begin
@@ -431,25 +334,21 @@ class tb_uart_class;
 	    end
 	    
 	    
-	    //$display("data_tmp : %d", data_tmp);
 
 	    // Generation of a pulse of TX UART[alias]
-	    @(posedge uart_checker_vif.clk);
+	    @(posedge this.uart_checker_vif.clk);
 
-	    array_index = uart_checker_vif.uart_checker_alias[uart_alias];
-	    //$display("array_index : %d", array_index);
-	    
-	    uart_checker_vif.tx_data[array_index]  = data_tmp;
-	    uart_checker_vif.start_tx[array_index] = 1;
+	    array_index = this.uart_checker_vif.uart_checker_alias[uart_alias];
+ 
+	    this.uart_checker_vif.tx_data[array_index]  = data_tmp;
+	    this.uart_checker_vif.start_tx[array_index] = 1;
 
-	    @(posedge uart_checker_vif.clk);
-	    //uart_checker_vif.tx_data[array_index]  = 0;
-	    uart_checker_vif.start_tx[array_index] = 0;
+	    @(posedge this.uart_checker_vif.clk);
 
-	    @(posedge uart_checker_vif.tx_done[array_index]); // Wait for UART[alias] tx_done
-	    //$display("UART TX DONE !");
-	    //$display("index i : %d", i);
-	    
+	    this.uart_checker_vif.start_tx[array_index] = 0;
+
+	    @(posedge this.uart_checker_vif.tx_done[array_index]); // Wait for UART[alias] tx_done
+
 	    
 	 end // for (i = 0 ; i < data_nb ; i ++)
 	 
@@ -467,9 +366,7 @@ class tb_uart_class;
     * - Check Value in RX buffer - Non Blocking command
     */
 
-   task UART_RX_READ(
-		     virtual 	  uart_checker_intf #(G_NB_UART_CHECKER, G_DATA_WIDTH, G_BUFFER_ADDR_WIDTH) uart_checker_vif,
-		     input string uart_alias,
+   task UART_RX_READ(input string uart_alias,
 		     input string uart_cmd,
 		     input string uart_cmd_args);
       begin
@@ -485,7 +382,7 @@ class tb_uart_class;
 	 string data_array [];
 	 int 	array_index = 0;
 
-	 array_index = uart_checker_vif.uart_checker_alias[uart_alias]; // Get Array Index
+	 array_index = this.uart_checker_vif.uart_checker_alias[uart_alias]; // Get Array Index
 	 
 	 // Get the number of data in uart_cmd_args
 	 for(i = 0 ; i < uart_cmd_args.len() ; i ++) begin
@@ -508,8 +405,7 @@ class tb_uart_class;
 	       if(data_cnt < data_nb) begin
 		  data_array[data_cnt] = uart_cmd_args.substr(start_pos, space_position -1);
 		  data_cnt += 1;
-		  $display("data_cnt : %d" , data_cnt);
-		  
+
 	       end
 	       start_pos = space_position + 1; // Update Start Position       
 	    end
@@ -518,8 +414,6 @@ class tb_uart_class;
 
 	 // Fill Last data
 	 data_array[data_nb - 1] = uart_cmd_args.substr(start_pos, uart_cmd_args.len() - 1);
-
-	 $display("%p", data_array);
 
 
 	 // Fill Data to check
@@ -542,38 +436,34 @@ class tb_uart_class;
 	 for(i = 0 ; i < data_nb ; i ++) begin
 
 	    // Check if data is stored
-	    if(uart_checker_vif.s_buffer_rx_soft[array_index][uart_checker_vif.s_rd_ptr_soft[array_index]] == data_tmp[i]) begin
-	       $display("UART RX_READ(%x) - Expected %x => OK", data_tmp[i], uart_checker_vif.s_buffer_rx_soft[array_index][uart_checker_vif.s_rd_ptr_soft[array_index]]);	       
+	    if(this.uart_checker_vif.s_buffer_rx_soft[array_index][this.uart_checker_vif.s_rd_ptr_soft[array_index]] == data_tmp[i]) begin
+	       $display("UART RX_READ(%x) - Expected %x => OK", data_tmp[i], this.uart_checker_vif.s_buffer_rx_soft[array_index][this.uart_checker_vif.s_rd_ptr_soft[array_index]]);	       
 	    end
 	    else begin
-	       $display("UART RX_READ(%x) - Expected %x => Error", data_tmp[i], uart_checker_vif.s_buffer_rx_soft[array_index][uart_checker_vif.s_rd_ptr_soft]);
+	       $display("UART RX_READ(%x) - Expected %x => Error", data_tmp[i], this.uart_checker_vif.s_buffer_rx_soft[array_index][this.uart_checker_vif.s_rd_ptr_soft]);
 	    end
 
-	    if(uart_checker_vif.s_rd_ptr_soft[array_index] < uart_checker_vif.s_wr_ptr_soft[array_index]) begin
-	       uart_checker_vif.s_rd_ptr_soft[array_index] = uart_checker_vif.s_rd_ptr_soft[array_index] + 1; // Inc	       
+	    if(this.uart_checker_vif.s_rd_ptr_soft[array_index] < this.uart_checker_vif.s_wr_ptr_soft[array_index]) begin
+	       this.uart_checker_vif.s_rd_ptr_soft[array_index] = this.uart_checker_vif.s_rd_ptr_soft[array_index] + 1; // Inc	       
 	    end
 	    else begin
 	       $display("UART - Error : Buffer Read pointer soft > Buffer Write pointer soft");
 	       
 	    end
-	    
-	    //#1;
-	    
-	    
-	    
+	        
 	 end
-	 
-	 
-
-	    
-        
-	 $display("UART_RX_READ END");
-	 
-
-	 
+	 	 
       end
    endtask // UART_RX_READ
+
+
+
+   // == ADD ALIAS in Associative Array ==
+   function void UART_TB_ADD_ALIAS(string ALIAS, int alias_index);
+      this.uart_checker_vif.uart_checker_alias[ALIAS] = alias_index;      
+   endfunction // UART_TB_ADD_ALIAS
    
-      
-  
+   // ====================================
+   
+         
 endclass // tb_uart_class

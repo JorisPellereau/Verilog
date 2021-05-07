@@ -16,7 +16,7 @@
 `define C_TB_CLK_PERIOD      2000
 
 // TESTBENCH SEQUENCER Configuration
-`define C_CMD_ARGS_NB 5
+//`define C_CMD_ARGS_NB 5 // TBD a changer
 
 // SET ALIAS Configuration
 `define C_SET_ALIAS_NB 5
@@ -34,5 +34,6 @@
 
 
 // UART CHECKER Configuration
-`define C_NB_UART_CHECKER 2
-`define C_UART_CHECKER_INTERFACE tb_top.uart_checker_if
+`define C_NB_UART_CHECKER         3
+`define C_UART_DATA_WIDTH         8
+`define C_UART_BUFFER_ADDR_WIDTH  8

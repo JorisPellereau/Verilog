@@ -14,11 +14,11 @@ package fli;
 endpackage // fli
 
 `include "/home/jorisp/GitHub/Verilog/lib_testbench/tb_modules_custom_class.sv"
-`include "/home/jorisp/GitHub/Verilog/lib_tb_uart/uart_checker_wrapper.sv"
 
+
+`define ARGS_NB 5 
+ 
 class tb_class #(
-		 parameter ARGS_NB   = 5,
-		 
 		 // SET INJECTOR PARAMETERS
 		 parameter SET_SIZE  = 5,
 		 parameter SET_WIDTH = 32,
@@ -30,20 +30,15 @@ class tb_class #(
 		 
 		 // CHECK LEVEL PARAMETER
 		 parameter CHECK_SIZE  = 5,
-		 parameter CHECK_WIDTH = 32/*,
-
-		 // UART PARAMETER
-		 parameter G_NB_UART_CHECKER = 2,
-		 parameter G_DATA_WIDTH = 8,
-		 parameter G_BUFFER_ADDR_WIDTH = 8*/	 
-      );
+		 parameter CHECK_WIDTH = 32	 
+		 );
 
 
    // == CUSTOM TESTBENCH MODULES CLASS ==
-//   extends ?????/
-   //tb_modules_custom_class #(G_NB_UART_CHECKER, G_DATA_WIDTH, G_BUFFER_ADDR_WIDTH)  tb_modules_custom_inst;   
+   tb_modules_custom_class tb_modules_custom_inst;
    // ====================================
-   
+
+
    // == VIRTUAL I/F ==
 
    // == GENERIC VIRTUAL I/F ==
@@ -53,11 +48,7 @@ class tb_class #(
    virtual check_level_intf    #(CHECK_SIZE, CHECK_WIDTH)   check_level_vif;
    // =========================
 
-   // == OPTIONNAL VIRTUAL I/F ==
-   // UART Testbench modules
-   //virtual uart_checker_intf #(G_NB_UART_CHECKER, G_DATA_WIDTH , G_BUFFER_ADDR_WIDTH) uart_checker_vif; 
-   // ===========================
-   
+ 
    // =================
 
    
@@ -66,41 +57,22 @@ class tb_class #(
    function new(virtual wait_event_intf     #(WAIT_SIZE, WAIT_WIDTH)    wait_nif, 
                 virtual set_injector_intf #(SET_SIZE, SET_WIDTH) set_nif, 
                 virtual wait_duration_intf wait_duration_nif,
-                virtual check_level_intf #(CHECK_SIZE, CHECK_WIDTH) check_level_nif/*,
-		tb_modules_custom_class #(G_NB_UART_CHECKER, G_DATA_WIDTH, G_BUFFER_ADDR_WIDTH)  tb_modules_custom_inst*/
-		//logic 	UART_MODULES_EN
-		
+                virtual check_level_intf #(CHECK_SIZE, CHECK_WIDTH) check_level_nif,		
+		tb_modules_custom_class tb_modules_custom_inst
 		);
-      
-      wait_event_vif    = wait_nif;
-      set_injector_vif  = set_nif;
-      wait_duration_vif = wait_duration_nif;
-      check_level_vif   = check_level_nif;
 
-      // Custom Modules Class
-      /*if(UART_MODULES_EN) begin
-	tb_modules_custom_inst = new(UART_MODULES_EN, uart_checker_vif);
-      end*/
       
-      
-      
-      
-	
+      this.wait_event_vif         = wait_nif;
+      this.set_injector_vif       = set_nif;
+      this.wait_duration_vif      = wait_duration_nif;
+      this.check_level_vif        = check_level_nif;
+      this.tb_modules_custom_inst = tb_modules_custom_inst;
 
-      // 
    endfunction // new
 
    // ====================================
 
 
-   // == STATICS Functions ==
-   static function void display_tb_class_infos();
-      $display("tb_class infos : test");
-      
-   endfunction // display_tb_class_infos
-   
-   // =======================
-   
 
    // INIT tb_modules_custom_class extend
    
@@ -111,9 +83,7 @@ class tb_class #(
     * Send Args to the Decoder
    */
    task tb_sequencer(
-
-        input string scn_file_path, // SCENARIO FILE PATH
-	input tb_modules_custom_class tb_modules_custom_inst // Custom tb_modules class
+        input string scn_file_path
       );
       
       begin
@@ -129,31 +99,23 @@ class tb_class #(
 
 	 // Flag from Generic Testbench Modules
 	 logic 	   cmd_exists;      
-	 string    args[ARGS_NB];
+	 string    args[`ARGS_NB];
       
-
 	 logic 	   end_test;
 	 int 	   line_status;
-      
-      
+
+	 // INIT Variables
 	 end_test    = 1'b0;
 	 line_status = 0;
 
-	 // INIT CUSTOM TESTBENCH MODULES
-	 /*if(tb_modules_custom_inst.UART_MODULES_EN == 1'b1) begin
-	    $display("UART TESTBENCH Modules Enable");
 
-	    tb_modules_custom_inst.init_tb_modules();	 
-	 end*/
-	
-	 //tb_modules_custom_inst = tb_modules_custom_inst.init_uart_class(2,8,8,uart_checker_if);
-	 
-	 //tb_modules_custom_inst.init_uart_class(2,8,8,uart_checker_if);
-	
-
+	 // Initialization of Custom TB Modules if needed
+	 this.tb_modules_custom_inst.init_tb_modules();	 
+       
 	 // INIT SET INJECTOR
 	 set_injector_init(set_injector_vif);
-	
+
+	 
       
 	 // OPEN File
 	 $display("Beginning of sequencer");
@@ -194,14 +156,12 @@ class tb_class #(
 	 
 	    // Send line to Command Decoder
 	    else begin
-	       // cmd_decoder(line, cmd_exists, args); // Command decoder off generic CMD
 
-	       // Command decoder of specific Testbench Modules
-	       /*tb_modules_custom_inst.run_seq_custom_tb_modules (
-								 line,
-								 s_cmd_custom_exists,
-								 s_cmd_custom_done
-								 );*/
+	       // Command decoder of specific Testbench Modules       
+	       this.tb_modules_custom_inst.run_seq_custom_tb_modules (line,
+								      s_cmd_custom_exists,
+								      s_cmd_custom_done
+								      );
 
 	       if(s_cmd_custom_exists == 0) begin
 		  cmd_decoder(line, cmd_exists, args); // Command decoder off generic CMD
@@ -240,7 +200,6 @@ class tb_class #(
 		       
 		       "MODELSIM_CMD" : begin
 			  extract_line_double_quote(line, line_tmp);
-			  //line_tmp = "mem load -i /home/jorisp/GitHub/VHDL_code/MAX7219/stimulis/max7219_ram_pattern_3.mem -format mti /tb_top/i_dut/tdpram_inst_0/v_ram";
 			  $display($typename(line_tmp));			  	  
 			  modelsim_cmd_exec(line_tmp);		     
 		       end
@@ -270,7 +229,7 @@ class tb_class #(
    task cmd_decoder(
       input string  line,
       output logic  o_cmd_exists,		    
-      output string args [ARGS_NB]);
+      output string args [`ARGS_NB]);
       
       begin
        
@@ -333,7 +292,7 @@ class tb_class #(
     */
    task set_injector(
      virtual set_injector_intf #(SET_SIZE, SET_WIDTH) set_injector_vif,
-     input string 		      i_args [ARGS_NB]
+     input string 		      i_args [`ARGS_NB]
    );
       begin
 
@@ -375,7 +334,7 @@ class tb_class #(
    task wait_event (
 
      virtual           wait_event_intf #(WAIT_SIZE, WAIT_WIDTH) wait_event_vif,		    
-     input string      i_args [ARGS_NB]
+     input string      i_args [`ARGS_NB]
    );
       begin
 
@@ -468,7 +427,7 @@ class tb_class #(
    
    task wait_duration (
 	virtual      wait_duration_intf wait_duration_vif, 	       
-        input string i_args [ARGS_NB]       	              		       
+        input string i_args [`ARGS_NB]       	              		       
    );
       
       begin
@@ -546,7 +505,7 @@ class tb_class #(
    
    task check_level (
         virtual check_level_intf #(CHECK_SIZE, CHECK_WIDTH) check_level_vif,
-        input string i_args [ARGS_NB]
+        input string i_args [`ARGS_NB]
    );
       begin
 
@@ -622,7 +581,7 @@ class tb_class #(
    
    task wait_event_soft (
 			virtual           wait_event_intf #(WAIT_SIZE, WAIT_WIDTH) wait_event_vif,		    
-                        input string      i_args [ARGS_NB]
+                        input string      i_args [`ARGS_NB]
    );
       begin
 
@@ -690,8 +649,8 @@ class tb_class #(
     *
     * */
    task modelsim_cmd_exec (
-			  input string      line
-      );
+			   input string line
+			   );
       begin
 
 	 int 	status;
@@ -699,8 +658,7 @@ class tb_class #(
 	 
 	 $display("Modelsim Command Exec : %s", line);
 	 status = mti_fli::mti_Cmd(line);
-	 //$display("status : %d", status);
-	 
+
       end
    endtask // modelsim_cmd_exec
    
