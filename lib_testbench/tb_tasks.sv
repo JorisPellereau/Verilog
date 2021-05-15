@@ -636,7 +636,7 @@ class tb_class #(
 	 end // for (i == 0 ; i < line_length ; i++)
 
 	 // Remove '"' in string (End of line fill with \n and ")
-         line_in_double_quote = line.substr( first_guillemet + 1, line.len() - 3);
+         line_in_double_quote = line.substr( first_guillemet + 1, line.len() - 4);
 	 $display("Line in double quote : %s", line_in_double_quote);
 	 
       end

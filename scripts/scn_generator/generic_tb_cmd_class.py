@@ -88,7 +88,7 @@ class generic_tb_cmd_class:
 
     # Print Modelsim Command
     def MODELSIM_CMD(self, modelsim_cmd):
-        line_to_print = "MODELSIM_CMD" + "(\"" + modelsim_cmd + "\")" + "\n"
+        line_to_print = "MODELSIM_CMD" + " (\"" + modelsim_cmd + "\")" + "\n"
         self.f.write(line_to_print)
 
     # Print END_TEST at the end of the test

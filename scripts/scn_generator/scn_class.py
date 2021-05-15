@@ -29,9 +29,11 @@ class scn_class:
     # Print a Custom Line in SCN
     def print_line(self, line_2_print):
         self.f.write(line_2_print)
-        
 
-    
+    # Print MODELSIM COMMAND
+    def MODELSIM_CMD(self, modelsim_cmd):
+        self.generic_tb_cmd.MODELSIM_CMD(modelsim_cmd)
+          
     # Close PY SCN file and print END_TEST
     def END_TEST(self):
         self.generic_tb_cmd.END_TEST()
