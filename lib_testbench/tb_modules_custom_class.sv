@@ -44,6 +44,9 @@ class tb_modules_custom_class;
 					   );
       begin
 	// By Default => No Custom Modules
+	 o_cmd_custom_exists = 0;
+	 o_cmd_custom_done   = 1;
+	 
 	 
       end      
    endtask // run_seq_custom_tb_modules
