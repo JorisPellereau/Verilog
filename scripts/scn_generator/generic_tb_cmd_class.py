@@ -71,6 +71,7 @@ class generic_tb_cmd_class:
              self.f.write(line_to_print)
 
     # Print CHK Commands
+    # data : int
     # test : "OK" or "ERROR"
     def CHK(self, alias, data, test):
         line_to_print = "CHK " + alias + " " + hex(data) + " " + test + "\n"
