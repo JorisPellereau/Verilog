@@ -278,7 +278,9 @@ module i2c_slave_checker (
 
 		  end
 		  else if(s_scl_f_edge == 1 && s_cnt_9 == 9) begin
-		     s_sack_done <= 1;       	  
+		     s_sack_done <= 1;     
+  		     s_en_sda <= 0;
+		     
 		  end
 	       //end
 	    end
@@ -444,10 +446,8 @@ module i2c_slave_checker (
 		 else if(s_stop_detected == 1 && s_stop_en == 1) begin
 		    s_next_state <= IDLE;		    
 		 end
-		 
-		 // Case transfer not ended	        
-		 else if(s_stop_detected == 0 && s_stop_en == 0) begin
-		    // Read Access
+
+		 else if(s_cnt_nb_data < s_nb_data - 1) begin
 		    if(s_read_or_write == 1) begin
 		       s_next_state <= WR_DATA; // Read Access request => Write Data on SDA		       
 		    end
@@ -457,16 +457,20 @@ module i2c_slave_checker (
 		       s_next_state <= RD_DATA; // Write Access request => Read Data on SDA		       
 		    end
 		 end
+		 
+		 // Case transfer not ended	        
+		 else /*if(s_stop_detected == 0 && s_stop_en == 0)*/ begin
+		    // Read Access
+		    // if(s_read_or_write == 1) begin
+		    //    s_next_state <= WR_DATA; // Read Access request => Write Data on SDA		       
+		    // end
 		    
-	   
-		
-		 
-		 //else begin // ADDR CHIP KO => IDLE
-		//    s_next_state <= IDLE;		    
-		 //end // else: !if(s_addr_chip_ok == 1)
-
-
-		 
+		    // // Write Access
+		    // else begin
+		    //    s_next_state <= RD_DATA; // Write Access request => Read Data on SDA		       
+		    // end
+		 end
+		    
 		 
 	      end // if (s_sack_done == 1)		 		 		 
 	      
