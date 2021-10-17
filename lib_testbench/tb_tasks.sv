@@ -13,7 +13,8 @@ package fli;
     import "DPI-C" function mti_Cmd(input string cmd);
 endpackage // fli
 
-`include "/home/jorisp/GitHub/Verilog/lib_testbench/tb_modules_custom_class.sv"
+//`include "/home/jorisp/GitHub/Verilog/lib_testbench/tb_modules_custom_class.sv"
+`include "/home/linux-jp/Documents/GitHub/Verilog/lib_testbench/tb_modules_custom_class.sv"
 
 
 `define ARGS_NB 5 
