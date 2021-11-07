@@ -119,9 +119,8 @@ class tb_class #(
 	 
       
 	 // OPEN File
-	 $display("Beginning of sequencer");
+	 $display("# == Beginning of Sequencer == #");
 	 scn_file = $fopen(scn_file_path, "r");
-
 
       
 	 // While END_TEST not Reach
@@ -148,7 +147,7 @@ class tb_class #(
 
 	    // End of Test detected
 	    else if( {line.getc(0), line.getc(1), line.getc(2), line.getc(3), line.getc(4), line.getc(5), line.getc(6), line.getc(7)} == "END_TEST") begin
-	       $display("End of test");
+	       $display("# == End of Test == #");
                $fclose(scn_file);
 	       end_test = 1'b1;
 	       
@@ -233,9 +232,8 @@ class tb_class #(
       output string args [`ARGS_NB]);
       
       begin
-       
-        $display("%s", line);
-	 	 
+	 
+        $display("%s", line.substr(0,line.len() - 2)); // Print line and Remove "\n" character	 	 
         $sscanf(line, "%s %s %s %s %s", args[0], args[1], args[2], args[3], args[4]);
 
 	// Check If GENERIC Command is recognized
@@ -586,6 +584,8 @@ class tb_class #(
    );
       begin
 
+	 //$timeformat(-9, 2, " ns", 20); // Time Format
+	 
 	 string 		      s_unit; // ps - ns - us - ms
 	 int s_timeout_value;
 	 int s_max_timeout_cnt;
@@ -600,12 +600,14 @@ class tb_class #(
 	 // Command Decod
 	 if(i_args[0] == "WTRS") begin  
 	    $display("Waiting for a rising edge ...");
-	    @(posedge wait_event_vif.wait_signals[s_alias_array[i_args[1]]]);	    
+	    @(posedge wait_event_vif.wait_signals[s_alias_array[i_args[1]]]);
+	    $display("WTR detected at %t", $time);
 		  
 	 end
 	 else if(i_args[0] == "WTFS") begin
 	    $display("Waiting for a falling edge ...");
-	    @(negedge wait_event_vif.wait_signals[s_alias_array[i_args[1]]]);	    
+	    @(negedge wait_event_vif.wait_signals[s_alias_array[i_args[1]]]);
+	    $display("WTF detected at %t", $time);
          end	       
          else begin
            $display("Error: Not A Wait soft Command");		  
