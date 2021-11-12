@@ -14,6 +14,14 @@ class tb_uart_class #(parameter G_NB_UART_CHECKER   = 2,
 		      parameter G_BUFFER_ADDR_WIDTH = 8
 		      );
 
+   /* ===============
+    * == VARIABLES ==
+    * ===============
+    */
+
+   string UART_ALIAS; // Alias of Current UART Testbench Module   
+   
+
    // == VIRTUAL I/F ==
    // UART Checker interface
    virtual uart_checker_intf  #(G_NB_UART_CHECKER, G_DATA_WIDTH, G_BUFFER_ADDR_WIDTH) uart_checker_vif;   
@@ -22,9 +30,11 @@ class tb_uart_class #(parameter G_NB_UART_CHECKER   = 2,
  
 
    // == Interface passed in Virtual I/F ==
-   function new(virtual uart_checker_intf #(G_NB_UART_CHECKER, G_DATA_WIDTH, G_BUFFER_ADDR_WIDTH) uart_checker_nif);
+   function new(virtual uart_checker_intf #(G_NB_UART_CHECKER, G_DATA_WIDTH, G_BUFFER_ADDR_WIDTH) uart_checker_nif, string UART_ALIAS);
 
-      this.uart_checker_vif    = uart_checker_nif; // New Virtual Interface
+      this.uart_checker_vif = uart_checker_nif; // New Virtual Interface
+      this.UART_ALIAS       = UART_ALIAS;       // UART Alias passed
+      $display("UART_ALIAS : %s", this.UART_ALIAS);      
       
    endfunction // new
    // ====================================

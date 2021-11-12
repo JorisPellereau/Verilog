@@ -109,6 +109,8 @@ class tb_class #(
 	 end_test    = 1'b0;
 	 line_status = 0;
 
+	 // Display Info on tb_modules_custom_class
+	 this.tb_modules_custom_inst.DISPLAY_CUSTOM_TB_MODULES_INFO();	 
 
 	 // Initialization of Custom TB Modules if needed
 	 this.tb_modules_custom_inst.init_tb_modules();	 

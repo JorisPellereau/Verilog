@@ -14,6 +14,25 @@
 
 class tb_modules_custom_class;
 
+
+   /* ===========
+    * == TYPES ==
+    * ===========
+    */
+   typedef int alias_list_t [string]; // Associative array of Possible Alias
+   typedef int cmd_list_t   [string]; // Associative array of Possible Command (Ex : TX_START - COLLECT_STOP etc..)
+   
+   /* ===============
+    * == VARIABLES ==
+    * ===============
+    */
+   alias_list_t alias_list;        // Alias List
+   cmd_list_t cmd_list[*];         // Dynamic Command list   
+   int 	       cmd_list_ptr   = 0; // Command List Pointer
+   int 	       alias_list_ptr = 0; // Alias List Pointer  
+   int 	       i;                  // Index
+   
+   
  
    /* =================
     * == CONSTRUCTOR ==
@@ -23,11 +42,59 @@ class tb_modules_custom_class;
 
    endfunction // new
 
+   
+   /* ===============
+    * == FUNCTIONS ==
+    * ===============
+    */
+   
+   // Add Command list of Current TB Module to Global command list
+   // Increment. Command List Pointer for dynamic array
+   function void ADD_CMD_2_CMD_LIST(cmd_list_t tb_module_cmd_list);
+      this.cmd_list[this.cmd_list_ptr] = tb_module_cmd_list; // Add commands to global list (Dynamic Array)
+      this.cmd_list_ptr += 1;                                // Inc. Command List Pointer
+   endfunction // ADD_CMD_2_CMD_LIST
 
+   // Add Alias of Current TB Module to Global Alias List
+   // Increment alias list pointer
+   function void ADD_ALIAS_2_ALIAS_LIST(string TB_MODULE_ALIAS);
+      this.alias_list[TB_MODULE_ALIAS] = this.alias_list_ptr; // Add Current TB Module Alias (string index) to Associative array - int value
+      this.alias_list_ptr += 1;                               // Inc. Pointer
+   endfunction // ADD_ALIAS_2_ALIAS_LIST
+   
+   // Add Info of Current TB Module to GLobal Info
+   function void ADD_INFO(cmd_list_t tb_module_cmd_list, string TB_MODULE_ALIAS);
+      ADD_CMD_2_CMD_LIST(tb_module_cmd_list);
+      ADD_ALIAS_2_ALIAS_LIST(TB_MODULE_ALIAS);
+   endfunction // ADD_INFO
+   
+   
+   // Display Custom TB Module Info
+   function void DISPLAY_CUSTOM_TB_MODULES_INFO();
+      $display("# ================================ #");
+      $display("tb_modules_custom_class Infos :\n");
+      $display("Commands List : ");
+      for(i = 0 ; i < this.cmd_list_ptr; i++) begin
+	 $display("cmd_list[%d] : %p", i, this.cmd_list[i]);	 
+      end
+      $display("\n");      
+      $display("Alias List : ");
+      $display("alias_list : %p", this.alias_list);	 
+      $display("# ================================ #");
+   endfunction // DISPLAY_CUSTOM_TB_MODULES_INFO
+   
+
+   
    /* ==========================================
     * == COMMON FUNCTIONS AND TASK to CHILDS  ==
     * ==========================================
     */
+
+   virtual task seq_custom_tb_modules();
+      begin
+      end      
+   endtask // seq_custom_tb_modules
+   
 
    // Initialization of Enabled Testbench Modules
    virtual task init_tb_modules(); 
@@ -85,13 +152,16 @@ class tb_modules_custom_uart #(parameter G_NB_UART_CHECKER   = 2,
    tb_uart_class_inst = null;
 
    // Constructor of the class - Infos of Used modules
-   function new (virtual uart_checker_intf #(G_NB_UART_CHECKER, G_DATA_WIDTH, G_BUFFER_ADDR_WIDTH) uart_checker_nif);
+   function new (virtual uart_checker_intf #(G_NB_UART_CHECKER, G_DATA_WIDTH, G_BUFFER_ADDR_WIDTH) uart_checker_nif, string UART_ALIAS);
 
       // CONSTRUCTOR
-      super.new();          
-
-      init_uart_class(uart_checker_nif);
-
+      super.new();      
+      
+      init_uart_class(uart_checker_nif, UART_ALIAS);          // Init Uart Testbench Module class
+      ADD_INFO(tb_uart_class_inst.UART_CMD_ARRAY, UART_ALIAS); // Add info to global Info List
+      
+      //ADD_CMD_2_CMD_LIST(tb_uart_class_inst.UART_CMD_ARRAY);  // Add List of UART Command to Global List
+      
    endfunction // new
 
 
@@ -143,7 +213,7 @@ class tb_modules_custom_uart #(parameter G_NB_UART_CHECKER   = 2,
       end                  
    endtask // run_seq_custom_tb_modules
 
-   /* Add Alias in associative array
+   /* Add Alias in associative array - TBD Obsolete
     *
     * 
     */
@@ -158,9 +228,10 @@ class tb_modules_custom_uart #(parameter G_NB_UART_CHECKER   = 2,
     */
 
    // INIT UART TESTBENCH CLASS
-   function void init_uart_class(virtual uart_checker_intf #(G_NB_UART_CHECKER, G_DATA_WIDTH, G_BUFFER_ADDR_WIDTH) uart_checker_nif);
+   function void init_uart_class(virtual uart_checker_intf #(G_NB_UART_CHECKER, G_DATA_WIDTH, G_BUFFER_ADDR_WIDTH) uart_checker_nif, 
+				 string UART_ALIAS);
   
-      this.tb_uart_class_inst  = new(uart_checker_nif);    
+      this.tb_uart_class_inst  = new(uart_checker_nif, UART_ALIAS);    
 
    endfunction // init_uart_class
    
