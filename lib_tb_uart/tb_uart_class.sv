@@ -19,7 +19,8 @@ class tb_uart_class #(parameter G_NB_UART_CHECKER   = 2,
     * ===============
     */
 
-   string UART_ALIAS; // Alias of Current UART Testbench Module   
+   string UART_COMMAND_TYPE = "UART"; // Commande Type   
+   string UART_ALIAS; // Alias of Current UART Testbench Module 
    
 
    // == VIRTUAL I/F ==
@@ -34,7 +35,7 @@ class tb_uart_class #(parameter G_NB_UART_CHECKER   = 2,
 
       this.uart_checker_vif = uart_checker_nif; // New Virtual Interface
       this.UART_ALIAS       = UART_ALIAS;       // UART Alias passed
-      $display("UART_ALIAS : %s", this.UART_ALIAS);      
+      $display("tb_uart_class : UART_ALIAS : %s", this.UART_ALIAS);      
       
    endfunction // new
    // ====================================

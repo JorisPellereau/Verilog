@@ -31,12 +31,20 @@ class tb_class #(
 		 
 		 // CHECK LEVEL PARAMETER
 		 parameter CHECK_SIZE  = 5,
-		 parameter CHECK_WIDTH = 32	 
+		 parameter CHECK_WIDTH = 32,
+
+		 // UART Modules PARAMETER
+		 parameter G_NB_UART_CHECKER        = 1,
+		 parameter G_UART_DATA_WIDTH        = 8,
+		 parameter G_UART_BUFFER_ADDR_WIDTH = 8
 		 );
 
 
    // == CUSTOM TESTBENCH MODULES CLASS ==
-   tb_modules_custom_class tb_modules_custom_inst;
+   tb_modules_custom_class #(G_NB_UART_CHECKER,
+			     G_UART_DATA_WIDTH,
+			     G_UART_BUFFER_ADDR_WIDTH
+			     ) tb_modules_custom_inst;  // Create Handle
    // ====================================
 
 
@@ -58,16 +66,17 @@ class tb_class #(
    function new(virtual wait_event_intf     #(WAIT_SIZE, WAIT_WIDTH)    wait_nif, 
                 virtual set_injector_intf #(SET_SIZE, SET_WIDTH) set_nif, 
                 virtual wait_duration_intf wait_duration_nif,
-                virtual check_level_intf #(CHECK_SIZE, CHECK_WIDTH) check_level_nif,		
-		tb_modules_custom_class tb_modules_custom_inst
+                virtual check_level_intf #(CHECK_SIZE, CHECK_WIDTH) check_level_nif/*,		
+		tb_modules_custom_class tb_modules_custom_inst*/
 		);
 
       
       this.wait_event_vif         = wait_nif;
       this.set_injector_vif       = set_nif;
       this.wait_duration_vif      = wait_duration_nif;
-      this.check_level_vif        = check_level_nif;
-      this.tb_modules_custom_inst = tb_modules_custom_inst;
+      this.check_level_vif        = check_level_nif;      
+      this.tb_modules_custom_inst = new(); // Init Object
+//tb_modules_custom_inst;
 
    endfunction // new
 
