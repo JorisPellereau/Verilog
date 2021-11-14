@@ -35,8 +35,7 @@ class tb_uart_class #(parameter G_NB_UART_CHECKER   = 2,
 
       this.uart_checker_vif = uart_checker_nif; // New Virtual Interface
       this.UART_ALIAS       = UART_ALIAS;       // UART Alias passed
-      $display("tb_uart_class : UART_ALIAS : %s", this.UART_ALIAS);      
-      
+      //this.uart_checker_vif.uart_checker_alias[ALIAS] = alias_index; // TBD a bien gerer
    endfunction // new
    // ====================================
 
@@ -213,6 +212,39 @@ class tb_uart_class #(parameter G_NB_UART_CHECKER   = 2,
       
    endtask // decod_scn_line
 
+   // Task : Selection of UART Commands
+   task sel_uart_command(input string i_uart_cmd
+			 input string i_uart_alias, 
+			 input string i_uart_cmd_args);
+      begin
+	 case(i_uart_cmd)
+        
+	   "TX_START": begin
+	      UART_TX_START (i_uart_alias,
+			     i_uart_cmd,
+			     i_uart_cmd_args		       
+			     );	     
+	   end
+	   
+	   "RX_READ" : begin
+	      UART_RX_READ (i_uart_alias,
+			    i_uart_cmd,
+			    i_uart_cmd_args
+			    );
+	   end
+	   
+	   "RX_WAIT_DATA" : begin
+	      UART_RX_WAIT_DATA (i_uart_alias,
+				 i_uart_cmd,
+				 i_uart_cmd_args
+				 );
+	   end
+	   
+
+	   default: $display("Error: wrong UART Command : %s", i_uart_cmd);
+      end
+   endtask; // sel_uart_command
+   
 
    // Task : Check if command exists and route to corerct Task
    task route_uart_command (logic 	 i_command_exist,
@@ -560,10 +592,10 @@ class tb_uart_class #(parameter G_NB_UART_CHECKER   = 2,
 	    
 	    @(posedge this.uart_checker_vif.rx_done[array_index]);
 	    if(this.uart_checker_vif.rx_data[array_index] == data_tmp[i]) begin
-	       $display("UART RX_WAIT_DATA(%x) - Expected %x => OK - %t", data_tmp[i], this.uart_checker_vif.rx_data[array_index], $time);	    
+	       $display("UART RX_WAIT_DATA(%x) - Expected %x => OK - %t", data_tmp[i], this.uart_checker_vif.rx_data[array_index],$time);
 	    end
 	    else begin
-	       $display("UART RX_WAIT_DATA(%x) - Expected %x => ERROR - %t", data_tmp[i], this.uart_checker_vif.rx_data[array_index], $time);
+	       $display("UART RX_WAIT_DATA(%x) - Expected %x => ERROR - %t", data_tmp[i], this.uart_checker_vif.rx_data[array_index],$time);
 	    end
 	    
 

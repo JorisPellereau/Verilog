@@ -18,15 +18,13 @@ class tb_modules_custom_class #(parameter G_NB_UART_CHECKER   = 2,
 				);
    
 
-
    /* ===========
     * == TYPES ==
     * ===========
     */
    typedef int alias_list_t [string]; // Associative array of Possible Alias
    typedef int cmd_list_t   [string]; // Associative array of Possible Command (Ex : TX_START - COLLECT_STOP etc..)
-   //typedef int cmd_type     [string]; // Associative array of Type of Commande (UART - DATA_COLLECTOR etc..)
-   
+ 
    /* ============
     * == STRUCT ==
     * ============
@@ -42,23 +40,12 @@ class tb_modules_custom_class #(parameter G_NB_UART_CHECKER   = 2,
     * == VARIABLES ==
     * ===============
     */
-   alias_list_t alias_list;        // Alias List - Associative Array
-   cmd_list_t cmd_list[*];         // Dynamic Command list
+
    
    tb_modules_infos_st tb_modules_infos [*]; // TB Infos - Dynamic Struct
-   int 		  tb_infos_ptr = 0;
-   
-   
-   int 	       cmd_list_ptr   = 0; // Command List Pointer
-   int 	       alias_list_ptr = 0; // Alias List Pointer  
+   int 		  tb_infos_ptr = 0;   
    int 	       i;                  // Index
-   
-   // == VIRTUAL I/F of Testbench Modules ==
-   // UART Checker interface
-   //virtual uart_checker_intf  #(G_NB_UART_CHECKER, G_DATA_WIDTH, G_BUFFER_ADDR_WIDTH) uart_checker_vif [*]; // Dynamic Array or UART I/F
-   int 	   uart_checker_vif_ptr = 0; // Virtual interface pointer   
-   // =================
-   
+      
    /* ======================================    
     * == Array of Testbench Modules Class ==
     * ======================================
@@ -69,7 +56,8 @@ class tb_modules_custom_class #(parameter G_NB_UART_CHECKER   = 2,
 		   G_BUFFER_ADDR_WIDTH
 		   )
    tb_uart_class_custom_inst [*];
-
+   
+    int 	   uart_checker_vif_ptr = 0; // Virtual interface pointer   
    
    // INIT UART TESTBENCH CLASS
    function void init_uart_custom_class(virtual uart_checker_intf #(G_NB_UART_CHECKER, 
@@ -78,7 +66,14 @@ class tb_modules_custom_class #(parameter G_NB_UART_CHECKER   = 2,
 					string UART_ALIAS);
   
       this.tb_uart_class_custom_inst[this.uart_checker_vif_ptr]  = new(uart_checker_nif, UART_ALIAS);
-      this.uart_checker_vif_ptr += 1; // Inc Pointer      
+
+      // Add Info Of current Instantiated class
+      ADD_INFO(this.tb_uart_class_custom_inst[this.uart_checker_vif_ptr].UART_COMMAND_TYPE,
+	       this.tb_uart_class_custom_inst[this.uart_checker_vif_ptr].UART_CMD_ARRAY,
+	       this.tb_uart_class_custom_inst[this.uart_checker_vif_ptr].UART_ALIAS);
+      
+      this.uart_checker_vif_ptr += 1; // Inc Pointer
+            
    endfunction // init_uart_class
   
    
@@ -98,22 +93,8 @@ class tb_modules_custom_class #(parameter G_NB_UART_CHECKER   = 2,
     * == FUNCTIONS ==
     * ===============
     */
-
-   
-   // Add Command list of Current TB Module to Global command list
-   // Increment. Command List Pointer for dynamic array
-   function void ADD_CMD_2_CMD_LIST(cmd_list_t tb_module_cmd_list);      
-      this.cmd_list[this.cmd_list_ptr] = tb_module_cmd_list; // Add commands to global list (Dynamic Array)
-      this.cmd_list_ptr += 1;                                // Inc. Command List Pointer
-   endfunction // ADD_CMD_2_CMD_LIST
-
-   // Add Alias of Current TB Module to Global Alias List
-   // Increment alias list pointer
-   function void ADD_ALIAS_2_ALIAS_LIST(string TB_MODULE_ALIAS);
-      this.alias_list[TB_MODULE_ALIAS] = this.alias_list_ptr; // Add Current TB Module Alias (string index) to Associative array - int value
-      this.alias_list_ptr += 1;                               // Inc. Pointer
-   endfunction // ADD_ALIAS_2_ALIAS_LIST
-   
+ 
+  
    // Add Info of Current TB Module to GLobal Info
    function void ADD_INFO(string cmd_type, cmd_list_t tb_module_cmd_list, string TB_MODULE_ALIAS);
             
@@ -176,72 +157,68 @@ class tb_modules_custom_class #(parameter G_NB_UART_CHECKER   = 2,
       end
 
       $display("this.tb_modules_infos : %p\n\n", this.tb_modules_infos);
-      
-      ADD_CMD_2_CMD_LIST(tb_module_cmd_list);
-      ADD_ALIAS_2_ALIAS_LIST(TB_MODULE_ALIAS);
+            
    endfunction // ADD_INFO
    
    
    // Display Custom TB Module Info
    function void DISPLAY_CUSTOM_TB_MODULES_INFO();
-      $display("# ================================ #");
-      
-      $display("tb_modules_custom_class Infos :\n");
-      $display("Commands List : ");
-      for(i = 0 ; i < this.cmd_list_ptr; i++) begin
-	 $display("cmd_list[%d] : %p", i, this.cmd_list[i]);	 
-      end
-      
-      $display("\n");      
-      $display("Alias List : ");
-      $display("alias_list : %p", this.alias_list);
-      
-      $display("\n");      
+      $display("# ================================ #");           
       $display("TB Infos : ");
-      //for(i = 0; i < this.tb_infos_ptr ; i++) begin
-      $display("tb_modules_infos: %p", i, this.tb_modules_infos);	 
-      //end	 
+      $display("tb_modules_infos: %p", this.tb_modules_infos);	 	 
       $display("# ================================ #");
    endfunction // DISPLAY_CUSTOM_TB_MODULES_INFO
 
 
-   // Add extend class to an array
-   // function void INIT_TB_MODULES_CUSTOM_UART(virtual uart_checker_intf #(G_NB_UART_CHECKER_PER_INST[inst_nb], 
-   // 										      G_DATA_WIDTH[inst_nb], 
-   // 										      G_BUFFER_ADDR_WIDTH[inst_nb]) uart_checker_nif, */
-   // 					     string UART_ALIAS [*]);
-
-   //    for(i = 0 ; i < G_NB_UART_CHECKER_INST; i++) begin
-   // 	 this.tb_uart_class_inst[this.uart_checker_list_ptr] = new(uart_checker_nif, UART_ALIAS[i]);
-   // 	 this.uart_checker_list_ptr += 1;
-   //    end
-   // endfunction // INIT_TB_MODULES_CUSTOM_UART
-   
-   // tb_modules_custom_uart
-
+  
    
    /* ==========================================
     * == COMMON FUNCTIONS AND TASK to CHILDS  ==
     * ==========================================
     */
 
-   // Get Line from scenario and :
-   // Check if Command exists - Display error if it doesnt and abort
-   // Check if Alias exixts    - Display error if it doesnt and abort
-   // If ok get argument and send if to correct TB Module Tasks
+   // Sequencer of scenario command lines
    virtual task seq_custom_tb_modules(input string line);
       begin
+	 string cmd_type;  // Type of the command (UART, DATA_COLLECTOR etc..)
+	 string alias_str; // Alias of the Type of Command
+	 string cmd;	   // Command of the type of command
+	 string cmd_args;  // Args of the command
+	 logic 	check_ok;	 
+	 
+	 decod_scn_line(line, cmd_type, alias_str, cmd, cmd_args); // Decode Scenarii lines
+	 check_commands(cmd_type, alias_str, check_ok);            // Check if Command type exists and if Alias exists
+
+	 if(check_ok == 1) begin
+	    routed_commands(cmd_type, alias_str, cmd, cmd_args);   // Route commands to corect Testbench Modules
+	 end	 	 
+      end
+   endtask // seq_custom_tb_modules
+   
+
+   // Get Line from scenario and :
+   // Extract from line : cmd_type - alias and args
+   virtual task decod_scn_line(input string line,
+			       
+			       output string o_cmd_type,
+			       output string o_alias_str,
+			       output string o_cmd,
+			       output string o_cmd_args);
+      begin
 	 // == INTERNAL Variables ==
-	 int tb_module_cmd_len    = 0; // Len of tb_module_cmd
 	 int line_length          = 0; // Length of the line
 	 int pos_0                = 0; // Position of [ character
 	 int pos_1                = 0; // Position of ] character
-	 int first_space_position = 0; // First position of " " character
+	 int pos_parenthesis_0    = 0; // Position of ( character
+	 int pos_parenthesis_1    = 0; // Position of ) character
+	 //int first_space_position = 0; // First position of " " character
 	 
 	 int i; // Loop Index
 
-	 string cmd_type;  // Command between beginning of line and fier "["	 
+	 string cmd_type;  // Command between beginning of line and "["	 
 	 string alias_str; // Extracted Alias of the line
+	 string cmd;       // Command of the commande type	 
+	 string cmd_args;  // Extract char. between "(" and ")"	 
 	 // ========================
 
 	 // Get the length of the line
@@ -249,14 +226,28 @@ class tb_modules_custom_class #(parameter G_NB_UART_CHECKER   = 2,
 
 	 // Get info. of the line
 	 // Get The type of Command (UART - DATA_COLLECTOR - etc..)
-	 for(i = 0; i < line_length; i++) begin	    
+	 for(i = 0; i < line_length; i++) begin
+
+	    // Get "[" position
 	    if(line.getc(i) == "[") begin
 	       pos_0 = i;		  
 	    end
-	       
+
+	    // Get "]" position
 	    if(line.getc(i) == "]") begin
 	       pos_1 = i;		  
 	    end
+
+	    // Get "(" position
+	    if(line.getc(i) == "(") begin
+	       pos_parenthesis_0 = i;	       
+	    end
+
+	    // Get ")" position
+	    if(line.getc(i) == ")") begin
+	       pos_parenthesis_1 = i;	       
+	    end
+	    
 	 end
 
 	 // Get Commande Type
@@ -264,28 +255,99 @@ class tb_modules_custom_class #(parameter G_NB_UART_CHECKER   = 2,
 	 
 	 // Get Alias
 	 alias_str = line.substr(pos_0 + 1, pos_1 - 1); // RM "[" and "]"
+
+	 // Get First space position
+	 first_space_position = pos_1 + 1;
+	 cmd = line.substr(first_space_position, pos_parenthesis_0 - 1);	 
+
+	 // Get Commands Args
+	 cmd_args = line.substr(pos_parenthesis_0 + 1 , pos_parenthesis_1 - 1); // RM "(" and ")"
+
 	 
-
-	 // Check if command exists
-	 // if(line.substr(0, tb_module_cmd_len - 1) == tb_module_cmd) begin
-
-	 //    // Get alias between [] and check if alias exist	    
-	 //    for(i = 0; i < line_length; i++) begin
-	 //       if(line.getc(i) == "[") begin
-	 // 	  pos_0 = i;		  
-	 //       end
-	       
-	 //       if(line.getc(i) == "]") begin
-	 // 	  pos_1 = i;		  
-	 //       end	       
-	 //    end
-
-	    
-
-	    // Get First space position
-	    first_space_position = pos_1 + 1;
+	 $display("DEBUG - cmd_type : %s - alias_str : %s - cmd : %s - cmd_args : %s", cmd_type, alias_str, cmd, cmd_args);
+	 
+	 // Output affectation
+	 o_cmd_type  = cmd_type;
+	 o_alias_str = alias_str;
+	 o_cmd       = cmd;	 
+	 o_cmd_args  = cmd_args;
+	 
       end      
    endtask // seq_custom_tb_modules
+
+   // Check if extracted commands exists
+   virtual task check_commands(input string i_cmd_type,
+			       input string i_alias_str,
+			       output logic o_check_ok);
+      begin
+	 // Internal variables
+	 int i                   = 0; // Loop index
+	 logic i_cmd_type_exists = 0; // Command Type exists flag
+	 int   cmd_type_index    = 0; // Index of command type if exists	 
+	 
+	 // By default check is not ok
+	 o_check_ok   = 0;	 
+
+	 // == Check if i_cmd_type is in tb_modules_info ==
+	 for(i = 0; i < this.tb_infos_ptr; i++) begin
+	    if(this.tb_modules_infos[i].cmd_type == i_cmd_type) begin
+	       i_cmd_type_exists = 1; // Set flag to 1
+	       cmd_type_index    = i; // Get index
+	    end
+	 end
+	 // ===============================================
+	 
+	 if(i_cmd_type_exists == 0) begin
+	    $display("Error: cmd_type %s does not exists !", i_cmd_type);
+	    o_check_ok = 0;
+	 end
+	 // Case i_cmd_type exists
+	 else begin
+	    // Check if Alias exists in cmd_type
+	    if(this.tb_modules_infos[cmd_type_index].alias_list.exists(i_alias_str)) begin
+	       o_check_ok = 1; // Commad type and Alias Exists
+	    end
+	    else begin
+	       $display("Error: Alias %s does not exists !", i_alias_str);	       
+	    end
+	 end // else: !if(i_cmd_type_exists == 0)
+
+	 $display("DEBUG - check_commands : o_check_ok : %d", o_check_ok);
+	 
+      end
+   endtask; // check_commands
+
+
+   // Routed Commands
+   // Run route_commands method of selected testbench modules
+   virtual task routed_commands(input string i_cmd_type,
+				input string i_alias_str,
+				input string i_cmd,
+				input string i_cmd_args);
+      begin
+
+	 // Internal variables
+	 int i = 0; // Loop index
+
+	 // Loop on all possible commands
+	 for (i = 0; i < this.tb_infos_ptr ; i++) begin
+	    
+	    // Check if Commands are "UART" Types
+	    if(this.tb_modules_infos[i].i_cmd_type == "UART" and i_cmd_type == "UART") begin
+	       this.tb_uart_class_custom_inst[this.tb_modules_infos[i].alias_list[i_alias_str]].sel_uart_command(i_cmd, 
+														 i_alias_str, 
+														 i_cmd_args);	       
+	    end
+
+	    // Check if Commands are "DATA_COLLECTOR" Types
+	    else if(this.tb_modules_infos[i].i_cmd_type == "DATA_COLLECTOR") begin
+	       // TBD !!!
+	    end
+	 end
+	 
+      end
+   endtask; // routed_commands
+   
    
 
    // Initialization of Enabled Testbench Modules

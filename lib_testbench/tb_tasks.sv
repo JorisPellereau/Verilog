@@ -168,12 +168,17 @@ class tb_class #(
 	    // Send line to Command Decoder
 	    else begin
 
-	       // Command decoder of specific Testbench Modules       
-	       this.tb_modules_custom_inst.run_seq_custom_tb_modules (line,
-								      s_cmd_custom_exists,
-								      s_cmd_custom_done
-								      );
-
+	       
+	       this.tb_modules_custom_inst.seq_custom_tb_modules(line);
+	       
+	       // Command decoder of specific Testbench Modules
+	       // Old Seq
+	       // this.tb_modules_custom_inst.run_seq_custom_tb_modules (line,
+	       // 							      s_cmd_custom_exists,
+	       // 							      s_cmd_custom_done
+	       // 							      );
+	       s_cmd_custom_exists == 0; // Forced for the moment
+	       
 	       if(s_cmd_custom_exists == 0) begin
 		  cmd_decoder(line, cmd_exists, args); // Command decoder off generic CMD
 		  
