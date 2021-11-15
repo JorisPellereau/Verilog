@@ -20,8 +20,8 @@ class tb_uart_class #(parameter G_NB_UART_CHECKER   = 2,
     */
 
    string UART_COMMAND_TYPE = "UART"; // Commande Type   
-   string UART_ALIAS; // Alias of Current UART Testbench Module 
-   
+   string UART_ALIAS;                 // Alias of Current UART Testbench Module 
+ 
 
    // == VIRTUAL I/F ==
    // UART Checker interface
@@ -33,9 +33,10 @@ class tb_uart_class #(parameter G_NB_UART_CHECKER   = 2,
    // == Interface passed in Virtual I/F ==
    function new(virtual uart_checker_intf #(G_NB_UART_CHECKER, G_DATA_WIDTH, G_BUFFER_ADDR_WIDTH) uart_checker_nif, string UART_ALIAS);
 
-      this.uart_checker_vif = uart_checker_nif; // New Virtual Interface
-      this.UART_ALIAS       = UART_ALIAS;       // UART Alias passed
-      //this.uart_checker_vif.uart_checker_alias[ALIAS] = alias_index; // TBD a bien gerer
+      this.uart_checker_vif = uart_checker_nif;                 // New Virtual Interface
+      this.UART_ALIAS       = UART_ALIAS;                       // UART Alias passed
+      this.uart_checker_vif.uart_checker_alias[UART_ALIAS] = 0; // Only 1 Alias for 1 tb_uart_class
+      INIT_UART_CHECKER();                                      // Init. UART Checker
    endfunction // new
    // ====================================
 
@@ -63,157 +64,157 @@ class tb_uart_class #(parameter G_NB_UART_CHECKER   = 2,
    
 
 
-   // UART Testbench Command sequencer
-   task uart_tb_sequencer(input string line,
-			  output logic o_command_exist,
-			  output logic o_route_uart_done
-			  );
-      begin
+   // // UART Testbench Command sequencer
+   // task uart_tb_sequencer(input string line,
+   // 			  output logic o_command_exist,
+   // 			  output logic o_route_uart_done
+   // 			  );
+   //    begin
 
-	 // Internal signals
-	 logic s_command_exist; // Command UART exists flag
-	 logic s_route_uart_done;
+   // 	 // Internal signals
+   // 	 logic s_command_exist; // Command UART exists flag
+   // 	 logic s_route_uart_done;
 	 
-	 string s_uart_alias;
-	 string s_uart_cmd;
-	 string s_uart_cmd_args;
+   // 	 string s_uart_alias;
+   // 	 string s_uart_cmd;
+   // 	 string s_uart_cmd_args;
 	 
 
 
-	 // Decod Scenario Line
-	 decod_scn_line (line,
-			 this.UART_CMD_ARRAY,
-			 s_command_exist,
-			 s_uart_alias,
-			 s_uart_cmd,
-			 s_uart_cmd_args
-			 );
+   // 	 // Decod Scenario Line
+   // 	 decod_scn_line (line,
+   // 			 this.UART_CMD_ARRAY,
+   // 			 s_command_exist,
+   // 			 s_uart_alias,
+   // 			 s_uart_cmd,
+   // 			 s_uart_cmd_args
+   // 			 );
 
-	 // Route UART Command - Launch uart command if exists
-	 route_uart_command (s_command_exist,
-			     s_uart_alias,
-			     s_uart_cmd,
-			     s_uart_cmd_args,
-			     s_route_uart_done			   
-			     );
+   // 	 // Route UART Command - Launch uart command if exists
+   // 	 route_uart_command (s_command_exist,
+   // 			     s_uart_alias,
+   // 			     s_uart_cmd,
+   // 			     s_uart_cmd_args,
+   // 			     s_route_uart_done			   
+   // 			     );
 
-	 o_command_exist   = s_command_exist;
-	 o_route_uart_done = s_route_uart_done;
+   // 	 o_command_exist   = s_command_exist;
+   // 	 o_route_uart_done = s_route_uart_done;
 	 
-      end
-   endtask // uart_tb_sequencer
+   //    end
+   // endtask // uart_tb_sequencer
    
    
 
-   // Get line from scenarios - Check if alias exist - Check if command exsits and return args of command
-   task decod_scn_line (input string  line,
-			input int     uart_checker_cmd_list [string],
-			output logic  o_command_exist,
-			output string o_uart_alias,
-			output string o_uart_cmd,
-			output string o_uart_cmd_args
-		       );
-      begin
+   // // Get line from scenarios - Check if alias exist - Check if command exsits and return args of command
+   // task decod_scn_line (input string  line,
+   // 			input int     uart_checker_cmd_list [string],
+   // 			output logic  o_command_exist,
+   // 			output string o_uart_alias,
+   // 			output string o_uart_cmd,
+   // 			output string o_uart_cmd_args
+   // 		       );
+   //    begin
 
-	 // Internal variables
-	 string alias_tmp;
-	 string uart_cmd_tmp;
-	 string uart_cmd_alias;
-	 string uart_cmd;
-	 string uart_data;
-	 string uart_cmd_args;
+   // 	 // Internal variables
+   // 	 string alias_tmp;
+   // 	 string uart_cmd_tmp;
+   // 	 string uart_cmd_alias;
+   // 	 string uart_cmd;
+   // 	 string uart_data;
+   // 	 string uart_cmd_args;
 
-	 int 	space_position = 0; // Position of " " character
+   // 	 int 	space_position = 0; // Position of " " character
 	 
 	 	 	 
-	 int 	line_length;
-	 int 	i; // Index for loop
+   // 	 int 	line_length;
+   // 	 int 	i; // Index for loop
 
-	 int 	pos_0 = 0;
-	 int 	pos_1 = 0;
+   // 	 int 	pos_0 = 0;
+   // 	 int 	pos_1 = 0;
 
-	 o_command_exist = 0;
+   // 	 o_command_exist = 0;
 	 	 
-	 line_length = line.len();
+   // 	 line_length = line.len();
 	 
 	 
-	 // Check if Command exists
-	 if(line.substr(0, 3) == "UART") begin
+   // 	 // Check if Command exists
+   // 	 if(line.substr(0, 3) == "UART") begin
 
-	    // Get alias between [] and check if alias exist	    
-	    for(i = 0; i < line_length; i++) begin
-	       if(line.getc(i) == "[") begin
-		  pos_0 = i;		  
-	       end
+   // 	    // Get alias between [] and check if alias exist	    
+   // 	    for(i = 0; i < line_length; i++) begin
+   // 	       if(line.getc(i) == "[") begin
+   // 		  pos_0 = i;		  
+   // 	       end
 	       
-	       if(line.getc(i) == "]") begin
-		  pos_1 = i;		  
-	       end	       
-	    end
+   // 	       if(line.getc(i) == "]") begin
+   // 		  pos_1 = i;		  
+   // 	       end	       
+   // 	    end
 
-	    uart_cmd_alias = line.substr(0, pos_1);
+   // 	    uart_cmd_alias = line.substr(0, pos_1);
 	    
-	    space_position = pos_1 + 1;
-	    uart_cmd_tmp = line.substr(space_position + 1, line.len() - 1);
+   // 	    space_position = pos_1 + 1;
+   // 	    uart_cmd_tmp = line.substr(space_position + 1, line.len() - 1);
 	    	    	    
-	    alias_tmp = line.substr(pos_0 + 1, pos_1 - 1); // RM "[" and "]"	    
+   // 	    alias_tmp = line.substr(pos_0 + 1, pos_1 - 1); // RM "[" and "]"	    
 
 	    
-	    // Check if alias exist
-	    if(this.uart_checker_vif.uart_checker_alias.exists(alias_tmp)) begin
+   // 	    // Check if alias exist
+   // 	    if(this.uart_checker_vif.uart_checker_alias.exists(alias_tmp)) begin
 
-	       // Check if command exist
+   // 	       // Check if command exist
 
-	       // Position of ()
-	       for(i = 0; i < uart_cmd_tmp.len() ; i ++) begin
-		  if(uart_cmd_tmp.getc(i) == "(") begin
-		     pos_0 = i;		    
-		  end
+   // 	       // Position of ()
+   // 	       for(i = 0; i < uart_cmd_tmp.len() ; i ++) begin
+   // 		  if(uart_cmd_tmp.getc(i) == "(") begin
+   // 		     pos_0 = i;		    
+   // 		  end
 
-		  if(uart_cmd_tmp.getc(i) == ")") begin
-		     pos_1 = i;		     
-		  end		  
-	       end
+   // 		  if(uart_cmd_tmp.getc(i) == ")") begin
+   // 		     pos_1 = i;		     
+   // 		  end		  
+   // 	       end
 
-	       uart_cmd = uart_cmd_tmp.substr(0, pos_0 - 1); // Get UART command
+   // 	       uart_cmd = uart_cmd_tmp.substr(0, pos_0 - 1); // Get UART command
 	       
-	       if(uart_checker_cmd_list.exists(uart_cmd)) begin
+   // 	       if(uart_checker_cmd_list.exists(uart_cmd)) begin
 
-		  // Get Args inside () if exist
-		  uart_cmd_args = uart_cmd_tmp.substr(pos_0 + 1, pos_1 - 1);// RM "(" and ")"
+   // 		  // Get Args inside () if exist
+   // 		  uart_cmd_args = uart_cmd_tmp.substr(pos_0 + 1, pos_1 - 1);// RM "(" and ")"
 
-		  // Generation of outputs		  
-		  o_command_exist = 1; // End of test => Command exist
-		  o_uart_alias    = alias_tmp;
-		  o_uart_cmd      = uart_cmd;
-		  o_uart_cmd_args = uart_cmd_args;
+   // 		  // Generation of outputs		  
+   // 		  o_command_exist = 1; // End of test => Command exist
+   // 		  o_uart_alias    = alias_tmp;
+   // 		  o_uart_cmd      = uart_cmd;
+   // 		  o_uart_cmd_args = uart_cmd_args;
 		  
 		  
-	       end
-	       else begin		  
-		  o_command_exist = 0;  // End of test => Command don't exist
-	       end
+   // 	       end
+   // 	       else begin		  
+   // 		  o_command_exist = 0;  // End of test => Command don't exist
+   // 	       end
 	       
 	       
-	    end
-	    else begin
-	       $display("UART Testbench Alias Doesn't Exist !");
-	       o_command_exist = 0;  // End of test => Command don't exist
-	    end
+   // 	    end
+   // 	    else begin
+   // 	       $display("UART Testbench Alias Doesn't Exist !");
+   // 	       o_command_exist = 0;  // End of test => Command don't exist
+   // 	    end
 	    
 	    
-	 end
-	 else begin
+   // 	 end
+   // 	 else begin
 
-	    o_command_exist = 0;  // End of test => Command don't exist	    
-	 end // else: !if(line.substr(0, 3) == "UART")
-      end
+   // 	    o_command_exist = 0;  // End of test => Command don't exist	    
+   // 	 end // else: !if(line.substr(0, 3) == "UART")
+   //    end
  
       
-   endtask // decod_scn_line
+   // endtask // decod_scn_line
 
    // Task : Selection of UART Commands
-   task sel_uart_command(input string i_uart_cmd
+   task sel_uart_command(input string i_uart_cmd,
 			 input string i_uart_alias, 
 			 input string i_uart_cmd_args);
       begin
@@ -221,80 +222,75 @@ class tb_uart_class #(parameter G_NB_UART_CHECKER   = 2,
         
 	   "TX_START": begin
 	      UART_TX_START (i_uart_alias,
-			     i_uart_cmd,
 			     i_uart_cmd_args		       
 			     );	     
 	   end
 	   
 	   "RX_READ" : begin
 	      UART_RX_READ (i_uart_alias,
-			    i_uart_cmd,
 			    i_uart_cmd_args
 			    );
 	   end
 	   
 	   "RX_WAIT_DATA" : begin
 	      UART_RX_WAIT_DATA (i_uart_alias,
-				 i_uart_cmd,
 				 i_uart_cmd_args
 				 );
 	   end
 	   
 
-	   default: $display("Error: wrong UART Command : %s", i_uart_cmd);
+	   default: $display("Error: wrong UART Command : %s - len(%s) : %d", i_uart_cmd, i_uart_cmd, i_uart_cmd.len());
+	 endcase // case (i_uart_cmd)	 
       end
    endtask; // sel_uart_command
    
 
-   // Task : Check if command exists and route to corerct Task
-   task route_uart_command (logic 	 i_command_exist,
-			    input string i_uart_alias,
-			    input string i_uart_cmd,
-			    input string i_uart_cmd_args,
-			    output logic o_route_uart_done
-			    );
-      begin
+   // // Task : Check if command exists and route to corerct Task
+   // task route_uart_command (logic 	 i_command_exist,
+   // 			    input string i_uart_alias,
+   // 			    input string i_uart_cmd,
+   // 			    input string i_uart_cmd_args,
+   // 			    output logic o_route_uart_done
+   // 			    );
+   //    begin
 
-	 o_route_uart_done = 0;
+   // 	 o_route_uart_done = 0;
 	 
-	 if(i_command_exist) begin
-	    case(i_uart_cmd)
+   // 	 if(i_command_exist) begin
+   // 	    case(i_uart_cmd)
         
-	      "TX_START": begin
-		 UART_TX_START (i_uart_alias,
-				i_uart_cmd,
-				i_uart_cmd_args		       
-				);	     
-	      end
+   // 	      "TX_START": begin
+   // 		 UART_TX_START (i_uart_alias,
+   // 				i_uart_cmd_args		       
+   // 				);	     
+   // 	      end
 	      
-	      "RX_READ" : begin
-		 UART_RX_READ (i_uart_alias,
-			       i_uart_cmd,
-			       i_uart_cmd_args
-			       );
-	      end
+   // 	      "RX_READ" : begin
+   // 		 UART_RX_READ (i_uart_alias,
+   // 			       i_uart_cmd_args
+   // 			       );
+   // 	      end
 
-	      "RX_WAIT_DATA" : begin
-		 UART_RX_WAIT_DATA (i_uart_alias,
-				    i_uart_cmd,
-				    i_uart_cmd_args
-				    );
-	      end
+   // 	      "RX_WAIT_DATA" : begin
+   // 		 UART_RX_WAIT_DATA (i_uart_alias,
+   // 				    i_uart_cmd_args
+   // 				    );
+   // 	      end
 	      
 
-	      default: $display("Error: wrong UART Command : %s", i_uart_cmd);
+   // 	      default: $display("Error: wrong UART Command : %s", i_uart_cmd);
 	      
-	    endcase // case (i_uart_cmd)
+   // 	    endcase // case (i_uart_cmd)
 	    
-	    o_route_uart_done = 1;
+   // 	    o_route_uart_done = 1;
 	      
-	 end
-	 else begin
-	    o_route_uart_done = 1;
-	 end // else: !if(i_command_exist)
+   // 	 end
+   // 	 else begin
+   // 	    o_route_uart_done = 1;
+   // 	 end // else: !if(i_command_exist)
 	 
-      end
-   endtask // route_uart_command
+   //    end
+   // endtask // route_uart_command
    
 
 
@@ -304,12 +300,12 @@ class tb_uart_class #(parameter G_NB_UART_CHECKER   = 2,
 
 	 int i;
 	 for(i = 0 ; i < this.uart_checker_vif.G_NB_UART_CHECKER; i++) begin
-	    this.uart_checker_vif.start_tx[i] = 0;
-	    this.uart_checker_vif.tx_data[i] = 8'hAA; // TBD
-	    this.uart_checker_vif.s_rd_ptr_soft[i] = 0;   
+	    this.uart_checker_vif.start_tx[i]      = 0;
+	    this.uart_checker_vif.tx_data[i]       = 0;
+	    this.uart_checker_vif.s_rd_ptr_soft[i] = 0;
 	 end
 
-	 $display("Initialization of UART Testbench Module Done.");
+	 $display("Infos Initialization of UART Testbench %s  Done.", this.UART_ALIAS);
 	 	 
       end
    endtask // INIT_UART_CHECKER
@@ -320,7 +316,6 @@ class tb_uart_class #(parameter G_NB_UART_CHECKER   = 2,
     * 
     */
    task UART_TX_START (input string uart_alias,
-		       input string uart_cmd,
 		       input string uart_cmd_args		       
 		       );
       begin
@@ -422,7 +417,6 @@ class tb_uart_class #(parameter G_NB_UART_CHECKER   = 2,
     */
 
    task UART_RX_READ(input string uart_alias,
-		     input string uart_cmd,
 		     input string uart_cmd_args);
       begin
 
@@ -518,7 +512,6 @@ class tb_uart_class #(parameter G_NB_UART_CHECKER   = 2,
     */
 
    task UART_RX_WAIT_DATA(input string uart_alias,
-			  input string uart_cmd,
 			  input string uart_cmd_args);
       begin
 
@@ -606,13 +599,13 @@ class tb_uart_class #(parameter G_NB_UART_CHECKER   = 2,
    
 
 
-
-   // == ADD ALIAS in Associative Array ==
-   function void UART_TB_ADD_ALIAS(string ALIAS, int alias_index);
-      this.uart_checker_vif.uart_checker_alias[ALIAS] = alias_index;      
-   endfunction // UART_TB_ADD_ALIAS
+   // // TBD Obsolete
+   // // == ADD ALIAS in Associative Array ==
+   // function void UART_TB_ADD_ALIAS(string ALIAS, int alias_index);
+   //    this.uart_checker_vif.uart_checker_alias[ALIAS] = alias_index;      
+   // endfunction // UART_TB_ADD_ALIAS
    
-   // ====================================
+   // // ====================================
    
          
 endclass // tb_uart_class

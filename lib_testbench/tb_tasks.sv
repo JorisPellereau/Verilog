@@ -30,8 +30,8 @@ class tb_class #(
 		 parameter CLK_PERIOD = 1000, // Unity : ps
 		 
 		 // CHECK LEVEL PARAMETER
-		 parameter CHECK_SIZE  = 5,
-		 parameter CHECK_WIDTH = 32,
+		 parameter G_CHECK_SIZE  = 5,
+		 parameter G_CHECK_WIDTH = 32,
 
 		 // UART Modules PARAMETER
 		 parameter G_NB_UART_CHECKER        = 1,
@@ -41,7 +41,9 @@ class tb_class #(
 
 
    // == CUSTOM TESTBENCH MODULES CLASS ==
-   tb_modules_custom_class #(G_NB_UART_CHECKER,
+   tb_modules_custom_class #(G_CHECK_SIZE,
+		             G_CHECK_WIDTH,
+			     G_NB_UART_CHECKER,
 			     G_UART_DATA_WIDTH,
 			     G_UART_BUFFER_ADDR_WIDTH
 			     ) tb_modules_custom_inst;  // Create Handle
@@ -54,7 +56,7 @@ class tb_class #(
    virtual wait_event_intf     #(WAIT_SIZE, WAIT_WIDTH)     wait_event_vif;
    virtual set_injector_intf   #(SET_SIZE, SET_WIDTH)       set_injector_vif;
    virtual wait_duration_intf  wait_duration_vif;
-   virtual check_level_intf    #(CHECK_SIZE, CHECK_WIDTH)   check_level_vif;
+   virtual check_level_intf    #(G_CHECK_SIZE, G_CHECK_WIDTH)   check_level_vif;
    // =========================
 
  
@@ -66,7 +68,7 @@ class tb_class #(
    function new(virtual wait_event_intf     #(WAIT_SIZE, WAIT_WIDTH)    wait_nif, 
                 virtual set_injector_intf #(SET_SIZE, SET_WIDTH) set_nif, 
                 virtual wait_duration_intf wait_duration_nif,
-                virtual check_level_intf #(CHECK_SIZE, CHECK_WIDTH) check_level_nif/*,		
+                virtual check_level_intf #(G_CHECK_SIZE, G_CHECK_WIDTH) check_level_nif/*,		
 		tb_modules_custom_class tb_modules_custom_inst*/
 		);
 
@@ -75,7 +77,7 @@ class tb_class #(
       this.set_injector_vif       = set_nif;
       this.wait_duration_vif      = wait_duration_nif;
       this.check_level_vif        = check_level_nif;      
-      this.tb_modules_custom_inst = new(); // Init Object
+      this.tb_modules_custom_inst = new(check_level_nif); // Init Object
 //tb_modules_custom_inst;
 
    endfunction // new
@@ -177,7 +179,7 @@ class tb_class #(
 	       // 							      s_cmd_custom_exists,
 	       // 							      s_cmd_custom_done
 	       // 							      );
-	       s_cmd_custom_exists == 0; // Forced for the moment
+	       s_cmd_custom_exists = 0; // Forced for the moment
 	       
 	       if(s_cmd_custom_exists == 0) begin
 		  cmd_decoder(line, cmd_exists, args); // Command decoder off generic CMD
@@ -519,19 +521,19 @@ class tb_class #(
 
    
    task check_level (
-        virtual check_level_intf #(CHECK_SIZE, CHECK_WIDTH) check_level_vif,
+        virtual check_level_intf #(G_CHECK_SIZE, G_CHECK_WIDTH) check_level_vif,
         input string i_args [`ARGS_NB]
    );
       begin
 
 	 // ASSOCIATIVE ARRAY
          int 	 s_alias_array [string];
-         reg [CHECK_WIDTH - 1 : 0]     s_check_value;
+         reg [G_CHECK_WIDTH - 1 : 0]     s_check_value;
          string 		       s_str;     
          int 			       s_str_len;
 	 
 	 // INIT ALIAS
-	 for (int i = 0; i < CHECK_SIZE; i++) begin
+	 for (int i = 0; i < G_CHECK_SIZE; i++) begin
 	   s_alias_array[check_level_vif.check_alias[i]] = i;
          end
 

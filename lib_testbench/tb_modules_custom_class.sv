@@ -9,10 +9,16 @@
 // Status          : Unknown, Use with caution!
 
 //`include "/home/jorisp/GitHub/Verilog/lib_tb_uart/tb_uart_class.sv"
+`include "/home/linux-jp/Documents/GitHub/Verilog/lib_tb_generic/tb_check_level_class.sv"
 `include "/home/linux-jp/Documents/GitHub/Verilog/lib_tb_uart/tb_uart_class.sv"
 
 
-class tb_modules_custom_class #(parameter G_NB_UART_CHECKER   = 2,
+class tb_modules_custom_class #(// == CHECK LEVEL PARAMETERS ==
+				parameter G_CHECK_SIZE  = 5,
+				parameter G_CHECK_WIDTH = 32,
+
+				// == UART PARAMETERS ==
+				parameter G_NB_UART_CHECKER   = 2,
 				parameter G_DATA_WIDTH        = 8,
 				parameter G_BUFFER_ADDR_WIDTH = 8
 				);
@@ -31,8 +37,8 @@ class tb_modules_custom_class #(parameter G_NB_UART_CHECKER   = 2,
     */
    typedef struct {
       string 	  cmd_type;           // Type of Commande
-      alias_list_t alias_list;   // List of Alias of Commande Type
-      cmd_list_t cmd_list;       // List of Commande of Commande type
+      alias_list_t alias_list;        // List of Alias of Commande Type
+      cmd_list_t cmd_list;            // List of Commande of Commande type
       int 	  alias_list_ptr = 0; // Alias List Pointer
    } tb_modules_infos_st;
    
@@ -43,9 +49,19 @@ class tb_modules_custom_class #(parameter G_NB_UART_CHECKER   = 2,
 
    
    tb_modules_infos_st tb_modules_infos [*]; // TB Infos - Dynamic Struct
-   int 		  tb_infos_ptr = 0;   
+   int 	       tb_infos_ptr = 0;   
    int 	       i;                  // Index
-      
+
+   /* =====================================    
+    * == GENERIC Testbench Modules Class ==
+    * =====================================
+    */
+   tb_check_level_class #(G_CHECK_SIZE,
+			  G_CHECK_WIDTH
+			  )
+   tb_check_level_inst;
+   
+   
    /* ======================================    
     * == Array of Testbench Modules Class ==
     * ======================================
@@ -84,8 +100,10 @@ class tb_modules_custom_class #(parameter G_NB_UART_CHECKER   = 2,
     * == CONSTRUCTOR ==
     * =================
     */
-   function new ();
 
+   // Initialize Generic Testbench Modules
+   function new (virtual check_level_intf #(G_CHECK_SIZE, G_CHECK_WIDTH) check_level_nif);
+      this.tb_check_level_inst = new(check_level_nif); // Init Class object Check Level      
    endfunction // new
 
    
@@ -211,7 +229,7 @@ class tb_modules_custom_class #(parameter G_NB_UART_CHECKER   = 2,
 	 int pos_1                = 0; // Position of ] character
 	 int pos_parenthesis_0    = 0; // Position of ( character
 	 int pos_parenthesis_1    = 0; // Position of ) character
-	 //int first_space_position = 0; // First position of " " character
+	 int first_space_position = 0; // First position of " " character
 	 
 	 int i; // Loop Index
 
@@ -258,7 +276,7 @@ class tb_modules_custom_class #(parameter G_NB_UART_CHECKER   = 2,
 
 	 // Get First space position
 	 first_space_position = pos_1 + 1;
-	 cmd = line.substr(first_space_position, pos_parenthesis_0 - 1);	 
+	 cmd = line.substr(first_space_position + 1, pos_parenthesis_0 - 1);	 
 
 	 // Get Commands Args
 	 cmd_args = line.substr(pos_parenthesis_0 + 1 , pos_parenthesis_1 - 1); // RM "(" and ")"
@@ -333,14 +351,14 @@ class tb_modules_custom_class #(parameter G_NB_UART_CHECKER   = 2,
 	 for (i = 0; i < this.tb_infos_ptr ; i++) begin
 	    
 	    // Check if Commands are "UART" Types
-	    if(this.tb_modules_infos[i].i_cmd_type == "UART" and i_cmd_type == "UART") begin
+	    if(this.tb_modules_infos[i].cmd_type == "UART" && i_cmd_type == "UART") begin
 	       this.tb_uart_class_custom_inst[this.tb_modules_infos[i].alias_list[i_alias_str]].sel_uart_command(i_cmd, 
 														 i_alias_str, 
 														 i_cmd_args);	       
 	    end
 
 	    // Check if Commands are "DATA_COLLECTOR" Types
-	    else if(this.tb_modules_infos[i].i_cmd_type == "DATA_COLLECTOR") begin
+	    else if(this.tb_modules_infos[i].cmd_type == "DATA_COLLECTOR") begin
 	       // TBD !!!
 	    end
 	 end
