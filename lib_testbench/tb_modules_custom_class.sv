@@ -30,7 +30,8 @@ class tb_modules_custom_class #(// == CHECK LEVEL PARAMETERS ==
     */
    typedef int alias_list_t [string]; // Associative array of Possible Alias
    typedef int cmd_list_t   [string]; // Associative array of Possible Command (Ex : TX_START - COLLECT_STOP etc..)
- 
+   typedef string regular_cmd_list_t [int]; // Associative array of Regular Commands
+   
    /* ============
     * == STRUCT ==
     * ============
@@ -40,7 +41,37 @@ class tb_modules_custom_class #(// == CHECK LEVEL PARAMETERS ==
       alias_list_t alias_list;        // List of Alias of Commande Type
       cmd_list_t cmd_list;            // List of Commande of Commande type
       int 	  alias_list_ptr = 0; // Alias List Pointer
+      bit 	  is_regular_cmd = 0; // Regular Command (CHK-WAIT-SET ..) or Custom command (UART - DATA_COLLECTOR ..)
    } tb_modules_infos_st;
+
+   /* ================
+    * == CONSTANTES ==
+    * ================
+    */
+   const int regular_cmd_nb = 7;
+   tb_modules_infos_st regular_tb_modules_infos[7-1:0];
+
+   regular_cmd_list_t regular_cmd_list = '{0         : "SET",
+					   1         : "WTR",
+					   2         : "WTF",
+					   3         : "WTRS",
+					   4         : "WTFS",
+					   5         : "CHK" ,
+					   6         : "WAIT",
+					   7         : "MODELSIM_CMD"
+					   };
+
+   
+   // regular_cmd_list["SET"]          = 0; // SET Command
+   // regular_cmd_list["WTR"]          = 1; // WTR Command
+   // regular_cmd_list["WTF"]          = 2; // WTF Command
+   // regular_cmd_list["WTRS"]         = 3; // WTRS Command
+   // regular_cmd_list["WTFS"]         = 4; // WTFS Command
+   // regular_cmd_list["CHK"]          = 5; // CHK Command
+   // regular_cmd_list["WAIT"]         = 6; // WAIT Command
+   // regular_cmd_list["MODELSIM_CMD"] = 7; // MODELSIM_CMD Command
+   
+   
    
    /* ===============
     * == VARIABLES ==
@@ -48,14 +79,19 @@ class tb_modules_custom_class #(// == CHECK LEVEL PARAMETERS ==
     */
 
    
-   tb_modules_infos_st tb_modules_infos [*]; // TB Infos - Dynamic Struct
+   tb_modules_infos_st tb_modules_infos [*]; // TB Infos of Custom Testbench Modules - Dynamic Struct
    int 	       tb_infos_ptr = 0;   
    int 	       i;                  // Index
+
+   
+   
 
    /* =====================================    
     * == GENERIC Testbench Modules Class ==
     * =====================================
     */
+
+   // Check Level Testbench Module
    tb_check_level_class #(G_CHECK_SIZE,
 			  G_CHECK_WIDTH
 			  )
@@ -75,7 +111,7 @@ class tb_modules_custom_class #(// == CHECK LEVEL PARAMETERS ==
    
     int 	   uart_checker_vif_ptr = 0; // Virtual interface pointer   
    
-   // INIT UART TESTBENCH CLASS
+   // INIT UART TESTBENCH CLASS and Add Info
    function void init_uart_custom_class(virtual uart_checker_intf #(G_NB_UART_CHECKER, 
 								    G_DATA_WIDTH, 
 								    G_BUFFER_ADDR_WIDTH) uart_checker_nif, 
@@ -103,7 +139,13 @@ class tb_modules_custom_class #(// == CHECK LEVEL PARAMETERS ==
 
    // Initialize Generic Testbench Modules
    function new (virtual check_level_intf #(G_CHECK_SIZE, G_CHECK_WIDTH) check_level_nif);
-      this.tb_check_level_inst = new(check_level_nif); // Init Class object Check Level      
+      this.tb_check_level_inst = new(check_level_nif); // Init Class object Check Level
+
+      // Init Regular TB Modules Infos
+      for(i = 0; i < this.regular_cmd_list.size(); i++) begin
+	 this.regular_tb_modules_infos[i].cmd_type       = this.regular_cmd_list[i];
+	 this.regular_tb_modules_infos[i].is_regular_cmd = 1;                       // Regular Command	 
+      end
    endfunction // new
 
    
@@ -113,12 +155,14 @@ class tb_modules_custom_class #(// == CHECK LEVEL PARAMETERS ==
     */
  
   
-   // Add Info of Current TB Module to GLobal Info
+   // Add Info of Current Custom TB Module to GLobal Info
    function void ADD_INFO(string cmd_type, cmd_list_t tb_module_cmd_list, string TB_MODULE_ALIAS);
             
       // Internal Variables
       int      cmd_type_already_exists = 0;
       int      cmd_type_index          = 0;
+      bit      is_regular = 0;
+      
       
       $display("DEBUG - ADD_INFO function !");
       $display("this.tb_infos_ptr : %d", this.tb_infos_ptr);
@@ -135,6 +179,15 @@ class tb_modules_custom_class #(// == CHECK LEVEL PARAMETERS ==
 	 end
       end
 
+      // == Check if cmd_type is a regular command or not ==
+      // if(this.regular_cmd_list.exists(cmd_type) == 1) begin
+      // 	 is_regular = 1;	 
+      // end
+      // else begin
+      // 	 is_regular = 0;	 
+      // end
+      // ===================================================
+
       // If cmd_type doesnt exists, add it to array of struct
       if(cmd_type_already_exists == 0) begin
 	 $display("cmd_type_already_exists == 0");	
@@ -149,9 +202,13 @@ class tb_modules_custom_class #(// == CHECK LEVEL PARAMETERS ==
 	 
 	 // Add Command List
 	 this.tb_modules_infos[this.tb_infos_ptr].cmd_list = tb_module_cmd_list; // Same List of command for cmd_type
+
+	 // Add info of regular cmd
+	 this.tb_modules_infos[this.tb_infos_ptr].is_regular_cmd = is_regular;
 	 
 	 $display("this.tb_modules_infos[this.tb_infos_ptr].cmd_type : %s", this.tb_modules_infos[this.tb_infos_ptr].cmd_type);
 	 $display("this.tb_modules_infos[this.tb_infos_ptr].alias_list : %p", this.tb_modules_infos[this.tb_infos_ptr].alias_list);
+	 $display("this.tb_modules_infos[this.tb_infos_ptr].is_regular_cmd : %d", this.tb_modules_infos[this.tb_infos_ptr].is_regular_cmd);
 	 
 	 this.tb_infos_ptr += 1; // Inc Pointer	
 	 $display("this.tb_infos_ptr : %d\n", this.tb_infos_ptr);
@@ -178,6 +235,21 @@ class tb_modules_custom_class #(// == CHECK LEVEL PARAMETERS ==
             
    endfunction // ADD_INFO
    
+   // REGULAR_TB_MODULE_ADD_INFO
+   function void REGULAR_TB_MODULES_ADD_INFO();
+      this.regular_tb_modules_infos[5].alias_list = this.tb_check_level_inst.check_level_alias_list; // Get ALias List of Check Level
+      
+            
+   endfunction // REGULAR_TB_MODULES_ADD_INFO
+
+   // Display Regular TB Module Info
+   function void DISPLAY_REGULAR_TB_MODULES_INFO();
+      $display("# ================================ #");           
+      $display("Regular TB Infos : ");
+      $display("regular_tb_modules_infos: %p", this.regular_tb_modules_infos);	 	 
+      $display("# ================================ #");
+   endfunction // DISPLAY_REGULAR_TB_MODULES_INFO
+   
    
    // Display Custom TB Module Info
    function void DISPLAY_CUSTOM_TB_MODULES_INFO();
@@ -202,13 +274,14 @@ class tb_modules_custom_class #(// == CHECK LEVEL PARAMETERS ==
 	 string alias_str; // Alias of the Type of Command
 	 string cmd;	   // Command of the type of command
 	 string cmd_args;  // Args of the command
-	 logic 	check_ok;	 
+	 logic 	check_ok;  // Check OK "1" or KO "0"
+	 logic 	is_regular_cmd; // Regular command when  == '1'	  
 	 
 	 decod_scn_line(line, cmd_type, alias_str, cmd, cmd_args); // Decode Scenarii lines
-	 check_commands(cmd_type, alias_str, check_ok);            // Check if Command type exists and if Alias exists
+	 check_commands(cmd_type, alias_str, check_ok, is_regular_cmd);            // Check if Command type exists and if Alias exists
 
 	 if(check_ok == 1) begin
-	    routed_commands(cmd_type, alias_str, cmd, cmd_args);   // Route commands to corect Testbench Modules
+	    routed_commands(cmd_type, alias_str, cmd, cmd_args, is_regular_cmd);   // Route commands to corect Testbench Modules
 	 end	 	 
       end
    endtask // seq_custom_tb_modules
@@ -296,21 +369,36 @@ class tb_modules_custom_class #(// == CHECK LEVEL PARAMETERS ==
    // Check if extracted commands exists
    virtual task check_commands(input string i_cmd_type,
 			       input string i_alias_str,
-			       output logic o_check_ok);
+			       output logic o_check_ok,
+			       output logic o_is_regular_cmd);
       begin
 	 // Internal variables
 	 int i                   = 0; // Loop index
 	 logic i_cmd_type_exists = 0; // Command Type exists flag
-	 int   cmd_type_index    = 0; // Index of command type if exists	 
+	 int   cmd_type_index    = 0; // Index of command type if exists
+	 
+	 int   is_regular_cmd = 0;
+	 
 	 
 	 // By default check is not ok
-	 o_check_ok   = 0;	 
+	 o_check_ok   = 0;
 
-	 // == Check if i_cmd_type is in tb_modules_info ==
-	 for(i = 0; i < this.tb_infos_ptr; i++) begin
-	    if(this.tb_modules_infos[i].cmd_type == i_cmd_type) begin
+	 // == Check if i_cmd_type is a regular command or not
+	 for(i = 0; i < this.regular_cmd_nb ; i ++) begin
+	    if(this.regular_tb_modules_infos[i].cmd_type == i_cmd_type) begin
+	       is_regular_cmd    = 1;
 	       i_cmd_type_exists = 1; // Set flag to 1
 	       cmd_type_index    = i; // Get index
+	    end
+	 end
+	 
+	 // == Check if i_cmd_type is in tb_modules_info only if it is not a regular cmd ==
+	 if(is_regular_cmd == 0) begin
+	    for(i = 0; i < this.tb_infos_ptr; i++) begin
+	       if(this.tb_modules_infos[i].cmd_type == i_cmd_type) begin
+		  i_cmd_type_exists = 1; // Set flag to 1
+		  cmd_type_index    = i; // Get index
+	       end
 	    end
 	 end
 	 // ===============================================
@@ -321,17 +409,30 @@ class tb_modules_custom_class #(// == CHECK LEVEL PARAMETERS ==
 	 end
 	 // Case i_cmd_type exists
 	 else begin
-	    // Check if Alias exists in cmd_type
-	    if(this.tb_modules_infos[cmd_type_index].alias_list.exists(i_alias_str)) begin
-	       o_check_ok = 1; // Commad type and Alias Exists
+
+	    // Check if Alias exists in regular cmd type
+	    if(is_regular_cmd == 1) begin
+	       if(this.regular_tb_modules_infos[cmd_type_index].alias_list.exists(i_alias_str)) begin
+		  o_check_ok = 1;		  
+	       end
+	       else begin
+		  $display("Error: Alias %s does not exists !", i_alias_str);
+	       end
 	    end
 	    else begin
-	       $display("Error: Alias %s does not exists !", i_alias_str);	       
+	       // Check if Alias exists in cmd_type (not a regular cmd)
+	       if(this.tb_modules_infos[cmd_type_index].alias_list.exists(i_alias_str)) begin
+		  o_check_ok = 1; // Commad type and Alias Exists
+	       end
+	       else begin
+		  $display("Error: Alias %s does not exists !", i_alias_str);	       
+	       end
 	    end
 	 end // else: !if(i_cmd_type_exists == 0)
 
 	 $display("DEBUG - check_commands : o_check_ok : %d", o_check_ok);
-	 
+
+	 o_is_regular_cmd = is_regular_cmd;	 
       end
    endtask; // check_commands
 
@@ -341,25 +442,42 @@ class tb_modules_custom_class #(// == CHECK LEVEL PARAMETERS ==
    virtual task routed_commands(input string i_cmd_type,
 				input string i_alias_str,
 				input string i_cmd,
-				input string i_cmd_args);
+				input string i_cmd_args,
+				input logic  i_is_regular_cmd);
       begin
 
 	 // Internal variables
 	 int i = 0; // Loop index
 
-	 // Loop on all possible commands
-	 for (i = 0; i < this.tb_infos_ptr ; i++) begin
+	 if(i_is_regular_cmd == 0) begin
+	    // Loop on all possible commands
+	    for (i = 0; i < this.tb_infos_ptr ; i++) begin
 	    
-	    // Check if Commands are "UART" Types
-	    if(this.tb_modules_infos[i].cmd_type == "UART" && i_cmd_type == "UART") begin
-	       this.tb_uart_class_custom_inst[this.tb_modules_infos[i].alias_list[i_alias_str]].sel_uart_command(i_cmd, 
-														 i_alias_str, 
-														 i_cmd_args);	       
-	    end
+	       // Check if Commands are "UART" Types
+	       if(this.tb_modules_infos[i].cmd_type == "UART" && i_cmd_type == "UART") begin
+		  this.tb_uart_class_custom_inst[this.tb_modules_infos[i].alias_list[i_alias_str]].sel_uart_command(i_cmd, 
+														    i_alias_str, 
+														    i_cmd_args);
+	       end
+	       
+	       // Check if Commands are "DATA_COLLECTOR" Types
+	       else if(this.tb_modules_infos[i].cmd_type == "DATA_COLLECTOR") begin
+		  // TBD !!!
+	       end
+	    end // for (i = 0; i < this.tb_infos_ptr ; i++)
+	 end // if (i_is_regular_cmd == 0)
 
-	    // Check if Commands are "DATA_COLLECTOR" Types
-	    else if(this.tb_modules_infos[i].cmd_type == "DATA_COLLECTOR") begin
-	       // TBD !!!
+	 
+	 else begin
+	    // Loop For REGULAR Commands
+	    for(i = 0; i < this.regular_cmd_nb ; i++) begin
+
+	       // Check Commands
+	       if(this.regular_tb_modules_infos[i].cmd_type == "CHK" && i_cmd_type == "CHK") begin
+		  this.tb_check_level_inst.sel_check_level_command(i_cmd_type,
+								   i_alias_str,
+								   i_cmd_args);
+	       end
 	    end
 	 end
 	 
