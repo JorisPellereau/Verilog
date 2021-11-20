@@ -9,11 +9,18 @@
 // Status          : Unknown, Use with caution!
 
 //`include "/home/jorisp/GitHub/Verilog/lib_tb_uart/tb_uart_class.sv"
+`include "/home/linux-jp/Documents/GitHub/Verilog/lib_tb_generic/tb_wait_event_class.sv"
 `include "/home/linux-jp/Documents/GitHub/Verilog/lib_tb_generic/tb_check_level_class.sv"
 `include "/home/linux-jp/Documents/GitHub/Verilog/lib_tb_uart/tb_uart_class.sv"
 
 
-class tb_modules_custom_class #(// == CHECK LEVEL PARAMETERS ==
+class tb_modules_custom_class #(
+				// == WAIT EVENT PARAMETERS ==
+				parameter G_WAIT_SIZE  = 5,
+				parameter G_WAIT_WIDTH = 1,
+				parameter G_CLK_PERIOD = 1000, // Unity : ps
+				
+				// == CHECK LEVEL PARAMETERS ==
 				parameter G_CHECK_SIZE  = 5,
 				parameter G_CHECK_WIDTH = 32,
 
@@ -62,17 +69,6 @@ class tb_modules_custom_class #(// == CHECK LEVEL PARAMETERS ==
 					   };
 
    
-   // regular_cmd_list["SET"]          = 0; // SET Command
-   // regular_cmd_list["WTR"]          = 1; // WTR Command
-   // regular_cmd_list["WTF"]          = 2; // WTF Command
-   // regular_cmd_list["WTRS"]         = 3; // WTRS Command
-   // regular_cmd_list["WTFS"]         = 4; // WTFS Command
-   // regular_cmd_list["CHK"]          = 5; // CHK Command
-   // regular_cmd_list["WAIT"]         = 6; // WAIT Command
-   // regular_cmd_list["MODELSIM_CMD"] = 7; // MODELSIM_CMD Command
-   
-   
-   
    /* ===============
     * == VARIABLES ==
     * ===============
@@ -90,6 +86,13 @@ class tb_modules_custom_class #(// == CHECK LEVEL PARAMETERS ==
     * == GENERIC Testbench Modules Class ==
     * =====================================
     */
+
+   // Wait Event Testbench Module
+   tb_wait_event_class #(G_WAIT_SIZE,
+			 G_WAIT_WIDTH,
+			 G_CLK_PERIOD // Unity : ps
+			 )
+   tb_wait_event_inst;   
 
    // Check Level Testbench Module
    tb_check_level_class #(G_CHECK_SIZE,
@@ -138,7 +141,10 @@ class tb_modules_custom_class #(// == CHECK LEVEL PARAMETERS ==
     */
 
    // Initialize Generic Testbench Modules
-   function new (virtual check_level_intf #(G_CHECK_SIZE, G_CHECK_WIDTH) check_level_nif);
+   function new (virtual wait_event_intf  #(G_WAIT_SIZE, G_WAIT_WIDTH)   wait_event_nif,
+		 virtual check_level_intf #(G_CHECK_SIZE, G_CHECK_WIDTH) check_level_nif);
+
+      this.tb_wait_event_inst  = new(wait_event_nif);  // Init Class Object Wait Event      
       this.tb_check_level_inst = new(check_level_nif); // Init Class object Check Level
 
       // Init Regular TB Modules Infos
@@ -237,6 +243,10 @@ class tb_modules_custom_class #(// == CHECK LEVEL PARAMETERS ==
    
    // REGULAR_TB_MODULE_ADD_INFO
    function void REGULAR_TB_MODULES_ADD_INFO();
+      this.regular_tb_modules_infos[1].alias_list = this.tb_wait_event_inst.wait_event_alias_list;   // Get Alias List of WTR
+      this.regular_tb_modules_infos[2].alias_list = this.tb_wait_event_inst.wait_event_alias_list;   // Get Alias List of WTF
+      this.regular_tb_modules_infos[3].alias_list = this.tb_wait_event_inst.wait_event_alias_list;   // Get Alias List of WTRS
+      this.regular_tb_modules_infos[4].alias_list = this.tb_wait_event_inst.wait_event_alias_list;   // Get Alias List of WTFS
       this.regular_tb_modules_infos[5].alias_list = this.tb_check_level_inst.check_level_alias_list; // Get ALias List of Check Level
       
             
@@ -246,7 +256,10 @@ class tb_modules_custom_class #(// == CHECK LEVEL PARAMETERS ==
    function void DISPLAY_REGULAR_TB_MODULES_INFO();
       $display("# ================================ #");           
       $display("Regular TB Infos : ");
-      $display("regular_tb_modules_infos: %p", this.regular_tb_modules_infos);	 	 
+      for(i = 0; i < this.regular_cmd_nb; i++) begin
+	 $display("cmd_type   : %s", this.regular_tb_modules_infos[i].cmd_type);
+	 $display("alias_list : %p\n", this.regular_tb_modules_infos[i].alias_list);
+      end	 	 
       $display("# ================================ #");
    endfunction // DISPLAY_REGULAR_TB_MODULES_INFO
    
@@ -255,7 +268,11 @@ class tb_modules_custom_class #(// == CHECK LEVEL PARAMETERS ==
    function void DISPLAY_CUSTOM_TB_MODULES_INFO();
       $display("# ================================ #");           
       $display("TB Infos : ");
-      $display("tb_modules_infos: %p", this.tb_modules_infos);	 	 
+      for(i = 0 ; i < this.tb_infos_ptr ; i++) begin
+	 $display("cmd_type   : %s", this.tb_modules_infos[i].cmd_type);
+	 $display("alias_list : %p", this.tb_modules_infos[i].alias_list);
+	 $display("cmd_list   : %p\n", this.tb_modules_infos[i].cmd_list);
+      end      	 
       $display("# ================================ #");
    endfunction // DISPLAY_CUSTOM_TB_MODULES_INFO
 
@@ -477,6 +494,17 @@ class tb_modules_custom_class #(// == CHECK LEVEL PARAMETERS ==
 		  this.tb_check_level_inst.sel_check_level_command(i_cmd_type,
 								   i_alias_str,
 								   i_cmd_args);
+	       end
+	       // Wait Event Command
+	       else if(
+		       (this.regular_tb_modules_infos[i].cmd_type == "WTR" && i_cmd_type == "WTR")   ||
+		       (this.regular_tb_modules_infos[i].cmd_type == "WTF" && i_cmd_type == "WTF")   ||
+		       (this.regular_tb_modules_infos[i].cmd_type == "WTRS" && i_cmd_type == "WTRS") || 
+		       (this.regular_tb_modules_infos[i].cmd_type == "WTFS" && i_cmd_type == "WTRS") ) begin
+		  this.tb_wait_event_inst.sel_wait_event_command(i_cmd_type,
+								 i_alias_str,
+								 i_cmd_args);
+		  
 	       end
 	    end
 	 end

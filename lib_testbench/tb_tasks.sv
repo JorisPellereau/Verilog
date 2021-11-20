@@ -25,9 +25,9 @@ class tb_class #(
 		 parameter SET_WIDTH = 32,
 		 
 		 // WAIT EVENT PARAMETERS
-		 parameter WAIT_SIZE  = 5,
-		 parameter WAIT_WIDTH = 1,
-		 parameter CLK_PERIOD = 1000, // Unity : ps
+		 parameter G_WAIT_SIZE  = 5,
+		 parameter G_WAIT_WIDTH = 1,
+		 parameter G_CLK_PERIOD = 1000, // Unity : ps
 		 
 		 // CHECK LEVEL PARAMETER
 		 parameter G_CHECK_SIZE  = 5,
@@ -41,7 +41,11 @@ class tb_class #(
 
 
    // == CUSTOM TESTBENCH MODULES CLASS ==
-   tb_modules_custom_class #(G_CHECK_SIZE,
+   tb_modules_custom_class #(
+			     G_WAIT_SIZE,
+			     G_WAIT_WIDTH,
+			     G_CLK_PERIOD, 
+			     G_CHECK_SIZE,
 		             G_CHECK_WIDTH,
 			     G_NB_UART_CHECKER,
 			     G_UART_DATA_WIDTH,
@@ -53,7 +57,7 @@ class tb_class #(
    // == VIRTUAL I/F ==
 
    // == GENERIC VIRTUAL I/F ==
-   virtual wait_event_intf     #(WAIT_SIZE, WAIT_WIDTH)     wait_event_vif;
+   virtual wait_event_intf     #(G_WAIT_SIZE, G_WAIT_WIDTH)     wait_event_vif;
    virtual set_injector_intf   #(SET_SIZE, SET_WIDTH)       set_injector_vif;
    virtual wait_duration_intf  wait_duration_vif;
    virtual check_level_intf    #(G_CHECK_SIZE, G_CHECK_WIDTH)   check_level_vif;
@@ -65,19 +69,19 @@ class tb_class #(
    
 
    // == Interface passed in Virtual I/F ==
-   function new(virtual wait_event_intf     #(WAIT_SIZE, WAIT_WIDTH)    wait_nif, 
+   function new(virtual wait_event_intf     #(G_WAIT_SIZE, G_WAIT_WIDTH)    wait_nif, 
                 virtual set_injector_intf #(SET_SIZE, SET_WIDTH) set_nif, 
                 virtual wait_duration_intf wait_duration_nif,
                 virtual check_level_intf #(G_CHECK_SIZE, G_CHECK_WIDTH) check_level_nif/*,		
 		tb_modules_custom_class tb_modules_custom_inst*/
 		);
 
-      
+      // TBD RM nif
       this.wait_event_vif         = wait_nif;
       this.set_injector_vif       = set_nif;
       this.wait_duration_vif      = wait_duration_nif;
       this.check_level_vif        = check_level_nif;      
-      this.tb_modules_custom_inst = new(check_level_nif); // Init Object
+      this.tb_modules_custom_inst = new(wait_nif, check_level_nif); // Init Object
 //tb_modules_custom_inst;
 
    endfunction // new
@@ -198,29 +202,29 @@ class tb_class #(
 			  set_injector(set_injector_vif, args);		     
 		       end
 		       
-		       "WTR": begin
+		       /*"WTR": begin
 			  wait_event(wait_event_vif, args);		     
-		       end
+		       end*/
 		       
-		       "WTF": begin
+		       /*"WTF": begin
 			  wait_event(wait_event_vif, args);
-		       end
+		       end*/
 		       
                        "WAIT": begin
 			  wait_duration(wait_duration_vif, args);		     
                        end
 		       
-		       "CHK" : begin
+		       /*"CHK" : begin
 			  check_level(check_level_vif, args);
-		       end
+		       end*/
 		       
-		       "WTRS" : begin
+		       /*"WTRS" : begin
 			  wait_event_soft(wait_event_vif, args);		    
-		       end
+		       end*/
 		       
-		       "WTFS" : begin
+		       /*"WTFS" : begin
 			  wait_event_soft(wait_event_vif, args);
-		       end
+		       end*/
 		       
 		       "MODELSIM_CMD" : begin
 			  extract_line_double_quote(line, line_tmp);
@@ -264,24 +268,24 @@ class tb_class #(
         if(args[0] == "SET") begin
      	  o_cmd_exists = 1'b1;	 
         end
-        else if(args[0] == "WTR") begin
+        /*else if(args[0] == "WTR") begin
 	  o_cmd_exists = 1'b1;	 
-        end
-        else if(args[0] == "WTF") begin
+        end*/
+        /*else if(args[0] == "WTF") begin
           o_cmd_exists = 1'b1;
-        end
-        else if(args[0] == "CHK") begin
+        end*/
+        /*else if(args[0] == "CHK") begin
 	  o_cmd_exists = 1'b1; 
-        end
+        end*/
         else if(args[0] == "WAIT") begin
 	  o_cmd_exists = 1'b1; 
         end
-	else if(args[0] == "WTRS") begin
+	/*else if(args[0] == "WTRS") begin
 	  o_cmd_exists = 1'b1; 
 	end
 	else if(args[0] == "WTFS") begin
 	  o_cmd_exists = 1'b1;  
-	end
+	end*/
 	else if(args[0] == "MODELSIM_CMD") begin
 	  o_cmd_exists = 1'b1;	
 	end	 
@@ -356,7 +360,7 @@ class tb_class #(
     */
    task wait_event (
 
-     virtual           wait_event_intf #(WAIT_SIZE, WAIT_WIDTH) wait_event_vif,		    
+     virtual           wait_event_intf #(G_WAIT_SIZE, G_WAIT_WIDTH) wait_event_vif,		    
      input string      i_args [`ARGS_NB]
    );
       begin
@@ -367,7 +371,7 @@ class tb_class #(
          int s_alias_array [string];
 	 
 	 // INIT ALIAS ARRAY
-	 for (int i = 0; i < WAIT_SIZE; i++) begin
+	 for (int i = 0; i < G_WAIT_SIZE; i++) begin
 	   s_alias_array[wait_event_vif.wait_alias[i]] = i;
          end
 
@@ -397,23 +401,23 @@ class tb_class #(
 
              case (s_unit) 
              "ps": begin
-               s_max_timeout_cnt = s_timeout_value / CLK_PERIOD;
+               s_max_timeout_cnt = s_timeout_value / G_CLK_PERIOD;
                $display("Timeout : %d %s",s_timeout_value, s_unit);
 		       
              end
 	   
              "ns": begin
-	        s_max_timeout_cnt = (1000 * s_timeout_value) / (CLK_PERIOD);
+	        s_max_timeout_cnt = (1000 * s_timeout_value) / (G_CLK_PERIOD);
 	        $display("Timeout : %d %s",s_timeout_value, s_unit);
              end
 	   
              "us": begin
-               s_max_timeout_cnt = (1000000 * s_timeout_value) / (CLK_PERIOD);
+               s_max_timeout_cnt = (1000000 * s_timeout_value) / (G_CLK_PERIOD);
                $display("Timeout : %d %s",s_timeout_value, s_unit);
              end
 	   
              "ms": begin
-               s_max_timeout_cnt = (1000000000 * s_timeout_value) / (CLK_PERIOD);
+               s_max_timeout_cnt = (1000000000 * s_timeout_value) / (G_CLK_PERIOD);
                $display("Timeout : %d %s",s_timeout_value, s_unit);
               end
 		    
@@ -482,22 +486,22 @@ class tb_class #(
 
 	 case (s_unit) 
           "ps": begin
-            s_max_timeout_cnt = s_timeout_value / (CLK_PERIOD);
+            s_max_timeout_cnt = s_timeout_value / (G_CLK_PERIOD);
             $display("WAIT duration : %d %s",s_timeout_value, s_unit);		       
           end
 	   
           "ns": begin
-            s_max_timeout_cnt = (1000 * s_timeout_value) / (CLK_PERIOD);
+            s_max_timeout_cnt = (1000 * s_timeout_value) / (G_CLK_PERIOD);
             $display("WAIT duration : %d %s",s_timeout_value, s_unit);
           end
 	   
           "us": begin
-            s_max_timeout_cnt = (1000000 * s_timeout_value) / (CLK_PERIOD);
+            s_max_timeout_cnt = (1000000 * s_timeout_value) / (G_CLK_PERIOD);
             $display("WAIT duration : %d %s",s_timeout_value, s_unit);
           end
 	   
           "ms": begin
-            s_max_timeout_cnt = (1000000000 * s_timeout_value) / (CLK_PERIOD);
+            s_max_timeout_cnt = (1000000000 * s_timeout_value) / (G_CLK_PERIOD);
             $display("WAIT duration : %d %s",s_timeout_value, s_unit);
           end
 		    
@@ -526,7 +530,7 @@ class tb_class #(
 
 
    
-   task check_level (
+   /*task check_level (
         virtual check_level_intf #(G_CHECK_SIZE, G_CHECK_WIDTH) check_level_vif,
         input string i_args [`ARGS_NB]
    );
@@ -599,11 +603,11 @@ class tb_class #(
       $display("");
       
    endtask // check_level
-
+*/
 
    
    task wait_event_soft (
-			virtual           wait_event_intf #(WAIT_SIZE, WAIT_WIDTH) wait_event_vif,		    
+			virtual           wait_event_intf #(G_WAIT_SIZE, G_WAIT_WIDTH) wait_event_vif,		    
                         input string      i_args [`ARGS_NB]
    );
       begin
@@ -616,7 +620,7 @@ class tb_class #(
          int s_alias_array [string];
 	 
 	 // INIT ALIAS ARRAY
-	 for (int i = 0; i < WAIT_SIZE; i++) begin
+	 for (int i = 0; i < G_WAIT_SIZE; i++) begin
 	   s_alias_array[wait_event_vif.wait_alias[i]] = i;
          end
 

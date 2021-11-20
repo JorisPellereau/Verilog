@@ -36,3 +36,5 @@ Testbench/TB_WORK/lib_uart/_info
 Testbench/scripts/lib_tb/
 
 Testbench/TB_WORK/lib_uart/
+
+*.bak
