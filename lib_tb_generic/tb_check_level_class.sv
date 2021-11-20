@@ -70,22 +70,8 @@ class tb_check_level_class #(
 	 string check_value_str;    // Check value string format
 	 string check_type_str;     // Check type string format (ERROR - OK etc)
 	 
-	 
-	 
-	 // // ASSOCIATIVE ARRAY
-         // int 	 s_alias_array [string];
-         // reg [CHECK_WIDTH - 1 : 0]     s_check_value;
-         // string 		       s_str;     
-         // int 			       s_str_len;
-
-	 
-	 
-	 // INIT ALIAS
-	 /*for (int i = 0; i < CHECK_SIZE; i++) begin
-	   s_alias_array[this.check_level_vif.check_alias[i]] = i;
-         end*/
-
-	 $display("Run CHK[%s] (%s) ... - %t", i_alias, i_args, $time);
+	 	 	 
+	 $display("CHK[%s] (%s) ... - %t", i_alias, i_args, $time);
 	 	 
 	 // == Get " " position in args ==
 	 for(i = 0 ; i < i_args.len() ; i ++) begin
@@ -106,19 +92,7 @@ class tb_check_level_class #(
 	    check_value = check_value_str.atoi; // String to int	    
 	 end
 
-	 // Case : 0x at the beginning of the Args
-	 // if( {i_args[2].getc(0),  i_args[2].getc(1)} == "0x") begin
-		  
-	 //   s_str_len     = i_args[2].len(); // Find Length		  
-         //   s_str         = i_args[2].substr(2, s_str_len - 1); // Remove 0x
-         //   s_check_value = s_str.atohex(); // Set Correct Hex value
-	 // end
-	 // // DECIMAL ARGS
-	 // else begin
-         //   s_check_value = s_str.atoi;
-		  
-	 // end // else: !if( {i_args[2].getc(0),  i_args[2].getc(1)} == "0x")
-
+	 
 	 // Alias was already check before in cutom sequencer
 	 if(check_type_str == "OK") begin
 	    if(this.check_level_vif.check_signals[this.check_level_alias_list[i_alias]] == check_value) begin
@@ -141,52 +115,10 @@ class tb_check_level_class #(
 	    $display("Error: check_type_str of CHECK command not defined");
 	 end
 	 $display("");
-
-	 
-	 // // Test if ALIAS Name Exist else Error
-      // 	 if(s_alias_array.exists(i_args[1])) begin
-      // 	 // CHECK VALUE
-      // 	 // OK Expected
-      // 	   if(i_args[3] == "OK") begin
-
-      //        if(this.check_level_vif.check_signals[s_alias_array[i_args[1]]] == s_check_value) begin
-      //          $display("CHECK %s = 0x%x - Expected : 0x%x => OK", i_args[1], this.check_level_vif.check_signals[s_alias_array[i_args[1]]], s_check_value);
-		     
-      // 	     end
-      // 	     else begin
-      //          $display("Error: %s = 0x%x - Expected : 0x%x", i_args[1], this.check_level_vif.check_signals[s_alias_array[i_args[1]]], s_check_value);
-      // 	     end		  
-      // 	   end
-      // 	   // ERROR Expected
-      // 	   else if(i_args[3] == "ERROR") begin
-		  
-      //        if(this.check_level_vif.check_signals[s_alias_array[i_args[1]]] != s_check_value) begin
-      //          $display("CHECK %s != 0x%x  => OK", i_args[1],  s_check_value);
-		     
-      // 	     end
-      // 	     else begin
-      //          $display("Error: %s = 0x%x", i_args[1], s_check_value);
-      // 	     end
-      // 	   end
-      // 	   // Error no Expected state value
-      // 	   else begin
-      //        $display("Error: Args[3] of CHECK command not defined");
-		  
-      // 	   end // else: !if(i_args[3] == "ERROR")
-	       
-      // 	 end // if (s_alias_array.exists(i_args[1]))
-      // 	 else begin
-      //      $display("Error: %s alias doesn't exists", i_args[1]);
-		  
-      // 	 end // else: !if(s_alias_array.exists(i_args[1]))
 	 	 
-      // end
-
-      // $display("");
       end
       
    endtask // check_level
-
 
    // Add Alias function to class and to Interface
    function void ADD_CHECK_LEVEL_ALIAS(string alias_str, int alias_index);
