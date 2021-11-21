@@ -23,6 +23,7 @@ class tb_wait_event_class #(
    
    // == Virtual I/F ==
    virtual wait_event_intf #(G_WAIT_SIZE, G_WAIT_WIDTH) wait_event_vif;
+   virtual wait_duration_intf  wait_duration_vif;
    // =================
 
    // == VARIABLES ==
@@ -30,8 +31,11 @@ class tb_wait_event_class #(
    // ===============
 
    // == CONSTRUCTOR ==
-   function new(virtual wait_event_intf #(G_WAIT_SIZE, G_WAIT_WIDTH) wait_event_nif);
-      this.wait_event_vif = wait_event_nif; // Init Interface
+   function new(virtual wait_event_intf #(G_WAIT_SIZE, G_WAIT_WIDTH) wait_event_nif,
+		virtual wait_duration_intf  wait_duration_nif);
+      this.wait_event_vif    = wait_event_nif;    // Init Interface
+      this.wait_duration_vif = wait_duration_nif; // Init Wait duration Interface
+      
    endfunction // new   
    // =================
 
@@ -44,6 +48,7 @@ class tb_wait_event_class #(
    // WTF[ALIAS] (1 ps)
    // WTRS[ALIAS] (3215 ns)
    // WTFS[ALIAS] (59 ms)
+   // WAIT (10 us)  // No Alias for WAIT Command
 
 
    // Sel Check Level Command
@@ -67,6 +72,9 @@ class tb_wait_event_class #(
 
 	   "WTFS" : begin
 	      wait_event_soft(i_alias, i_args, 1'b1);
+	   end
+	   "WAIT": begin
+	      wait_duration(i_args);	      
 	   end
 	   
 	   default: $display("Error: wrong WAIT EVENT Command : %s", i_cmd);	   
@@ -134,7 +142,43 @@ class tb_wait_event_class #(
 	 end
 	
       end
-   endtask // wait_event_soft    
+   endtask // wait_event_soft
+
+
+   // Wait Duration
+   // Wait for a defined duration - No Alias Needed
+
+   task wait_duration (input string i_args
+		       );
+      
+      begin
+
+	 
+	 // == INTERNAL VARIABLES ==
+	 int           s_max_timeout_cnt;
+	 int 	       s_cnt      = 0;	 
+	 logic 	       s_cnt_done = 0;
+	 
+	 $display("DEBUG - wait_duration");
+	 s_max_timeout_cnt = DECODE_TIMEOUT(i_args);
+
+	 // WAIT until end of counter
+	 while(s_cnt_done == 1'b0) begin
+	    @(posedge this.wait_duration_vif.clk); // WAIT FOR RISING EDRE of CLK
+	    if(s_cnt < s_max_timeout_cnt) begin
+	       s_cnt = s_cnt + 1;
+	    end
+	    else begin
+	       s_cnt_done = 1'b1;
+	       $display("WAIT done at %t", $time);	       
+	    end	    
+	 end
+	 	 	 
+      end
+
+      $display("");
+   endtask // wait_duration
+
 
 
 

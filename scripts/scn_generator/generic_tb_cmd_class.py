@@ -22,7 +22,7 @@ class generic_tb_cmd_class:
     # Print the SET command with Data in HEXA
     # data : integer
     def SET(self, alias, data):
-        line_to_print = "SET " + alias + " " + hex(data) + "\n"
+        line_to_print = "SET[{0}] ({1})\n".format(alias, hex(data))# + alias + " " + hex(data) + "\n"
         self.f.write(line_to_print)
 
         
@@ -83,13 +83,13 @@ class generic_tb_cmd_class:
     # duree : int
     # unity : "ps", "ns", "us", "ms"
     def WAIT(self, duree, unity):
-        line_to_print = "WAIT " + str(duree) + " " + unity + "\n"
+        line_to_print = "WAIT[] ({0} {1})\n".format(str(duree), unity)# + str(duree) + " " + unity + "\n"
         self.f.write(line_to_print)
 
 
     # Print Modelsim Command
     def MODELSIM_CMD(self, modelsim_cmd):
-        line_to_print = "MODELSIM_CMD" + " (\"" + modelsim_cmd + "\")" + "\n"
+        line_to_print = "MODELSIM_CMD[] (\"{0}\")\n".format(modelsim_cmd)# + " (\"" + modelsim_cmd + "\")" + "\n"
         self.f.write(line_to_print)
 
     # Print END_TEST at the end of the test

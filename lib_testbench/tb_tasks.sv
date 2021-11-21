@@ -9,10 +9,10 @@
 // Status          : Unknown, Use with caution!
 
 // Add package - Not necessary
-package fli;
+/*package fli;
     import "DPI-C" function mti_Cmd(input string cmd);
 endpackage // fli
-
+*/
 //`include "/home/jorisp/GitHub/Verilog/lib_testbench/tb_modules_custom_class.sv"
 `include "/home/linux-jp/Documents/GitHub/Verilog/lib_testbench/tb_modules_custom_class.sv"
 
@@ -21,8 +21,8 @@ endpackage // fli
  
 class tb_class #(
 		 // SET INJECTOR PARAMETERS
-		 parameter SET_SIZE  = 5,
-		 parameter SET_WIDTH = 32,
+		 parameter G_SET_SIZE  = 5,
+		 parameter G_SET_WIDTH = 32,
 		 
 		 // WAIT EVENT PARAMETERS
 		 parameter G_WAIT_SIZE  = 5,
@@ -41,7 +41,8 @@ class tb_class #(
 
 
    // == CUSTOM TESTBENCH MODULES CLASS ==
-   tb_modules_custom_class #(
+   tb_modules_custom_class #(G_SET_SIZE,
+			     G_SET_WIDTH,
 			     G_WAIT_SIZE,
 			     G_WAIT_WIDTH,
 			     G_CLK_PERIOD, 
@@ -58,7 +59,7 @@ class tb_class #(
 
    // == GENERIC VIRTUAL I/F ==
    virtual wait_event_intf     #(G_WAIT_SIZE, G_WAIT_WIDTH)     wait_event_vif;
-   virtual set_injector_intf   #(SET_SIZE, SET_WIDTH)       set_injector_vif;
+   virtual set_injector_intf   #(G_SET_SIZE, G_SET_WIDTH)       set_injector_vif;
    virtual wait_duration_intf  wait_duration_vif;
    virtual check_level_intf    #(G_CHECK_SIZE, G_CHECK_WIDTH)   check_level_vif;
    // =========================
@@ -70,18 +71,18 @@ class tb_class #(
 
    // == Interface passed in Virtual I/F ==
    function new(virtual wait_event_intf     #(G_WAIT_SIZE, G_WAIT_WIDTH)    wait_nif, 
-                virtual set_injector_intf #(SET_SIZE, SET_WIDTH) set_nif, 
+                virtual set_injector_intf #(G_SET_SIZE, G_SET_WIDTH) set_nif, 
                 virtual wait_duration_intf wait_duration_nif,
                 virtual check_level_intf #(G_CHECK_SIZE, G_CHECK_WIDTH) check_level_nif/*,		
 		tb_modules_custom_class tb_modules_custom_inst*/
 		);
 
       // TBD RM nif
-      this.wait_event_vif         = wait_nif;
-      this.set_injector_vif       = set_nif;
-      this.wait_duration_vif      = wait_duration_nif;
-      this.check_level_vif        = check_level_nif;      
-      this.tb_modules_custom_inst = new(wait_nif, check_level_nif); // Init Object
+      /*this.wait_event_vif         = wait_nif;
+      this.set_injector_vif       = set_nif;*/
+      //this.wait_duration_vif      = wait_duration_nif;
+      //this.check_level_vif        = check_level_nif;      
+      this.tb_modules_custom_inst = new(set_nif, wait_nif, wait_duration_nif, check_level_nif); // Init Object
 //tb_modules_custom_inst;
 
    endfunction // new
@@ -136,9 +137,7 @@ class tb_class #(
 	 // Initialization of Custom TB Modules if needed
 	 this.tb_modules_custom_inst.init_tb_modules();	 
        
-	 // INIT SET INJECTOR
-	 set_injector_init(set_injector_vif);
-
+	 
 	 
       
 	 // OPEN File
@@ -192,15 +191,15 @@ class tb_class #(
 	       s_cmd_custom_exists = 0; // Forced for the moment
 	       
 	       if(s_cmd_custom_exists == 0) begin
-		  cmd_decoder(line, cmd_exists, args); // Command decoder off generic CMD
+		  //cmd_decoder(line, cmd_exists, args); // Command decoder off generic CMD
 		  
 		  if(cmd_exists) begin
 		     
 		     case(args[0])
         
-		       "SET": begin
+		       /*"SET": begin
 			  set_injector(set_injector_vif, args);		     
-		       end
+		       end*/
 		       
 		       /*"WTR": begin
 			  wait_event(wait_event_vif, args);		     
@@ -210,9 +209,9 @@ class tb_class #(
 			  wait_event(wait_event_vif, args);
 		       end*/
 		       
-                       "WAIT": begin
+                       /*"WAIT": begin
 			  wait_duration(wait_duration_vif, args);		     
-                       end
+                       end*/
 		       
 		       /*"CHK" : begin
 			  check_level(check_level_vif, args);
@@ -226,12 +225,12 @@ class tb_class #(
 			  wait_event_soft(wait_event_vif, args);
 		       end*/
 		       
-		       "MODELSIM_CMD" : begin
+		       /*"MODELSIM_CMD" : begin
 			  extract_line_double_quote(line, line_tmp);
 			  $display($typename(line_tmp));			  	  
 			  modelsim_cmd_exec(line_tmp);		     
 		       end
-		       
+		       */
     
 		       default: $display("");
 		       
@@ -265,9 +264,9 @@ class tb_class #(
         $sscanf(line, "%s %s %s %s %s", args[0], args[1], args[2], args[3], args[4]);
 
 	// Check If GENERIC Command is recognized
-        if(args[0] == "SET") begin
+        /*if(args[0] == "SET") begin
      	  o_cmd_exists = 1'b1;	 
-        end
+        end*/
         /*else if(args[0] == "WTR") begin
 	  o_cmd_exists = 1'b1;	 
         end*/
@@ -277,22 +276,22 @@ class tb_class #(
         /*else if(args[0] == "CHK") begin
 	  o_cmd_exists = 1'b1; 
         end*/
-        else if(args[0] == "WAIT") begin
+        /*else*/ /*if(args[0] == "WAIT") begin
 	  o_cmd_exists = 1'b1; 
-        end
+        end*/
 	/*else if(args[0] == "WTRS") begin
 	  o_cmd_exists = 1'b1; 
 	end
 	else if(args[0] == "WTFS") begin
 	  o_cmd_exists = 1'b1;  
 	end*/
-	else if(args[0] == "MODELSIM_CMD") begin
+	/*else*/ /*if(args[0] == "MODELSIM_CMD") begin
 	  o_cmd_exists = 1'b1;	
-	end	 
-        else begin
+	end*/	 
+        /*else begin
 	  $display("Error: Command %s not recognized", args[0]);
           o_cmd_exists = 1'b0;	 
-        end
+        end*/
       end
               
    endtask // cmd_decoder
@@ -302,13 +301,13 @@ class tb_class #(
     * 
     * 
     */
-   task set_injector_init (
-      virtual set_injector_intf #(SET_SIZE, SET_WIDTH) set_injector_vif
+   /*task set_injector_init (
+      virtual set_injector_intf #(G_SET_SIZE, G_SET_WIDTH) set_injector_vif
    );
       begin
 	 set_injector_vif.set_signals_asynch = set_injector_vif.set_signals_asynch_init_value; 
       end
-   endtask // set_injector_init
+   endtask // set_injector_init*/
    
 		  
 
@@ -317,8 +316,8 @@ class tb_class #(
     * Read Args From Decoder task and set output as combinational
     * 
     */
-   task set_injector(
-     virtual set_injector_intf #(SET_SIZE, SET_WIDTH) set_injector_vif,
+   /*task set_injector(
+     virtual set_injector_intf #(G_SET_SIZE, G_SET_WIDTH) set_injector_vif,
      input string 		      i_args [`ARGS_NB]
    );
       begin
@@ -329,7 +328,7 @@ class tb_class #(
 	 string  s_str;
 
 	 // INIT ALIAS
-	 for (int i = 0; i < SET_SIZE; i++) begin
+	 for (int i = 0; i < G_SET_SIZE; i++) begin
 	   s_alias_array[set_injector_vif.set_alias[i]] = i;
          end
 	 
@@ -351,7 +350,7 @@ class tb_class #(
       
       $display("");      
       	 
-   endtask // set_injector
+   endtask // set_injector*/
 
 
    /* TASK WAIT EVENT
@@ -452,7 +451,7 @@ class tb_class #(
    endtask // wait_event
 
    
-   task wait_duration (
+   /*task wait_duration (
 	virtual      wait_duration_intf wait_duration_vif, 	       
         input string i_args [`ARGS_NB]       	              		       
    );
@@ -527,7 +526,7 @@ class tb_class #(
 
       $display("");
    endtask // wait_duration
-
+*/
 
    
    /*task check_level (
@@ -606,7 +605,7 @@ class tb_class #(
 */
 
    
-   task wait_event_soft (
+   /*task wait_event_soft (
 			virtual           wait_event_intf #(G_WAIT_SIZE, G_WAIT_WIDTH) wait_event_vif,		    
                         input string      i_args [`ARGS_NB]
    );
@@ -644,7 +643,7 @@ class tb_class #(
 	 
       end
    endtask // wait_event_soft    
-
+*/
    /*
     *
     * Task : get line in double quote

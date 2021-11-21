@@ -9,12 +9,22 @@
 // Status          : Unknown, Use with caution!
 
 //`include "/home/jorisp/GitHub/Verilog/lib_tb_uart/tb_uart_class.sv"
+
+// == REGULAR TESTBENCH CLASS ==
+`include "/home/linux-jp/Documents/GitHub/Verilog/lib_tb_generic/tb_set_injector_class.sv"
 `include "/home/linux-jp/Documents/GitHub/Verilog/lib_tb_generic/tb_wait_event_class.sv"
 `include "/home/linux-jp/Documents/GitHub/Verilog/lib_tb_generic/tb_check_level_class.sv"
+`include "/home/linux-jp/Documents/GitHub/Verilog/lib_tb_generic/tb_modelsim_cmd_class.sv"
+// =============================
+
+// == CUSTOM TESTBENCH CLASS ==
 `include "/home/linux-jp/Documents/GitHub/Verilog/lib_tb_uart/tb_uart_class.sv"
+// ============================
 
-
-class tb_modules_custom_class #(
+class tb_modules_custom_class #(// == SET INJECTOR PARAMETERS ==
+				parameter G_SET_SIZE  = 5,
+				parameter G_SET_WIDTH = 32,
+				
 				// == WAIT EVENT PARAMETERS ==
 				parameter G_WAIT_SIZE  = 5,
 				parameter G_WAIT_WIDTH = 1,
@@ -55,8 +65,8 @@ class tb_modules_custom_class #(
     * == CONSTANTES ==
     * ================
     */
-   const int regular_cmd_nb = 7;
-   tb_modules_infos_st regular_tb_modules_infos[7-1:0];
+   const int regular_cmd_nb = 8;
+   tb_modules_infos_st regular_tb_modules_infos[8-1:0];
 
    regular_cmd_list_t regular_cmd_list = '{0         : "SET",
 					   1         : "WTR",
@@ -87,6 +97,12 @@ class tb_modules_custom_class #(
     * =====================================
     */
 
+   // Set Injector Testbench Module
+   tb_set_injector_class #(G_SET_SIZE,
+			   G_SET_WIDTH
+			   )
+   tb_set_injector_inst;   
+
    // Wait Event Testbench Module
    tb_wait_event_class #(G_WAIT_SIZE,
 			 G_WAIT_WIDTH,
@@ -99,6 +115,9 @@ class tb_modules_custom_class #(
 			  G_CHECK_WIDTH
 			  )
    tb_check_level_inst;
+
+   // Modelsim Command
+   tb_modelsim_cmd_class tb_modelsim_cmd_inst;   
    
    
    /* ======================================    
@@ -141,11 +160,16 @@ class tb_modules_custom_class #(
     */
 
    // Initialize Generic Testbench Modules
-   function new (virtual wait_event_intf  #(G_WAIT_SIZE, G_WAIT_WIDTH)   wait_event_nif,
+   function new (virtual set_injector_intf #(G_SET_SIZE, G_SET_WIDTH)     set_injector_nif,
+		 virtual wait_event_intf #(G_WAIT_SIZE, G_WAIT_WIDTH) wait_event_nif,
+		 virtual wait_duration_intf  wait_duration_vif,
 		 virtual check_level_intf #(G_CHECK_SIZE, G_CHECK_WIDTH) check_level_nif);
 
-      this.tb_wait_event_inst  = new(wait_event_nif);  // Init Class Object Wait Event      
-      this.tb_check_level_inst = new(check_level_nif); // Init Class object Check Level
+      this.tb_set_injector_inst = new(set_injector_nif);                    // Init Class Oblect Set Injector
+      this.tb_wait_event_inst   = new(wait_event_nif, wait_duration_vif);   // Init Class Object Wait Event      
+      this.tb_check_level_inst  = new(check_level_nif);                     // Init Class Object Check Level
+      this.tb_modelsim_cmd_inst = new();                                    // Init Modelsim Command
+      
 
       // Init Regular TB Modules Infos
       for(i = 0; i < this.regular_cmd_list.size(); i++) begin
@@ -170,7 +194,7 @@ class tb_modules_custom_class #(
       bit      is_regular = 0;
       
       
-      $display("DEBUG - ADD_INFO function !");
+      //$display("DEBUG - ADD_INFO function !");
       $display("this.tb_infos_ptr : %d", this.tb_infos_ptr);
       
       // == Check if cmd_type is already stored in tb_modules_infos
@@ -179,7 +203,7 @@ class tb_modules_custom_class #(
 	    if(this.tb_modules_infos[i].cmd_type == cmd_type) begin
 	       cmd_type_already_exists = 1; // Command Already Exists
 	       cmd_type_index          = i; // Save the index
-	       $display("DEBUG - tb_modules_custom_class : Command Type already exists - index : %d !", cmd_type_index);
+	       //$display("DEBUG - tb_modules_custom_class : Command Type already exists - index : %d !", cmd_type_index);
 	       
 	    end
 	 end
@@ -196,9 +220,9 @@ class tb_modules_custom_class #(
 
       // If cmd_type doesnt exists, add it to array of struct
       if(cmd_type_already_exists == 0) begin
-	 $display("cmd_type_already_exists == 0");	
+	 /*$display("cmd_type_already_exists == 0");	
 	 $display("cmd_type : %s - tb_module_cmd_list : %p", cmd_type, tb_module_cmd_list);
-	 
+	 */
 	 // Add Command type
 	 this.tb_modules_infos[this.tb_infos_ptr].cmd_type = cmd_type;
 	 
@@ -212,12 +236,12 @@ class tb_modules_custom_class #(
 	 // Add info of regular cmd
 	 this.tb_modules_infos[this.tb_infos_ptr].is_regular_cmd = is_regular;
 	 
-	 $display("this.tb_modules_infos[this.tb_infos_ptr].cmd_type : %s", this.tb_modules_infos[this.tb_infos_ptr].cmd_type);
+	 /*$display("this.tb_modules_infos[this.tb_infos_ptr].cmd_type : %s", this.tb_modules_infos[this.tb_infos_ptr].cmd_type);
 	 $display("this.tb_modules_infos[this.tb_infos_ptr].alias_list : %p", this.tb_modules_infos[this.tb_infos_ptr].alias_list);
 	 $display("this.tb_modules_infos[this.tb_infos_ptr].is_regular_cmd : %d", this.tb_modules_infos[this.tb_infos_ptr].is_regular_cmd);
-	 
+	 */
 	 this.tb_infos_ptr += 1; // Inc Pointer	
-	 $display("this.tb_infos_ptr : %d\n", this.tb_infos_ptr);
+	 //$display("this.tb_infos_ptr : %d\n", this.tb_infos_ptr);
 	 
 	 
 //  
@@ -237,17 +261,19 @@ class tb_modules_custom_class #(
 	 end
       end
 
-      $display("this.tb_modules_infos : %p\n\n", this.tb_modules_infos);
+      //$display("this.tb_modules_infos : %p\n\n", this.tb_modules_infos);
             
    endfunction // ADD_INFO
    
    // REGULAR_TB_MODULE_ADD_INFO
    function void REGULAR_TB_MODULES_ADD_INFO();
-      this.regular_tb_modules_infos[1].alias_list = this.tb_wait_event_inst.wait_event_alias_list;   // Get Alias List of WTR
-      this.regular_tb_modules_infos[2].alias_list = this.tb_wait_event_inst.wait_event_alias_list;   // Get Alias List of WTF
-      this.regular_tb_modules_infos[3].alias_list = this.tb_wait_event_inst.wait_event_alias_list;   // Get Alias List of WTRS
-      this.regular_tb_modules_infos[4].alias_list = this.tb_wait_event_inst.wait_event_alias_list;   // Get Alias List of WTFS
-      this.regular_tb_modules_infos[5].alias_list = this.tb_check_level_inst.check_level_alias_list; // Get ALias List of Check Level
+      this.regular_tb_modules_infos[0].alias_list = this.tb_set_injector_inst.set_injector_alias_list; // Get Alias List of SET
+      this.regular_tb_modules_infos[1].alias_list = this.tb_wait_event_inst.wait_event_alias_list;     // Get Alias List of WTR
+      this.regular_tb_modules_infos[2].alias_list = this.tb_wait_event_inst.wait_event_alias_list;     // Get Alias List of WTF
+      this.regular_tb_modules_infos[3].alias_list = this.tb_wait_event_inst.wait_event_alias_list;     // Get Alias List of WTRS
+      this.regular_tb_modules_infos[4].alias_list = this.tb_wait_event_inst.wait_event_alias_list;     // Get Alias List of WTFS
+      this.regular_tb_modules_infos[5].alias_list = this.tb_check_level_inst.check_level_alias_list;   // Get ALias List of Check Level
+//      this.regular_tb_modules_infos[6].alias_list = this.tb_check_level_inst.check_level_alias_list;   // Get ALias List of Check Level
       
             
    endfunction // REGULAR_TB_MODULES_ADD_INFO
@@ -294,7 +320,7 @@ class tb_modules_custom_class #(
 	 logic 	check_ok;  // Check OK "1" or KO "0"
 	 logic 	is_regular_cmd; // Regular command when  == '1'	  
 	 
-	 decod_scn_line(line, cmd_type, alias_str, cmd, cmd_args); // Decode Scenarii lines
+	 decod_scn_line(line, cmd_type, alias_str, cmd, cmd_args);                 // Decode Scenarii lines
 	 check_commands(cmd_type, alias_str, check_ok, is_regular_cmd);            // Check if Command type exists and if Alias exists
 
 	 if(check_ok == 1) begin
@@ -328,6 +354,10 @@ class tb_modules_custom_class #(
 	 string cmd;       // Command of the commande type	 
 	 string cmd_args;  // Extract char. between "(" and ")"	 
 	 // ========================
+
+	 // Prin Line
+	 $display("%s", line.substr(0,line.len() - 2)); // Print line and Remove "\n" character
+	 
 
 	 // Get the length of the line
 	 line_length = line.len();
@@ -372,7 +402,7 @@ class tb_modules_custom_class #(
 	 cmd_args = line.substr(pos_parenthesis_0 + 1 , pos_parenthesis_1 - 1); // RM "(" and ")"
 
 	 
-	 $display("DEBUG - cmd_type : %s - alias_str : %s - cmd : %s - cmd_args : %s", cmd_type, alias_str, cmd, cmd_args);
+	 //$display("DEBUG - cmd_type : %s - alias_str : %s - cmd : %s - cmd_args : %s", cmd_type, alias_str, cmd, cmd_args);
 	 
 	 // Output affectation
 	 o_cmd_type  = cmd_type;
@@ -389,12 +419,12 @@ class tb_modules_custom_class #(
 			       output logic o_check_ok,
 			       output logic o_is_regular_cmd);
       begin
+	 
 	 // Internal variables
 	 int i                   = 0; // Loop index
 	 logic i_cmd_type_exists = 0; // Command Type exists flag
-	 int   cmd_type_index    = 0; // Index of command type if exists
-	 
-	 int   is_regular_cmd = 0;
+	 int   cmd_type_index    = 0; // Index of command type if exists	 
+	 int   is_regular_cmd    = 0; // Regular Command
 	 
 	 
 	 // By default check is not ok
@@ -432,10 +462,17 @@ class tb_modules_custom_class #(
 	       if(this.regular_tb_modules_infos[cmd_type_index].alias_list.exists(i_alias_str)) begin
 		  o_check_ok = 1;		  
 	       end
+	       // Special Case for "WAIT" Command => No Alias needed for this command
+	       // Special Case for "MODELSIM_CMD" Command => No Alias needed
+	       else if(i_cmd_type == "WAIT" || i_cmd_type == "MODELSIM_CMD") begin
+		  o_check_ok = 1;		  
+	       end
+	       
 	       else begin
 		  $display("Error: Alias %s does not exists !", i_alias_str);
 	       end
-	    end
+	    end // if (is_regular_cmd == 1)
+	    
 	    else begin
 	       // Check if Alias exists in cmd_type (not a regular cmd)
 	       if(this.tb_modules_infos[cmd_type_index].alias_list.exists(i_alias_str)) begin
@@ -447,7 +484,7 @@ class tb_modules_custom_class #(
 	    end
 	 end // else: !if(i_cmd_type_exists == 0)
 
-	 $display("DEBUG - check_commands : o_check_ok : %d", o_check_ok);
+	 //$display("DEBUG - check_commands : o_check_ok : %d", o_check_ok);
 
 	 o_is_regular_cmd = is_regular_cmd;	 
       end
@@ -500,9 +537,21 @@ class tb_modules_custom_class #(
 		       (this.regular_tb_modules_infos[i].cmd_type == "WTR" && i_cmd_type == "WTR")   ||
 		       (this.regular_tb_modules_infos[i].cmd_type == "WTF" && i_cmd_type == "WTF")   ||
 		       (this.regular_tb_modules_infos[i].cmd_type == "WTRS" && i_cmd_type == "WTRS") || 
-		       (this.regular_tb_modules_infos[i].cmd_type == "WTFS" && i_cmd_type == "WTRS") ) begin
+		       (this.regular_tb_modules_infos[i].cmd_type == "WTFS" && i_cmd_type == "WTRS") || 
+		       (this.regular_tb_modules_infos[i].cmd_type == "WAIT" && i_cmd_type == "WAIT") ) begin
 		  this.tb_wait_event_inst.sel_wait_event_command(i_cmd_type,
 								 i_alias_str,
+								 i_cmd_args);
+		  
+	       end
+	       else if(this.regular_tb_modules_infos[i].cmd_type == "SET" && i_cmd_type == "SET") begin
+		  this.tb_set_injector_inst.sel_set_injector_command(i_cmd_type,
+								     i_alias_str,
+								     i_cmd_args);
+		  
+	       end
+	       else if(this.regular_tb_modules_infos[i].cmd_type == "MODELSIM_CMD" && i_cmd_type == "MODELSIM_CMD") begin
+		  this.tb_modelsim_cmd_inst.sel_modelsim_command(i_cmd_type,
 								 i_cmd_args);
 		  
 	       end
@@ -516,9 +565,9 @@ class tb_modules_custom_class #(
 
    // Initialization of Enabled Testbench Modules
    virtual task init_tb_modules(); 
-      begin
-	 // By Default => No Custom Modules
-
+      begin       
+	 // INIT SET INJECTOR
+	 this.tb_set_injector_inst.set_injector_init();
       end      
    endtask // init_tb_modules
 
