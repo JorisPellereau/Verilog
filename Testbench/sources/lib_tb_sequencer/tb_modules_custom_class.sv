@@ -11,14 +11,14 @@
 //`include "/home/jorisp/GitHub/Verilog/lib_tb_uart/tb_uart_class.sv"
 
 // == REGULAR TESTBENCH CLASS ==
-`include "/home/linux-jp/Documents/GitHub/Verilog/lib_tb_generic/tb_set_injector_class.sv"
-`include "/home/linux-jp/Documents/GitHub/Verilog/lib_tb_generic/tb_wait_event_class.sv"
-`include "/home/linux-jp/Documents/GitHub/Verilog/lib_tb_generic/tb_check_level_class.sv"
-`include "/home/linux-jp/Documents/GitHub/Verilog/lib_tb_generic/tb_modelsim_cmd_class.sv"
+`include "/home/linux-jp/Documents/GitHub/Verilog/Testbench/sources/lib_tb_set_injector/tb_set_injector_class.sv"
+`include "/home/linux-jp/Documents/GitHub/Verilog/Testbench/sources/lib_tb_wait_event/tb_wait_event_class.sv"
+`include "/home/linux-jp/Documents/GitHub/Verilog/Testbench/sources/lib_tb_check_level/tb_check_level_class.sv"
+`include "/home/linux-jp/Documents/GitHub/Verilog/Testbench/sources/lib_tb_modelsim_cmd/tb_modelsim_cmd_class.sv"
 // =============================
 
 // == CUSTOM TESTBENCH CLASS ==
-`include "/home/linux-jp/Documents/GitHub/Verilog/lib_tb_uart/tb_uart_class.sv"
+`include "/home/linux-jp/Documents/GitHub/Verilog/Testbench/sources/lib_tb_uart/tb_uart_class.sv"
 // ============================
 
 class tb_modules_custom_class #(// == SET INJECTOR PARAMETERS ==

@@ -9,7 +9,7 @@
 // Status          : Unknown, Use with caution!
 
 
-`include "/home/linux-jp/Documents/GitHub/Verilog/lib_testbench/tb_modules_custom_class.sv"
+`include "/home/linux-jp/Documents/GitHub/Verilog/Testbench/sources/lib_tb_sequencer/tb_modules_custom_class.sv"
 
 
 `define ARGS_NB 5 
@@ -168,11 +168,11 @@ class tb_class #(
 	    else begin
 	       
 	       this.tb_modules_custom_inst.seq_custom_tb_modules(line); // Decode SCN Line
-	 end // while (end_test == 1'b0)	 
-      end // task tb_sequencer(                             
+	    end // while (end_test == 1'b0)
+	    
+	 end // while (end_test == 1'b0)
+      end      
+      
    endtask // tb_sequencer
-
-
- 
-
- endclass
+   
+endclass
