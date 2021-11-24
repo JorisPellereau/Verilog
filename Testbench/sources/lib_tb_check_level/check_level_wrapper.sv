@@ -14,8 +14,7 @@ interface check_level_intf #(
      );
 
    string 	       check_alias [CHECK_SIZE];   
-   logic [CHECK_WIDTH - 1 : 0] check_signals [CHECK_SIZE];   
-   
+   logic [CHECK_WIDTH - 1 : 0] check_signals [CHECK_SIZE];  
 endinterface // check_level_intf
 
    
