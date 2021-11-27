@@ -9,13 +9,11 @@
 
 import sys
 
-
-class generic_tb_uart_cmd_class:
+class tb_uart_cmd_class:
 
     # INIT of the class
-    def __init__(self, output_file_path, f):
-        self.out_file = output_file_path
-        self.f = f
+    def __init__(self, scn_line_list):#output_file_path, f):
+        self.scn_line_list = scn_line_list
 
 
     # UART TX START
@@ -26,8 +24,8 @@ class generic_tb_uart_cmd_class:
         for i in range(0, len(data_list) - 1):
             line_to_print = line_to_print + str(data_list[i]) + " "
 
-        line_to_print = "UART[" + alias + "] TX_START(" + line_to_print + str(data_list[len(data_list) - 1]) + ")\n"
-        self.f.write(line_to_print)
+        line_to_print = "UART[" + alias + "] TX_START(" + line_to_print + str(data_list[len(data_list) - 1]) + ")"
+        self.scn_line_list.append(line_to_print)
 
 
     # UART RX_READ
@@ -38,8 +36,8 @@ class generic_tb_uart_cmd_class:
         for i in range(0, len(data_list) - 1):
             line_to_print = line_to_print + str(data_list[i]) + " "
         
-        line_to_print = "UART[" + alias + "] RX_READ(" + line_to_print + str(data_list[len(data_list) - 1]) + ")\n"
-        self.f.write(line_to_print)
+        line_to_print = "UART[" + alias + "] RX_READ(" + line_to_print + str(data_list[len(data_list) - 1]) + ")"
+        self.scn_line_list.append(line_to_print)
 
 
     # UART RX_WAIT_DATA
@@ -50,5 +48,5 @@ class generic_tb_uart_cmd_class:
         for i in range(0, len(data_list) - 1):
             line_to_print = line_to_print + str(data_list[i]) + " "
             
-        line_to_print = "UART[" + alias + "] RX_WAIT_DATA(" + line_to_print + str(data_list[len(data_list) - 1]) + ")\n"
-        self.f.write(line_to_print)
+        line_to_print = "UART[" + alias + "] RX_WAIT_DATA(" + line_to_print + str(data_list[len(data_list) - 1]) + ")"
+        self.scn_line_list.append(line_to_print)
