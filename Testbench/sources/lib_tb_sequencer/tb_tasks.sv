@@ -12,8 +12,6 @@
 `include "/home/linux-jp/Documents/GitHub/Verilog/Testbench/sources/lib_tb_sequencer/tb_modules_custom_class.sv"
 
 
-`define ARGS_NB 5 
- 
 class tb_class #(
 		 // SET INJECTOR PARAMETERS
 		 parameter G_SET_SIZE  = 5,
@@ -28,10 +26,14 @@ class tb_class #(
 		 parameter G_CHECK_SIZE  = 5,
 		 parameter G_CHECK_WIDTH = 32,
 
-		 // UART Modules PARAMETER
+		 // == UART Modules PARAMETER ==
 		 parameter G_NB_UART_CHECKER        = 2,
 		 parameter G_UART_DATA_WIDTH        = 8,
-		 parameter G_UART_BUFFER_ADDR_WIDTH = 8
+		 parameter G_UART_BUFFER_ADDR_WIDTH = 8,
+
+		 // == DATA COLLECTOR PARAMETERS ==
+		 parameter G_NB_COLLECTOR           = 2,
+		 parameter G_DATA_COLLECTOR_WIDTH   = 32
 		 );
 
 
@@ -45,7 +47,9 @@ class tb_class #(
 		             G_CHECK_WIDTH,
 			     G_NB_UART_CHECKER,
 			     G_UART_DATA_WIDTH,
-			     G_UART_BUFFER_ADDR_WIDTH
+			     G_UART_BUFFER_ADDR_WIDTH,
+			     G_NB_COLLECTOR,
+			     G_DATA_COLLECTOR_WIDTH
 			     ) tb_modules_custom_inst;  // Create Handle
    // ====================================
 
@@ -104,7 +108,6 @@ class tb_class #(
 
 	 // Flag from Generic Testbench Modules
 	 logic 	   cmd_exists;      
-	 string    args[`ARGS_NB];
       
 	 logic 	   end_test;
 	 int 	   line_status;
@@ -174,5 +177,16 @@ class tb_class #(
       end      
       
    endtask // tb_sequencer
+
+
+
+
+
+   // == FUNCTIONS ==
+
+   function void ADD_ALIAS();
+   endfunction // ADD_ALIAS   
+	
+   // ===============
    
 endclass

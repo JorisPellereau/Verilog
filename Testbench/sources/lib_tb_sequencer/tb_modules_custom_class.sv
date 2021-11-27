@@ -19,6 +19,8 @@
 
 // == CUSTOM TESTBENCH CLASS ==
 `include "/home/linux-jp/Documents/GitHub/Verilog/Testbench/sources/lib_tb_uart/tb_uart_class.sv"
+`include "/home/linux-jp/Documents/GitHub/Verilog/Testbench/sources/lib_tb_data_collector/tb_data_collector_class.sv"
+
 // ============================
 
 class tb_modules_custom_class #(// == SET INJECTOR PARAMETERS ==
@@ -37,7 +39,11 @@ class tb_modules_custom_class #(// == SET INJECTOR PARAMETERS ==
 				// == UART PARAMETERS ==
 				parameter G_NB_UART_CHECKER   = 2,
 				parameter G_DATA_WIDTH        = 8,
-				parameter G_BUFFER_ADDR_WIDTH = 8
+				parameter G_BUFFER_ADDR_WIDTH = 8,
+
+				// == DATA COLLECTOR PARAMETERS ==
+				parameter G_NB_COLLECTOR           = 2,
+				parameter G_DATA_COLLECTOR_WIDTH   = 32
 				);
    
 
@@ -125,6 +131,7 @@ class tb_modules_custom_class #(// == SET INJECTOR PARAMETERS ==
     * ======================================
     */
 
+   // == UART TESTBENCH CLASS ==
    tb_uart_class #(G_NB_UART_CHECKER  ,
 		   G_DATA_WIDTH       ,
 		   G_BUFFER_ADDR_WIDTH
@@ -150,8 +157,33 @@ class tb_modules_custom_class #(// == SET INJECTOR PARAMETERS ==
             
    endfunction // init_uart_class
   
+   // ===============================
+
+
+   // == DATA COLLECTOR TESTBENCH CLASS ==
+   tb_data_collector_class #(G_NB_COLLECTOR,
+		             G_DATA_COLLECTOR_WIDTH
+			     )
+   tb_data_collector_inst [*];
+   int 					       data_collector_vif_ptr = 0; // Pointer of DATA_COLLECTOR Instances
    
- 
+   
+   // Init DATA COLLECTOR TESTBENCH CLASS and Add Info
+   function void init_data_collector_custom_class(virtual data_collector_intf #(G_NB_COLLECTOR, 
+										G_DATA_COLLECTOR_WIDTH) 
+						  data_collector_nif,
+						  string DATA_COLLECTOR_ALIAS);
+      
+      this.tb_data_collector_inst[this.data_collector_vif_ptr] = new(data_collector_nif, DATA_COLLECTOR_ALIAS);
+
+      ADD_INFO(this.tb_data_collector_inst[this.data_collector_vif_ptr].DATA_COLLECTOR_COMMAND_TYPE,
+	       this.tb_data_collector_inst[this.data_collector_vif_ptr].DATA_COLLECTOR_CMD_ARRAY,
+	       this.tb_data_collector_inst[this.data_collector_vif_ptr].DATA_COLLECTOR_ALIAS);
+      
+      this.data_collector_vif_ptr += 1; // Inc. Pointer
+            
+   endfunction // init_data_collector_custom_class
+   // ==========================================
    
    
    /* =================
