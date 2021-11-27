@@ -29,7 +29,7 @@ class tb_class #(
 		 parameter G_CHECK_WIDTH = 32,
 
 		 // UART Modules PARAMETER
-		 parameter G_NB_UART_CHECKER        = 1,
+		 parameter G_NB_UART_CHECKER        = 2,
 		 parameter G_UART_DATA_WIDTH        = 8,
 		 parameter G_UART_BUFFER_ADDR_WIDTH = 8
 		 );

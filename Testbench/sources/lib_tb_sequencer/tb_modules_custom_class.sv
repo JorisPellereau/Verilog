@@ -537,7 +537,7 @@ class tb_modules_custom_class #(// == SET INJECTOR PARAMETERS ==
 		       (this.regular_tb_modules_infos[i].cmd_type == "WTR" && i_cmd_type == "WTR")   ||
 		       (this.regular_tb_modules_infos[i].cmd_type == "WTF" && i_cmd_type == "WTF")   ||
 		       (this.regular_tb_modules_infos[i].cmd_type == "WTRS" && i_cmd_type == "WTRS") || 
-		       (this.regular_tb_modules_infos[i].cmd_type == "WTFS" && i_cmd_type == "WTRS") || 
+		       (this.regular_tb_modules_infos[i].cmd_type == "WTFS" && i_cmd_type == "WTFS") || 
 		       (this.regular_tb_modules_infos[i].cmd_type == "WAIT" && i_cmd_type == "WAIT") ) begin
 		  this.tb_wait_event_inst.sel_wait_event_command(i_cmd_type,
 								 i_alias_str,
@@ -553,7 +553,9 @@ class tb_modules_custom_class #(// == SET INJECTOR PARAMETERS ==
 	       else if(this.regular_tb_modules_infos[i].cmd_type == "MODELSIM_CMD" && i_cmd_type == "MODELSIM_CMD") begin
 		  this.tb_modelsim_cmd_inst.sel_modelsim_command(i_cmd_type,
 								 i_cmd_args);
-		  
+	       end
+	       else begin
+		 //$display("Error: Routed command failed");		  
 	       end
 	    end
 	 end

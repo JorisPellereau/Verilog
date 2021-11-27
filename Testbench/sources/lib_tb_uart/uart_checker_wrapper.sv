@@ -42,7 +42,7 @@ endinterface // uart_checker_intf
 
 module uart_checker_wrapper #(
 
-			      parameter G_NB_UART_CHECKER   = 1,
+			      parameter G_NB_UART_CHECKER   = 2,
 			      parameter G_STOP_BIT_NUMBER   = 1,
 			      parameter G_POLARITY          = 1,
 			      parameter G_PARITY            = 0,
