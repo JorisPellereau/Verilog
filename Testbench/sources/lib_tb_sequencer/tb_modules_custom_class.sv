@@ -547,8 +547,10 @@ class tb_modules_custom_class #(// == SET INJECTOR PARAMETERS ==
 	       end
 	       
 	       // Check if Commands are "DATA_COLLECTOR" Types
-	       else if(this.tb_modules_infos[i].cmd_type == "DATA_COLLECTOR") begin
-		  // TBD !!!
+	       else if(this.tb_modules_infos[i].cmd_type == "DATA_COLLECTOR" && i_cmd_type == "DATA_COLLECTOR") begin
+		  this.tb_data_collector_inst[this.tb_modules_infos[i].alias_list[i_alias_str]].sel_data_collector_command(i_cmd, 
+															   i_alias_str, 
+															   i_cmd_args);
 	       end
 	    end // for (i = 0; i < this.tb_infos_ptr ; i++)
 	 end // if (i_is_regular_cmd == 0)

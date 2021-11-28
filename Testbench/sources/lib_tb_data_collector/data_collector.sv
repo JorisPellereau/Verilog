@@ -13,23 +13,16 @@ interface data_collector_intf #(
 				parameter G_DATA_WIDTH   = 32
 				);
 
-   logic  clk [G_NB_COLLECTOR - 1 : 0];
+   // == DATA COLLECTOR Inputs ==
+   logic                        clk                   [G_NB_COLLECTOR - 1 : 0];
+   logic [G_DATA_WIDTH - 1 : 0] data_collector_inputs [G_NB_COLLECTOR - 1 : 0];
+   // ===========================
 
-   logic  s_init_file [G_NB_COLLECTOR - 1 : 0];    // Open file command
-   logic  s_file_is_init [G_NB_COLLECTOR - 1 : 0]; // File is init
-   
-   logic  s_close_file [G_NB_COLLECTOR - 1 : 0];  // Close file
-   
-   logic  s_start_collect [G_NB_COLLECTOR - 1 : 0];
-   logic  s_stop_collect [G_NB_COLLECTOR - 1 : 0];
-
-   // ALIASES
-   int 				  data_collector_alias [string];
-   
-   int    s_file [G_NB_COLLECTOR - 1 : 0];
-
-   string  s_file_and_path [G_NB_COLLECTOR - 1 : 0];
-   
+   // == File Interface ==
+   int    s_data_collector_file [G_NB_COLLECTOR - 1 : 0]; // File Handler
+   logic  s_file_is_init        [G_NB_COLLECTOR - 1 : 0]; // File is init
+   logic  s_start_collect       [G_NB_COLLECTOR - 1 : 0]; // Start collect when '1'
+  
 endinterface // data_collector_intf
 
    
@@ -48,32 +41,30 @@ module data_collector #(
     );
 
    genvar 			   i;
-   
-   // == Init File management ==
-   // Manage open file
+  
+
+   // == Interface Connection Management ==
    generate
-      for(i = 0 ; i < G_NB_COLLECTOR ; i++) begin : g_init_file_mngt 
-	 // Wait on Rising Edge of Init File command
-	 always @(posedge data_collector_if.s_init_file[i]) begin
-	    data_collector_if.s_file[i] = $fopen(data_collector_if.s_file_and_path[i], "w"); // Create and overwrite if it exists	    
-	 end	
-      end
+      for(i = 0 ; i < G_NB_COLLECTOR ; i++) begin : g_interface_connection
+	 assign data_collector_if.clk[i]                   = clk[i];
+	 assign data_collector_if.data_collector_inputs[i] = i_data[i];	 
+      end      
    endgenerate
+   // ==============================
 
-   // Manage closing file
+   // == Start Collect Management ==
    generate
-      for(i = 0 ; i < G_NB_COLLECTOR ; i++) begin : g_close_file_mngt
-	 // Wait on Rising Edge of Init File command
-	 always @(posedge data_collector_if.s_close_file[i]) begin
-	    $fclose(data_collector_if.s_file[i]); // Close file 
-	 end	
-      end
-   endgenerate   
-   // =============================
-
-
-   // == Write in file Management ==
-   
+      for(i = 0 ; i < G_NB_COLLECTOR ; i++) begin : g_collect_management
+	 
+	 always @(posedge clk[i]) begin
+	    // Collect Only if file is Init and if Start is enable
+	    if(data_collector_if.s_start_collect[i] == 1 && data_collector_if.s_file_is_init[i] == 1) begin	    
+	       $fwrite(data_collector_if.s_data_collector_file[i], "%h\n", i_data[i]);	       
+	    end
+	    
+	 end
+      end      
+   endgenerate
    // ==============================
 
 endmodule // data_collector

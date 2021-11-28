@@ -76,15 +76,18 @@ class tb_data_collector_class #(
 	   end
 
 	   "START": begin
+	      DATA_COLLECTOR_START(i_data_collector_alias,
+				   i_data_collector_cmd_args);	      
 	   end
 
 	   "STOP": begin
+	      DATA_COLLECTOR_STOP(i_data_collector_alias,
+				  i_data_collector_cmd_args);
 	   end
 
 	   "CLOSE": begin
 	      DATA_COLLECTOR_CLOSE(i_data_collector_alias,
-				   i_data_collector_cmd_args);
-	      
+				   i_data_collector_cmd_args);	      
 	   end
 
 	   default: $display("Error: wrong DATA_COLLECTOR Command : %s - len(%s) : %d", i_data_collector_cmd, i_data_collector_cmd, i_data_collector_cmd.len());
@@ -107,6 +110,8 @@ class tb_data_collector_class #(
 	 int 	space_position = 0;   // Space position between args
 	 string index_str;
 	 int 	args_len;
+
+	 $display("DEBUG - DATA_COLLECTOR_INIT task");
 	 
 	 
 	 // Get space position
@@ -121,9 +126,12 @@ class tb_data_collector_class #(
 	 data_collector_index = index_str.atoi();                           // String to Int
 
 	 file_path = data_collector_cmd_args.substr(space_position +1, args_len - 1);
-	 this.data_collector_file[data_collector_index] = $open(file_path, "w"); // Open it as Write mode
 
-	 $display("DEBUG - DATA_COLLECTOR_INIT : %d %s", data_collector_index, file_path);	 	 
+	 // Open file in interface
+	 this.data_collector_vif.s_data_collector_file[data_collector_index] = $fopen(file_path, "w"); // Open it as Write mode
+	 this.data_collector_vif.s_file_is_init[data_collector_index]        = 1;                      // File is init
+	 
+	 $display("DATA_COLLECTOR[%s] (%d) Initialiazed with file : %s - %t", data_collector_alias, data_collector_index,file_path, $time);
 	 
       end
    endtask // DATA_COLLECTOR_INIT
@@ -138,13 +146,59 @@ class tb_data_collector_class #(
 	 int    data_collector_index; // Index of data_collector
 	 // 	 
 	 data_collector_index = data_collector_cmd_args.atoi();	 
-	 $close(this.data_collector_file[data_collector_index]);
+	 $fclose(this.data_collector_vif.s_data_collector_file[data_collector_index]); // Close file in interface
+	 this.data_collector_vif.s_file_is_init[data_collector_index] = 0;             // File is Closed
+	 
+	 $display("DATA_COLLECTOR[%s] (%d) Closed at %t" ,data_collector_alias, data_collector_index, $time);	 
       end
    endtask // DATA_COLLECTOR_CLOSE
    
-   
-   
 
+   // Start Data Collector
+   task DATA_COLLECTOR_START(input string data_collector_alias,
+			     input string data_collector_cmd_args);
+      begin
+	 // Internal Variables
+	 int    data_collector_index; // Index of data_collector
+	  	 
+	 data_collector_index = data_collector_cmd_args.atoi();
+	 if(this.data_collector_vif.s_file_is_init[data_collector_index] == 1) begin
+	    this.data_collector_vif.s_start_collect[data_collector_index] = 1; // Start Selected Interface
+	    $display("DATA_COLLECTOR[%s] START(%d) at %t", data_collector_alias, data_collector_index, $time);
+	 end
+	 else begin
+	    $display("Error: DATA_COLLECTOR[%s] (%d) is not initialiazed ! - %t", data_collector_alias, data_collector_index, $time);	    
+	 end
+      end
+   endtask // DATA_COLLECTOR_START
+   
+   // Stop Data Collector
+   task DATA_COLLECTOR_STOP(input string data_collector_alias,
+			    input string data_collector_cmd_args);
+      begin
+	 // Internal Variables
+	 int    data_collector_index; // Index of data_collector
+	  	 
+	 data_collector_index = data_collector_cmd_args.atoi();
+	 this.data_collector_vif.s_start_collect[data_collector_index] = 0; // Stop Selected interface
+	 $display("DATA_COLLECTOR[%s] STOP(%d) at %t", data_collector_alias, data_collector_index, $time);
+	 
+      end
+   endtask // DATA_COLLECTOR_STOP
+   
+   
+   // Config Data Collector
+   task DATA_COLLECTOR_CONFIG(input string data_collector_alias,
+			    input string data_collector_cmd_args);
+      begin
+	 // Internal Variables
+	 int    data_collector_index; // Index of data_collector
+	  	 
+	 data_collector_index = data_collector_cmd_args.atoi();
+	 
+      end
+   endtask // DATA_COLLECTOR_CONFIG
+   
    
 
 endclass // tb_data_collector_class
