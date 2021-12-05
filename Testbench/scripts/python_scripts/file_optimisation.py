@@ -57,7 +57,7 @@ def file_optimisation(file_in, file_out):
             
     data_out = []
     for line in range(0, len(lines_opti)):
-        data_out.append("{0} {1}".format(lines_opti[line], lines_opti_index[line])) # Create output List to write in file
+        data_out.append("{0} {1:04d}".format(lines_opti[line], (lines_opti_index[line]))) # Create output List to write in file
         return_list.append([lines_opti[line], lines_opti_index[line]])              # Returned List
 
     data_out_to_file = "\n".join(data_out)
