@@ -184,7 +184,26 @@ class tb_class #(
 
    // == FUNCTIONS ==
 
-   function void ADD_ALIAS();
+   // ADD Alias function
+   function void ADD_ALIAS(string tb_module_name, string alias_str, int alias_index);
+      
+      case(tb_module_name)
+	"SET_INJECTOR" : begin
+	   tb_modules_custom_inst.tb_set_injector_inst.ADD_SET_INJECTOR_ALIAS(alias_str, alias_index);	   
+	end
+
+	"WAIT_EVENT" : begin
+	   tb_modules_custom_inst.tb_wait_event_inst.ADD_WAIT_EVENT_ALIAS(alias_str, alias_index);
+	end
+
+	"CHECK_LEVEL" : begin
+	   tb_modules_custom_inst.tb_check_level_inst.ADD_CHECK_LEVEL_ALIAS(alias_str,  alias_index);
+	end	
+
+	default: $display("Error: %s  does not exists !", tb_module_name);
+	
+      endcase // case (tb_module_name)
+      
    endfunction // ADD_ALIAS   
 	
    // ===============
