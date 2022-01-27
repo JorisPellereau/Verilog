@@ -35,6 +35,11 @@ class scn_class(generic_tb_cmd_class.generic_tb_cmd_class,
     # Print a Custom Line in SCN
     def print_line(self, line_2_print):
         self.scn_line_list.append(line_2_print)
+
+
+    # Print a Comment Line in SCN
+    def print_comment(self, line_2_print):
+        self.scn_line_list.append("-- " + line_2_print)
    
     # Close PY SCN file and print END_TEST
     def END_TEST(self):
