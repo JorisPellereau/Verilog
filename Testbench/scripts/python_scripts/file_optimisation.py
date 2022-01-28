@@ -5,12 +5,14 @@ import sys
 
 # == File optimisation ==
 # Optimized Collect file
+# Return packet of 32 bits integer in HEXA
 def file_optimisation(file_in, file_out):
 
     # == Init Variables ==
     input_file_length = 0
     lines             = []
     return_list       = []
+    tmp_line_len      = 0
     
     f = open(file_in, "r") # Open in read only
     lines = f.readlines()  # Get All lines in files
@@ -33,8 +35,6 @@ def file_optimisation(file_in, file_out):
     # Loop for each Lines
     for line_i in range(0, len(lines)):
 
-        
-
         if(lines[line_i] == previous_line):
             cnt_tmp += 1
 
@@ -53,10 +53,25 @@ def file_optimisation(file_in, file_out):
             previous_line = lines[line_i] # Update previous
             
         
+    # Pad with "0" in order to have 32 bits bit packets
+    tmp_line_len      = len(lines_opti[0])
+    nb_entire_32b_pkt = tmp_line_len / 8
+    pkt_remain        = tmp_line_len % 8 # a value [0:7]
+    nb_pkt_32b        = nb_entire_32b_pkt
+    if(pkt_remain != 0):
+        nb_pkt_32b += 1
+
+    
+    nb_0_to_add = 8 - pkt_remain
+    
         
-            
+    print("nb_pkt_32b : %d - pkt_remain : %d - nb_0_to_add : %d" %(nb_pkt_32b, pkt_remain, nb_0_to_add))
+    
+
     data_out = []
     for line in range(0, len(lines_opti)):
+        # Add extra 0 if needed
+        lines_opti[line] = "0"*nb_0_to_add + lines_opti[line]
         data_out.append("{0} {1:04d}".format(lines_opti[line], (lines_opti_index[line]))) # Create output List to write in file
         return_list.append([lines_opti[line], lines_opti_index[line]])              # Returned List
 
