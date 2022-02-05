@@ -29,7 +29,9 @@ class scn_class(generic_tb_cmd_class.generic_tb_cmd_class,
         self.scn_line_list             = []                          # List of line to write in file
         self.absolute_path_from_caller = inspect.stack()[1].filename # Absolute file path from Caller
         self.out_file                  = os.path.splitext(os.path.basename(self.absolute_path_from_caller))[0] + ".txt" # Create txt file
+        self.step_counter              = 0 # Step Counter Init
         super().__init__(self.scn_line_list) # Init Class
+        
         
 
     # Print a Custom Line in SCN
@@ -40,6 +42,12 @@ class scn_class(generic_tb_cmd_class.generic_tb_cmd_class,
     # Print a Comment Line in SCN
     def print_comment(self, line_2_print):
         self.scn_line_list.append("-- " + line_2_print)
+
+
+    # Print Step
+    def print_step(self, line_2_print):
+        self.scn_line_list.append("\n//-- STEP {0} : ".format(self.step_counter) + line_2_print + "\n")
+        self.step_counter += 1 # Inc Step Counter
    
     # Close PY SCN file and print END_TEST
     def END_TEST(self):
