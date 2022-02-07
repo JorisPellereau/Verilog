@@ -28,7 +28,8 @@ module max7219_checker_wrapper #(
     );
 
    genvar 			 i;  // Genvar for Generater MAX7219_Checker modules
-
+   genvar 			 j;
+   
    
 
 
@@ -42,7 +43,15 @@ module max7219_checker_wrapper #(
    
    max7219_register_struct_t max7219_screen_matrix [G_NB_MATRIX - 1 : 0];
    
-   
+   logic [G_NB_MATRIX*8 - 1 : 0] 	 s_matrix_row_i [7:0]; // MATRIX Row - LSB First
+/*   logic [G_NB_MATRIX*8 - 1] 	 s_matrix_row_1;
+   logic [G_NB_MATRIX*8 - 1] 	 s_matrix_row_2;
+   logic [G_NB_MATRIX*8 - 1] 	 s_matrix_row_3;
+   logic [G_NB_MATRIX*8 - 1] 	 s_matrix_row_4;
+   logic [G_NB_MATRIX*8 - 1] 	 s_matrix_row_5;
+   logic [G_NB_MATRIX*8 - 1] 	 s_matrix_row_6;
+   logic [G_NB_MATRIX*8 - 1] 	 s_matrix_row_7;
+  */ 
    // =======================
 
    // Latch Inputs
@@ -171,7 +180,25 @@ module max7219_checker_wrapper #(
    // ===========================
    
    
+   logic [7:0] s_row_0_tmp [G_NB_MATRIX - 1 : 0];
+   genvar      row_k;
    
+   generate
+      // For 8 Rows
+      for(row_k = 0 ; row_k < 8 ; row_k++) begin
+	 for(i = 0; i < G_NB_MATRIX ; i++) begin 
+
+	    // For 8 digits
+	    for (j = 0 ; j < 8 ; j++) begin
+	       
+	       assign s_matrix_row_i[row_k][j + 8*i] = gen_max7219_checker[i].i_max7219_checker_0.s_max7219_digit_i[j] >> (8 - row_k - 1);
+	    
+	    end
+	 end
+      end
+   endgenerate
+   
+     
    
    
   
