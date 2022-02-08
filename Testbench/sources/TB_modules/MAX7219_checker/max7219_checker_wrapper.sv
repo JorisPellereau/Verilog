@@ -182,6 +182,7 @@ module max7219_checker_wrapper #(
    
    logic [7:0] s_row_0_tmp [G_NB_MATRIX - 1 : 0];
    genvar      row_k;
+   logic [8*8*G_NB_MATRIX - 1 : 0] s_line_row_i [7:0];
    
    generate
       // For 8 Rows
@@ -197,8 +198,25 @@ module max7219_checker_wrapper #(
 	 end
       end
    endgenerate
+
+   genvar ii, jj;
    
-     
+   generate
+   //always @(*) begin
+      for(ii = 0 ; ii < 8*G_NB_MATRIX ; ii++) begin
+	 for(jj = 0 ; jj < 8 ; jj++) begin
+
+	    assign s_line_row_i[jj][8*8*G_NB_MATRIX - ii*8 - 1: 8*8*G_NB_MATRIX - ii*8 - 8] = s_matrix_row_i[jj][ii] ? "X" : "B";
+	    /*if(s_matrix_row_i[jj][ii] == 1'b0) begin
+	       /*assign*/ //s_line_row_i[jj][8*8*G_NB_MATRIX - ii*8 : 8*8*G_NB_MATRIX - ii*8 - 8] = " ";	       
+	    //end
+	    //else begin
+	       /*assign*/ //s_line_row_i[jj][8*8*G_NB_MATRIX - ii*8 : 8*8*G_NB_MATRIX - ii*8 - 8] = "*";
+	    //end	
+	 end
+      end
+   //end
+   endgenerate
    
    
   

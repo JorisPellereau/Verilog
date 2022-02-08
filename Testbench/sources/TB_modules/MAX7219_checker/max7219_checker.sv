@@ -47,6 +47,7 @@ module max7219_checker
    wire     s_max7219_clk_r_edge;
    wire     s_display_reg_r_edge;
    
+   logic [7:0] s_max7219_digit_i [7:0];
    
    max7219_register_struct_t max7219_reg;
    // ======================
@@ -163,7 +164,15 @@ module max7219_checker
       end // else: !if(!rst_n)
    end // always @ (posedge clk)
 
-
+   assign s_max7219_digit_i[0] = max7219_reg.REG_DIGIT_0;
+   assign s_max7219_digit_i[1] = max7219_reg.REG_DIGIT_1;
+   assign s_max7219_digit_i[2] = max7219_reg.REG_DIGIT_2;
+   assign s_max7219_digit_i[3] = max7219_reg.REG_DIGIT_3;
+   assign s_max7219_digit_i[4] = max7219_reg.REG_DIGIT_4;
+   assign s_max7219_digit_i[5] = max7219_reg.REG_DIGIT_5;
+   assign s_max7219_digit_i[6] = max7219_reg.REG_DIGIT_6;
+   assign s_max7219_digit_i[7] = max7219_reg.REG_DIGIT_7;
+  
    // == DOUT MNGT ==
    always @(posedge clk) begin
       if(!rst_n) begin
