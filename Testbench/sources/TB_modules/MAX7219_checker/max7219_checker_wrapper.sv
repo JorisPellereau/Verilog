@@ -122,31 +122,38 @@ module max7219_checker_wrapper #(
       end
       else begin
 	 if(s_display_screen_matrix_r_edge == 1'b1) begin
+
+	    for(n = 0; n < 8*G_NB_MATRIX ; n++) begin	         		      
+	       line_char[n*8 +: /*n*8 +*/ 7] = "_";		  
+	    end
+	    $display("%s", line_char);
+	    
 	    for(k = 0 ; k < 8 ; k++) begin
 	       for(l = 0 ; l < G_NB_MATRIX ; l++) begin
 		  for(m = 0 ; m < 8 ; m++) begin
-		     if(m == 0) begin
+		     
+		     if(m == 7) begin
   			line[(8*G_NB_MATRIX - 1) - (m+l*8)] = max7219_screen_matrix[l].REG_DIGIT_7[7 - k];
 		     end
-		     else if(m == 1) begin
+		     else if(m == 6) begin
 		        line[(8*G_NB_MATRIX - 1) - (m+l*8)] = max7219_screen_matrix[l].REG_DIGIT_6[7 - k];	
 		     end
-		     else if(m == 2) begin
+		     else if(m == 5) begin
 		        line[(8*G_NB_MATRIX - 1) - (m+l*8)] = max7219_screen_matrix[l].REG_DIGIT_5[7 - k];	
 		     end
-		     else if(m == 3) begin
+		     else if(m == 4) begin
 		        line[(8*G_NB_MATRIX - 1) - (m+l*8)] = max7219_screen_matrix[l].REG_DIGIT_4[7 - k];	
 		     end
-		     else if(m == 4) begin
+		     else if(m == 3) begin
 		        line[(8*G_NB_MATRIX - 1) - (m+l*8)] = max7219_screen_matrix[l].REG_DIGIT_3[7 - k];	
 		     end
-		     else if(m == 5) begin
+		     else if(m == 2) begin
 		        line[(8*G_NB_MATRIX - 1) - (m+l*8)] = max7219_screen_matrix[l].REG_DIGIT_2[7 - k];	
 		     end
-		     else if(m == 6) begin
+		     else if(m == 1) begin
 		        line[(8*G_NB_MATRIX - 1) - (m+l*8)] = max7219_screen_matrix[l].REG_DIGIT_1[7 - k];	
 		     end
-		     else if(m == 7) begin
+		     else if(m == 0) begin
 		        line[(8*G_NB_MATRIX - 1) - (m+l*8)] = max7219_screen_matrix[l].REG_DIGIT_0[7 - k];	
 		     end
 		     
@@ -157,7 +164,7 @@ module max7219_checker_wrapper #(
 	       
 	       for(n = 0; n < 8*G_NB_MATRIX ; n++) begin	         
 		  if(line[n] == 1'b1) begin		     
-		     line_char[n*8 +: /*n*8 +*/ 7] = "*";		     
+		     line_char[n*8 +: /*n*8 +*/ 7] = "0";		     
 		  end
 		  else begin		     
 		     line_char[n*8 +: /*n*8 +*/ 7] = " ";
@@ -171,7 +178,13 @@ module max7219_checker_wrapper #(
 	       line_char <= 0;
 	       
 	       
+	    end // for (k = 0 ; k < 8 ; k++)
+
+	    for(n = 0; n < 8*G_NB_MATRIX ; n++) begin	         		      
+	       line_char[n*8 +: /*n*8 +*/ 7] = "_";
+	  
 	    end
+	    $display("%s", line_char);
 	    
 	 end	 
       end      
