@@ -159,7 +159,7 @@ class tb_wait_event_class #(
 	 int 	       s_cnt      = 0;	 
 	 logic 	       s_cnt_done = 0;
 	 
-	 $display("DEBUG - wait_duration");
+	 //$display("DEBUG - wait_duration");
 	 s_max_timeout_cnt = DECODE_TIMEOUT(i_args);
 
 	 // WAIT until end of counter
