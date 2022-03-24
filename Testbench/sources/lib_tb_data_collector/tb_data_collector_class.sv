@@ -111,7 +111,7 @@ class tb_data_collector_class #(
 	 string index_str;
 	 int 	args_len;
 
-	 $display("DEBUG - DATA_COLLECTOR_INIT task");
+	 //$display("DEBUG - DATA_COLLECTOR_INIT task");
 	 
 	 
 	 // Get space position
