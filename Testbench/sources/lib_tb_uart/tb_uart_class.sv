@@ -294,13 +294,13 @@ class tb_uart_class #(parameter G_NB_UART_CHECKER   = 2,
 	       $display("UART RX_READ(%x) - Expected %x => Error", data_tmp[i], this.uart_checker_vif.s_buffer_rx_soft[array_index][this.uart_checker_vif.s_rd_ptr_soft]);
 	    end
 
-	    if(this.uart_checker_vif.s_rd_ptr_soft[array_index] < this.uart_checker_vif.s_wr_ptr_soft[array_index]) begin
-	       this.uart_checker_vif.s_rd_ptr_soft[array_index] = this.uart_checker_vif.s_rd_ptr_soft[array_index] + 1; // Inc	       
-	    end
-	    else begin
-	       $display("UART - Error : Buffer Read pointer soft > Buffer Write pointer soft");
-	       
-	    end
+	    //if(this.uart_checker_vif.s_rd_ptr_soft[array_index] < this.uart_checker_vif.s_wr_ptr_soft[array_index]) begin
+	    this.uart_checker_vif.s_rd_ptr_soft[array_index] = this.uart_checker_vif.s_rd_ptr_soft[array_index] + 1; // Inc	       
+	    //end
+	    //else begin
+	       //$display("UART - Error : Buffer Read pointer soft > Buffer Write pointer soft");
+	       // TBD RAZ a 0 nop ?
+	    //end
 	        
 	 end
 	 	 
@@ -392,6 +392,15 @@ class tb_uart_class #(parameter G_NB_UART_CHECKER   = 2,
 	    else begin
 	       $display("UART RX_WAIT_DATA(%x) - Expected %x => ERROR - %t", data_tmp[i], this.uart_checker_vif.rx_data[array_index],$time);
 	    end
+
+	    // Inc s_rd_ptr_soft
+	    //if(this.uart_checker_vif.s_rd_ptr_soft[array_index] < this.uart_checker_vif.s_wr_ptr_soft[array_index]) begin
+	    this.uart_checker_vif.s_rd_ptr_soft[array_index] = this.uart_checker_vif.s_rd_ptr_soft[array_index] + 1; // Inc	       
+	    //end
+	    //else begin
+	       //this.uart_checker_vif.s_rd_ptr_soft[array_index] = 0; // Inc
+	       
+	    //end
 	    
 
 	 end
