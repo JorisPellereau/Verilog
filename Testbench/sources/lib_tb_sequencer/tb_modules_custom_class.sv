@@ -378,6 +378,9 @@ class tb_modules_custom_class #(// == SET INJECTOR PARAMETERS ==
 	 int pos_parenthesis_0    = 0; // Position of ( character
 	 int pos_parenthesis_1    = 0; // Position of ) character
 	 int first_space_position = 0; // First position of " " character
+
+	 bit pos_0_find = 0; // 1 if first position of [ char. is find
+	 bit pos_1_find = 0; // 1 if first position of ] char. is find	 
 	 
 	 int i; // Loop Index
 
@@ -399,13 +402,15 @@ class tb_modules_custom_class #(// == SET INJECTOR PARAMETERS ==
 	 for(i = 0; i < line_length; i++) begin
 
 	    // Get "[" position
-	    if(line.getc(i) == "[") begin
-	       pos_0 = i;		  
+	    if(line.getc(i) == "["  && pos_0_find == 0) begin
+	       pos_0      = i;
+	       pos_0_find = 1;	       
 	    end
 
 	    // Get "]" position
-	    if(line.getc(i) == "]") begin
-	       pos_1 = i;		  
+	    if(line.getc(i) == "]" && pos_1_find == 0) begin
+	       pos_1      = i;
+	       pos_1_find = 1;
 	    end
 
 	    // Get "(" position

@@ -387,10 +387,10 @@ class tb_uart_class #(parameter G_NB_UART_CHECKER   = 2,
 	    
 	    @(posedge this.uart_checker_vif.rx_done[array_index]);
 	    if(this.uart_checker_vif.rx_data[array_index] == data_tmp[i]) begin
-	       $display("UART RX_WAIT_DATA(%x) - Expected %x => OK - %t", data_tmp[i], this.uart_checker_vif.rx_data[array_index],$time);
+	       $display("UART RX_WAIT_DATA(%x) - Expected %x - Received %x => OK - %t", data_tmp[i], data_tmp[i], this.uart_checker_vif.rx_data[array_index],$time);
 	    end
 	    else begin
-	       $display("UART RX_WAIT_DATA(%x) - Expected %x => ERROR - %t", data_tmp[i], this.uart_checker_vif.rx_data[array_index],$time);
+	       $display("UART RX_WAIT_DATA(%x) - Expected %x - Received %x => ERROR - %t", data_tmp[i], data_tmp[i], this.uart_checker_vif.rx_data[array_index],$time);
 	    end
 
 	    // Inc s_rd_ptr_soft
