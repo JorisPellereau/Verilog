@@ -117,3 +117,51 @@ class generic_tb_cmd_class:
         test_signal_value_cmd_str = self.modelsim_tcl_class.tcl_test_signal_value(var_name   = var_name,
                                                                                   test_value = value_to_check)
         self.MODELSIM_CMD(test_signal_value_cmd_str)
+
+
+
+
+    # Check a memory content in modelsim environment
+    # memory_rtl_path : str - path of memory to check
+    # memory_to_check : list - a list with memory content - HEX FORMAT
+    # digit_number : int - number of digit in memory data
+    def CHECK_MEMORY(self, memory_rtl_path, memory_to_check, digit_number):
+
+        # internal variables
+        var_name       = "memory_to_check"
+
+        # Convert memory_to_check to a string for TCL check
+        memory_to_check_str = "\"{"
+        for i in range(0, len(memory_to_check)):
+
+            # Add Space str only on data between range memory
+            if(i == 0 or i == len(memory_to_check)):
+                space_str = ""
+            else:
+                space_str = " "
+                
+            if(type(memory_to_check[i]) == int):
+                str_tmp = "{{{0:0" + str(digit_number) + "X" + "}}}"
+                memory_to_check_str = memory_to_check_str + space_str + str_tmp.format(memory_to_check[i])
+            elif(type(memory_to_check[i]) == str):
+                memory_to_check_str = memory_to_check_str + space_str + "{" + "X"*digit_number + "}"
+        memory_to_check_str = memory_to_check_str + "}\""
+        
+        self.scn_line_list.append("//-- Check memory content of {0} == {1}".format(memory_rtl_path, memory_to_check_str))
+                
+        # Set variable in modelsim (memory to check)
+        set_var_cmd_str = self.modelsim_tcl_class.tcl_set_signal_2_var(var_name    = var_name,
+                                                                       signal_path = memory_rtl_path)
+        self.MODELSIM_CMD(set_var_cmd_str)
+
+        # Set variable in modelsim (reference value)
+        memory_ref = "memory_ref"
+        set_var_cmd_str = self.modelsim_tcl_class.tcl_set_value_2_var(var_name = memory_ref,
+                                                                      value    = memory_to_check_str)
+        self.MODELSIM_CMD(set_var_cmd_str)
+        
+        # Check variable/signal in modelsim with an other variable
+        test_signal_value_cmd_str = self.modelsim_tcl_class.tcl_test_signal_value(var_name      = var_name,
+                                                                                  test_value    = memory_ref,
+                                                                                  test_variable = True)
+        self.MODELSIM_CMD(test_signal_value_cmd_str)
