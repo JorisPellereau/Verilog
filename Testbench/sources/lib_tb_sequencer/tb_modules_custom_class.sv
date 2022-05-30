@@ -20,6 +20,7 @@
 // == CUSTOM TESTBENCH CLASS ==
 `include "/home/linux-jp/Documents/GitHub/Verilog/Testbench/sources/lib_tb_uart/tb_uart_class.sv"
 `include "/home/linux-jp/Documents/GitHub/Verilog/Testbench/sources/lib_tb_data_collector/tb_data_collector_class.sv"
+`include "/home/linux-jp/Documents/GitHub/Verilog/Testbench/sources/lib_tb_data_checker/tb_data_checker_class.sv"
 
 // ============================
 
@@ -42,8 +43,12 @@ class tb_modules_custom_class #(// == SET INJECTOR PARAMETERS ==
 				parameter G_BUFFER_ADDR_WIDTH = 8,
 
 				// == DATA COLLECTOR PARAMETERS ==
-				parameter G_NB_COLLECTOR           = 2,
-				parameter G_DATA_COLLECTOR_WIDTH   = 32
+				parameter G_NB_COLLECTOR         = 2,
+				parameter G_DATA_COLLECTOR_WIDTH = 32,
+
+				// == DATA CHECKER PARAMETERS ==
+				parameter G_NB_CHECKER         = 2,
+				parameter G_DATA_CHECKER_WIDTH = 32
 				);
    
 
@@ -184,6 +189,32 @@ class tb_modules_custom_class #(// == SET INJECTOR PARAMETERS ==
             
    endfunction // init_data_collector_custom_class
    // ==========================================
+
+   // == DATA CHECKER TESTBENCH CLASS ==
+   tb_data_checker_class #( 
+			    .G_NB_CHECKER         (G_NB_CHECKER),
+			    .G_DATA_CHECKER_WIDTH (G_DATA_CHECKER_WIDTH)
+			   )
+   tb_data_checker_inst [*];
+   int 							 data_checker_vif_ptr = 0; // Point of DATA_CHECKER Instances
+
+   // Init DATA CHECKER TESTBENCH CLASS and Add Info
+   function void init_data_checker_custom_class(virtual data_checker_intf #(G_NB_CHECKER,
+									    G_DATA_CHECKER_WIDTH)
+						data_checker_nif,
+						string DATA_CHECKER_ALIAS
+						);
+
+      this.tb_data_checker_inst[this.data_checker_vif_ptr] = new(data_checker_nif, DATA_CHECKER_ALIAS);
+
+      ADD_INFO(this.tb_data_checker_inst[this.data_checker_vif_ptr].DATA_CHECKER_COMMAND_TYPE,
+	       this.tb_data_checker_inst[this.data_checker_vif_ptr].DATA_CHECKER_CMD_ARRAY,
+	       this.tb_data_checker_inst[this.data_checker_vif_ptr].DATA_CHECKER_ALIAS);
+      
+      this.data_checker_vif_ptr += 1; // Inc. Pointer
+      
+   endfunction // init_data_checker_custom_class         
+   // ==================================
    
    
    /* =================

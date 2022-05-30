@@ -32,8 +32,12 @@ class tb_class #(
 		 parameter G_UART_BUFFER_ADDR_WIDTH = 8,
 
 		 // == DATA COLLECTOR PARAMETERS ==
-		 parameter G_NB_COLLECTOR           = 2,
-		 parameter G_DATA_COLLECTOR_WIDTH   = 32
+		 parameter G_NB_COLLECTOR         = 2,
+		 parameter G_DATA_COLLECTOR_WIDTH = 32,
+
+		 // == DATA CHECKER PARAMETERS ==
+		 parameter G_NB_CHECKER         = 2,
+		 parameter G_DATA_CHECKER_WIDTH = 32
 		 );
 
 
@@ -49,7 +53,9 @@ class tb_class #(
 			     G_UART_DATA_WIDTH,
 			     G_UART_BUFFER_ADDR_WIDTH,
 			     G_NB_COLLECTOR,
-			     G_DATA_COLLECTOR_WIDTH
+			     G_DATA_COLLECTOR_WIDTH,
+			     G_NB_CHECKER,
+			     G_DATA_CHECKER_WIDTH
 			     ) tb_modules_custom_inst;  // Create Handle
    // ====================================
 

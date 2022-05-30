@@ -15,11 +15,13 @@ import inspect
 import generic_tb_cmd_class
 import tb_uart_cmd_class
 import tb_data_collector_cmd_class
+import tb_data_checker_cmd_class
 
 # Extends of generic_tb_cmd_class
 class scn_class(generic_tb_cmd_class.generic_tb_cmd_class,
                 tb_uart_cmd_class.tb_uart_cmd_class,
-                tb_data_collector_cmd_class.tb_data_collector_cmd_class):
+                tb_data_collector_cmd_class.tb_data_collector_cmd_class,
+                tb_data_checker_cmd_class.tb_data_checker_cmd_class):
     
     # INIT of the class
     def __init__(self):
