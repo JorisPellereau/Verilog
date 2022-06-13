@@ -1,11 +1,17 @@
+import os
 import sys
 from PySide2 import QtCore, QtGui, QtWidgets
 import numpy as np
 
 from datetime import *
 
+import testbench_files
+
 
 class testbench_creator_class(QtWidgets.QDialog):
+
+
+   
 
 
     def __init__(self, parent = None):
@@ -14,8 +20,32 @@ class testbench_creator_class(QtWidgets.QDialog):
         self.grid_layout = QtWidgets.QGridLayout()
         self.setLayout(self.grid_layout)
 
+        self.generic_module_info_list = []
+
+        # STR file constants
+        self.tb_str_cst = testbench_files
+
+        # File Name constants
+        self.testbench_filename         = "tb_top.sv"
+        self.testbench_setup_filename   = "testbench_setup.sv"
+        self.testbench_clk_gen_filename = "clk_gen.sv"
+
         
         # == INIT PARAM ==
+        self.set_injector_param_list = [["Alias Number : ", "1"],
+                                        ["SET INJECTOR WIDTH : ", "32"]]
+
+        self.set_injector_param_list_qt = self.tb_custom_module_parameters(self.set_injector_param_list)
+
+        self.check_level_param_list = [["Alias Number : ", "1"],
+                                       ["Check Level Width", "1"]]
+
+        self.check_level_param_list_qt = self.tb_custom_module_parameters(self.check_level_param_list)
+        
+        self.wait_event_param_list    = [["Alias Number : ", "1"]] # Always size to 1
+        self.wait_event_param_list_qt = self.tb_custom_module_parameters(self.wait_event_param_list)
+
+        
         self.last_init_param = None
         self.data_collector_param_list = [["Alias : "                           , "DATA_COLLECTOR_COVERAGE"],
                                           ["Number of parallel collector :"     , "1"],
@@ -51,20 +81,38 @@ class testbench_creator_class(QtWidgets.QDialog):
         
         # == PATH of Generated Testbench ==
         self.tb_path_text    = QtWidgets.QLabel("Path of generated Testbench :")
-        self.tb_path_to_edit = QtWidgets.QLineEdit("./tb_sources/XXX")
+        init_path = os.path.dirname(os.path.abspath(__file__)) # Get path where script is executed
+        self.tb_path_to_edit = QtWidgets.QLineEdit(init_path)#"./tb_sources/XXX")
 
+        # == CLOCK GENERATOR PARAMETERS ==
+        self.clk_gen_label_qt = QtWidgets.QLabel("Clock & Reset Generator PARAMETERS :")
+        self.clk_gen_param_list = [["Clock Half Period [ps] : "            , "10000"],
+                                   ["Waiting time before reset [ps] :"     , "100000"]]
+        
+        self.clk_gen_param_list_qt = self.tb_custom_module_parameters(self.clk_gen_param_list)
+        
+        # == GENERIC TESTBENCH MODULES ==
+        self.generic_tb_module_label_qt = QtWidgets.QLabel("GENERIC TESTBENCH Modules :")
+        self.generic_tb_module_list     = ["SET INJECTOR", "CHECK LEVEL", "WAIT EVENT"]
+        self.generic_tb_modules_list_qt = QtWidgets.QListWidget()
+        self.generic_tb_modules_list_qt.addItems(self.generic_tb_module_list)
+
+        
         # == Selection of Custom Testbench Modules ==
+        self.custom_tb_modules_label_qt = QtWidgets.QLabel("CUSTOM TESTBENCH Modules :")
         self.custom_tb_modules_list = QtWidgets.QListWidget()
         
-        self.item_list = ["DATA_COLLECTOR", "DATA_CHECKER", "UART"]
-        self.custom_tb_modules_list.addItems(self.item_list)
+        self.item_list = ["DATA_COLLECTOR",
+                          "DATA_CHECKER",
+                          "UART"]
+        self.custom_tb_modules_list.addItems(self.item_list) # Custom TB Module List
 
         # == ADD Select Custom Testbench Modules ==
         self.button_add_select_custom_tb_modules = QtWidgets.QPushButton("ADD Custom Testbench Module")
         self.button_del_sel_custom_tb_modules    = QtWidgets.QPushButton("DELETE Custom Testbench Module")
 
         # == Testbench Info List ==
-        self.tb_info_list = QtWidgets.QListWidget()
+        self.tb_info_list_qt = QtWidgets.QListWidget()
         self.custom_tb_info_list = []
         
         # == GENERATE BUTTON ==
@@ -85,19 +133,30 @@ class testbench_creator_class(QtWidgets.QDialog):
         self.grid_layout.addWidget(self.tb_path_text,      1, 0)
         self.grid_layout.addWidget(self.tb_path_to_edit,   1, 1)
 
-        self.grid_layout.addWidget(self.custom_tb_modules_list, 2, 0)
+        self.grid_layout.addWidget(self.clk_gen_label_qt, 2, 0)
+        self.add_to_grid_layout(self.clk_gen_param_list_qt)
+
+        self.grid_layout.addWidget(self.generic_tb_module_label_qt, self.grid_layout.rowCount(), 0)
+        self.grid_layout.addWidget(self.custom_tb_modules_label_qt, self.grid_layout.rowCount()-1, 1)
+                
+        self.grid_layout.addWidget(self.generic_tb_modules_list_qt, self.grid_layout.rowCount(), 0)
+        self.grid_layout.addWidget(self.custom_tb_modules_list,  self.grid_layout.rowCount()-1, 1)
 
         # == Custom TB Modules display on several lines ==
+
+        # Custom
         self.add_to_grid_layout(qt_param_list = self.data_collector_param_list_qt)
-
         self.add_to_grid_layout(qt_param_list = self.data_checker_param_list_qt)
-
         self.add_to_grid_layout(qt_param_list = self.uart_param_list_qt)
                                 
+        # Generic
+        self.add_to_grid_layout(qt_param_list = self.set_injector_param_list_qt)
+        self.add_to_grid_layout(qt_param_list = self.check_level_param_list_qt)
+        self.add_to_grid_layout(qt_param_list = self.wait_event_param_list_qt)
         
         self.grid_layout.addWidget(self.button_add_select_custom_tb_modules, self.grid_layout.rowCount(), 0)
 
-        self.grid_layout.addWidget(self.tb_info_list,           self.grid_layout.rowCount(), 0)
+        self.grid_layout.addWidget(self.tb_info_list_qt,           self.grid_layout.rowCount(), 0)
         self.grid_layout.addWidget(self.button_del_sel_custom_tb_modules, self.grid_layout.rowCount(), 0)
         self.grid_layout.addWidget(self.button_generer_tb,      self.grid_layout.rowCount(), 0)
 
@@ -123,15 +182,23 @@ class testbench_creator_class(QtWidgets.QDialog):
 
     
     def click_update(self):
+
+        # == GENEARTION of TESTBENCH ==
         self.button_generer_tb.clicked.connect(self.generate_testbench)
 
-        # == ITEM LIST CLICK ==
-        self.custom_tb_modules_list.itemClicked.connect(self.list_click_mngt)
+        # == GENERIC ITEM LIST CLICK ==
+        self.generic_tb_modules_list_qt.itemClicked.connect(self.list_click_generic_mngt)
+
+        
+        # == CUSTOM ITEM LIST CLICK ==
+        self.custom_tb_modules_list.itemClicked.connect(self.list_click_custom_mngt)
 
         # == ADD Custom TB Module Mngt ==
         self.button_add_select_custom_tb_modules.clicked.connect(self.add_sel_module_to_tb_info_list)
 
-
+        # == REMOVE Custom TB Module Mngt ==
+        self.button_del_sel_custom_tb_modules.clicked.connect(self.remove_info_to_list)
+        
     # == FUNCTION on CLICK ==
 
     def add_sel_module_to_tb_info_list(self):
@@ -144,19 +211,92 @@ class testbench_creator_class(QtWidgets.QDialog):
 
             info_tmp = self.get_custom_module_info(qt_param_list = self.data_collector_param_list_qt) # Get Info
             
+            self.add_info_to_list(info_tmp, module_type = "DATA_COLLECTOR")
             
         elif(self.custom_tb_modules_list.currentRow() == 1):
-            None
+            info_tmp = self.get_custom_module_info(qt_param_list = self.data_checker_param_list_qt) # Get Info
+            
+            self.add_info_to_list(info_tmp, module_type = "DATA_CHECKER")
             print("DAta checker Added !")
         elif(self.custom_tb_modules_list.currentRow() == 2):
             print("UART added !")
-            None
+            info_tmp = self.get_custom_module_info(qt_param_list = self.uart_param_list_qt) # Get Info
+            
+            self.add_info_to_list(info_tmp, module_type = "UART")
             
     def generate_testbench(self):
-        print("testtesttest !!!")
 
+        file_setup_str = ""
+        self.get_generic_module_info() # Get info of Generic TB Modules
+        #print(self.generic_module_info_list)
+        print(self.custom_tb_info_list)
+
+        # == Fill Testbench Setup File ==
+        # Fill Generics
+        file_setup_str = self.tb_str_cst.testbench_setup_generic_str.format(self.generic_module_info_list[0][0][1],
+                                                                            self.generic_module_info_list[0][1][1],
+                                                                            "1000",
+
+                                                                            self.generic_module_info_list[1][0][1],
+                                                                            self.generic_module_info_list[1][0][1],
+                                                                            self.generic_module_info_list[1][1][1],
+
+                                                                            self.generic_module_info_list[3][0][1], 1,
+
+                                                                            self.generic_module_info_list[2][0][1],
+                                                                            self.generic_module_info_list[2][0][1],
+                                                                            self.generic_module_info_list[2][1][1])
         
-    def list_click_mngt(self):
+        # Fill with custom
+        for i in self.custom_tb_info_list:
+            print(i)
+            if(i[len(i) - 1] == "DATA_COLLECTOR"):
+                print("Add Data Collector to Constant..")
+                file_setup_str = file_setup_str + self.tb_str_cst.data_collector_str.format(i[0][1],
+                                                                                            i[0][1],
+                                                                                            i[1][1],
+                                                                                            i[0][1],
+                                                                                            i[2][1],
+                )
+                
+            elif(i[len(i) - 1] == "DATA_CHECKER"):
+                print("Add Data checker to Constant ..")
+                file_setup_str = file_setup_str + self.tb_str_cst.data_checker_str.format(i[0][1],
+                )
+                
+            elif(i[len(i) - 1] == "UART"):
+                print("Add UART to Constant ..")
+                file_setup_str = file_setup_str + self.tb_str_cst.uart_cst_str.format(i[0][1],
+                                                                                      i[0][1], i[1][1],
+                                                                                      i[0][1], i[2][1],
+                                                                                      i[0][1], i[3][1],
+                                                                                      i[0][1], i[4][1],
+                                                                                      i[0][1], i[5][1],
+                                                                                      i[0][1], i[6][1],
+                                                                                      i[0][1], i[7][1],
+                                                                                      i[0][1], i[8][1],
+                                                                                      i[0][1], i[9][1],
+                )
+                # Check if file exist
+                
+        print(file_setup_str)
+        
+        expected_path     = self.tb_path_to_edit.text()
+        list_file_in_path = os.listdir(expected_path)
+
+        if(self.testbench_filename not in list_file_in_path):
+            print("%s not in directory - Creating it ...")
+
+            tb_file = open(self.testbench_filename, "w")
+            tb_file.close()
+        
+            print("%s generated !!" %(self.testbench_filename))
+
+        if(self.testbench_setup_filename not in list_file_in_path):
+            print("%s not in directory - Creating it .." %(self.testbench_setup_filename))
+            
+    def list_click_custom_mngt(self):
+
 
         if(self.custom_tb_modules_list.currentRow() == 0):
             print("DATA_COLLECTOR selected !")
@@ -165,13 +305,13 @@ class testbench_creator_class(QtWidgets.QDialog):
 
             
         elif(self.custom_tb_modules_list.currentRow() == 1):
-           
+            
             print("DATA_CHECKER selected !")
             self.hide_all_module_param()
             self.tb_custom_module_parameters_show_or_hide(self.data_checker_param_list_qt, "SHOW")
-
+            
         elif(self.custom_tb_modules_list.currentRow() == 2):
-           
+            
             print("UART selected !")
             self.hide_all_module_param()
             self.tb_custom_module_parameters_show_or_hide(self.uart_param_list_qt, "SHOW")
@@ -179,7 +319,20 @@ class testbench_creator_class(QtWidgets.QDialog):
         else:
             print("error !!")
 
-
+    def list_click_generic_mngt(self):
+        if(self.generic_tb_modules_list_qt.currentRow() == 0):
+            print("SET INJECTOR selected !")
+            self.hide_all_module_param()
+            self.tb_custom_module_parameters_show_or_hide(self.set_injector_param_list_qt, "SHOW")
+            
+        elif(self.generic_tb_modules_list_qt.currentRow() == 1):
+            print("CHECK LEVEL selected !")
+            self.hide_all_module_param()
+            self.tb_custom_module_parameters_show_or_hide(self.check_level_param_list_qt, "SHOW")
+        elif(self.generic_tb_modules_list_qt.currentRow() == 2):
+            print("WAIT EVENT selected !")
+            self.hide_all_module_param()
+            self.tb_custom_module_parameters_show_or_hide(self.wait_event_param_list_qt, "SHOW")
     # ====================================
 
 
@@ -202,10 +355,15 @@ class testbench_creator_class(QtWidgets.QDialog):
 
 
     def hide_all_module_param(self):
+        # Custom
         self.tb_custom_module_parameters_show_or_hide(self.data_collector_param_list_qt, "HIDE")
         self.tb_custom_module_parameters_show_or_hide(self.data_checker_param_list_qt, "HIDE")
         self.tb_custom_module_parameters_show_or_hide(self.uart_param_list_qt, "HIDE")
 
+        # Generic
+        self.tb_custom_module_parameters_show_or_hide(self.set_injector_param_list_qt, "HIDE")
+        self.tb_custom_module_parameters_show_or_hide(self.check_level_param_list_qt, "HIDE")
+        self.tb_custom_module_parameters_show_or_hide(self.wait_event_param_list_qt, "HIDE")
 
     def get_custom_module_info(self, qt_param_list):
 
@@ -216,57 +374,31 @@ class testbench_creator_class(QtWidgets.QDialog):
 
         return custom_module_info_list
 
+    def get_generic_module_info(self):
+        self.generic_module_info_list = [] # Init list
+        self.generic_module_info_list.append(self.get_custom_module_info(self.clk_gen_param_list_qt))
+        self.generic_module_info_list.append(self.get_custom_module_info(self.set_injector_param_list_qt))
+        self.generic_module_info_list.append(self.get_custom_module_info(self.check_level_param_list_qt))
+        self.generic_module_info_list.append(self.get_custom_module_info(self.wait_event_param_list_qt))
+        
 
-    def add_info_to_list(self, info_list):
+    def add_info_to_list(self, info_list, module_type):
+        info_list = info_list + [module_type]
         if(info_list not in self.custom_tb_info_list):
-            self.custom_tb_info_list.append(info_list)
-            self.tb_info_list.addItem(str(info_list))
+            self.custom_tb_info_list.append(info_list)   # Add in list
+            self.tb_info_list_qt.addItem(str(info_list)) # Add Item in QtWidget List
+
 
     def remove_info_to_list(self, current_info):
 
         # Get Row of current item
-        self.custom_tb_info_list.getItem()
-        if(current_info in self.custom_tb_info_list):
-            self.custom_tb_info_list.remove(current_info)
-                
-    # == FILE STR ==
-    def clk_gen_generator(self):
+#        self.tb_info_list_qt.getItem()
+        current_row = self.tb_info_list_qt.currentRow() # Get Current ROW
+        if(current_row != -1):
+            self.tb_info_list_qt.takeItem(current_row) # Remove ROW
+            self.custom_tb_info_list.pop(current_row)
+        print("remove : current row : %d" %(current_row))
+#        if(current_info in self.custom_tb_info_list):
+#            sefl.tb_info_list_qt.remove(current_info)
 
-
-        clk_gen_str = """//                              -*- Mode: Verilog -*-"
-    // Filename        : clk_gen.sv
-    // Description     : Clock generator
-    // Author          : {0}
-    // Created On      : {1}
-
-    `timescale 1ps/1ps
-
-    module clk_gen
-       #(
-         parameter int G_CLK_HALF_PERIOD = 10,
-         parameter int G_WAIT_RST        = 10
-       )
-       (
-        output reg clk_tb,
-        output reg rst_n
-       );
-
-       // Clock generation
-       initial begin
-         clk_tb <= 1'b0;
-         forever begin
-           #G_CLK_HALF_PERIOD;	
-           clk_tb <= ~ clk_tb;
-         end      
-       end
-
-       // Reset generation
-       initial begin
-         rst_n <= 1'b0;
-         #G_WAIT_RST;
-         rst_n <= 1'b0;
-         #G_WAIT_RST;
-         rst_n <= 1'b1;
-       end     
    
-endmodule // clk_gen"""
