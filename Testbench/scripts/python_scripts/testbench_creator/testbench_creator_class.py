@@ -226,6 +226,9 @@ class testbench_creator_class(QtWidgets.QDialog):
             
     def generate_testbench(self):
 
+        expected_path     = self.tb_path_to_edit.text()
+        list_file_in_path = os.listdir(expected_path)
+
         file_setup_str = ""
         self.get_generic_module_info() # Get info of Generic TB Modules
         #print(self.generic_module_info_list)
@@ -280,20 +283,49 @@ class testbench_creator_class(QtWidgets.QDialog):
                 # Check if file exist
                 
         print(file_setup_str)
+        # =================================
+
+        # == TB TOP ==
+        includes_str = self.tb_str_cst.include_testbench_setup_str.format(expected_path) + self.tb_str_cst.include_sequencer_str # Fill Includes
+        # Fill with custom
+        tb_custom_str = ""
+        for i in self.custom_tb_info_list:
+            print(i)
+            if(i[len(i) - 1] == "DATA_COLLECTOR"):
+                print("Add Data Collector to includes tb_custom_str...")
+                
+                tb_custom_str += self.tb_str_cst.data_collector_intf_str.format(i[0][1], i[0][1], i[0][1])
+                tb_custom_str += self.tb_str_cst.data_collector_wrapper_str.format(i[0][1], i[0][1], i[0][1], i[0][1], i[0][1], i[0][1], i[0][1], i[0][1], i[0][1], i[0][1], i[0][1])
+                
+            elif(i[len(i) - 1] == "DATA_CHECKER"):
+                print("Add Data checker to includes tb_custom_str..")
+               
+            elif(i[len(i) - 1] == "UART"):
+                print("Add UART to includes tb_custom_str...")
+                tb_custom_str += self.tb_str_cst.uart_checker_intf_str.format(i[0][1], i[0][1], i[0][1], i[0][1])
+                tb_custom_str += self.tb_str_cst.uart_checker_wrapper_str.format(i[0][1], i[0][1], i[0][1], i[0][1], i[0][1], i[0][1], i[0][1], i[0][1], i[0][1], i[0][1], i[0][1], i[0][1], i[0][1], i[0][1], i[0][1])
+                
+        # ============
         
-        expected_path     = self.tb_path_to_edit.text()
-        list_file_in_path = os.listdir(expected_path)
 
         if(self.testbench_filename not in list_file_in_path):
+
+            tb_top_str = self.tb_str_cst.tb_top_str.format(includes_str, tb_custom_str, self.tb_str_cst.sequencer_class_str)
+            
             print("%s not in directory - Creating it ...")
 
             tb_file = open(self.testbench_filename, "w")
+            tb_file.writelines(tb_top_str)
             tb_file.close()
         
             print("%s generated !!" %(self.testbench_filename))
 
         if(self.testbench_setup_filename not in list_file_in_path):
             print("%s not in directory - Creating it .." %(self.testbench_setup_filename))
+
+            file_cst = open(expected_path + "/testbench_setup.sv", "w")
+            file_cst.writelines(file_setup_str)
+            file_cst.close()
             
     def list_click_custom_mngt(self):
 
