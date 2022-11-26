@@ -63,7 +63,7 @@ module LCD_CFAH_emul (
    end // always @ (posedge clk)
 
    // Write data during Read operation
-   assign io_data = (!i_rw) ? i_wdata : 8'bz;
+   assign io_data = (i_rw) ? i_wdata : 8'bz;
 
    // == TIMING CHECKER ==
    time time_rs;
