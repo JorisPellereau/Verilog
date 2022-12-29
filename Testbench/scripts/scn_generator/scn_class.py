@@ -48,7 +48,9 @@ class scn_class(generic_tb_cmd_class.generic_tb_cmd_class,
 
     # Print Step
     def print_step(self, line_2_print):
-        self.scn_line_list.append("\n//-- STEP {0} : ".format(self.step_counter) + line_2_print + "\n")
+        self.scn_line_list.append("\n//================================")
+        self.scn_line_list.append("//-- STEP {0} : ".format(self.step_counter) + line_2_print)
+        self.scn_line_list.append("//================================\n")
         self.step_counter += 1 # Inc Step Counter
    
     # Close PY SCN file and print END_TEST
