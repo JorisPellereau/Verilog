@@ -49,8 +49,8 @@ module LCD_CFAH_emul #(
       
    logic [7:0] s_busy_flag_duration_counter;   
    logic   s_busy_flag;
-   logic [7:0] s_cgram_addr;
-   logic [7:0] s_cgram_buffer [0:7][0:7]; // TBD
+   logic [5:0] s_cgram_addr;
+   logic [7:0] s_cgram_buffer [0:63]; // TBD
    logic [7:0] s_ddram_addr;
    logic [7:0] s_ddram_buffer [0:1][0:15]; // 2 Lines of 16 char of bytes   
    logic       s_sel_ddram_or_cgram;
@@ -193,9 +193,7 @@ module LCD_CFAH_emul #(
 	 s_wr_data_detected        <= 0; // Pulse
 	 if(s_en_f_edge) begin
 	    $display("Info: LCD_CFAH_Emul - i_en falling edge occurs at %t", $time);
-	    if(s_received_cmds_ptr == G_RECEIVED_CMD_BUFFER_SIZE - 1) begin
-	       $display("Warning: PTR Max reach at %t", $time);	 
-	    end
+	    
 
 	    
 	    
@@ -250,8 +248,16 @@ module LCD_CFAH_emul #(
 		  end
 	       end
 	    end // else: !if(i_rs == 1)
+
+	    if(s_received_cmds_ptr < G_RECEIVED_CMD_BUFFER_SIZE - 1) begin
+	       s_received_cmds_ptr <=  s_received_cmds_ptr + 1;
+	    end
+	    else begin
+	       $display("Warning: PTR Max reach at %t - reset PTR", $time);
+	       s_received_cmds_ptr       <= 0;
+	    end
+
 	    
-	    s_received_cmds_ptr += 1;
 	 end // if (s_en_f_edge)	 
          
       end // else: !if(!rst_n)      
@@ -285,9 +291,27 @@ module LCD_CFAH_emul #(
    // CGRAM Addr Management
    always @(posedge clk) begin
       if(!rst_n) begin
-	 s_cgram_addr <= 0;	 
+	 s_cgram_addr <= 0;
+
+	 for(i = 0 ; i < 64 ; i++) begin
+	    s_cgram_buffer[i] <= 0;	    
+	 end
       end
       else begin
+
+	 // If set cgram detected -> update CGRAM ADDR
+	 if(s_set_cgram_addr_detected) begin
+	    s_cgram_addr <= o_rdata & 6'h3F;	    
+	 end
+
+	 // When command is detected and sel is activated (CGRAM selected)
+	 if(s_sel_ddram_or_cgram && s_wr_data_detected) begin
+
+	    s_cgram_buffer[s_cgram_addr] <= io_data & 5'h1F;	    	    
+	    // Inc CGRAM Addr
+	    s_cgram_addr <= s_cgram_addr + 1;
+	    
+	 end
 	 
       end
 	
