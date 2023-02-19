@@ -306,26 +306,36 @@ class testbench_creator_class(QtWidgets.QDialog):
                 tb_custom_str += self.tb_str_cst.uart_checker_wrapper_str.format(i[0][1], i[0][1], i[0][1], i[0][1], i[0][1], i[0][1], i[0][1], i[0][1], i[0][1], i[0][1], i[0][1], i[0][1], i[0][1], i[0][1], i[0][1])
                 
         # ============
-        
 
+        # == CLK_GEN Configuration ==
+        clk_gen_str = self.tb_str_cst.clk_gen_str.format()
+        
+        # ===========================
+        
+        # Create Testbench tb_top.sv
         if(self.testbench_filename not in list_file_in_path):
 
             tb_top_str = self.tb_str_cst.tb_top_str.format(includes_str, tb_custom_str, self.tb_str_cst.sequencer_class_str)
             
             print("%s not in directory - Creating it ...")
 
-            tb_file = open(self.testbench_filename, "w")
+            tb_file = open(expected_path + "/" + self.testbench_filename, "w")
             tb_file.writelines(tb_top_str)
             tb_file.close()
         
             print("%s generated !!" %(self.testbench_filename))
 
+        # Create Testbench Setup
         if(self.testbench_setup_filename not in list_file_in_path):
             print("%s not in directory - Creating it .." %(self.testbench_setup_filename))
 
             file_cst = open(expected_path + "/testbench_setup.sv", "w")
             file_cst.writelines(file_setup_str)
             file_cst.close()
+
+        # Create clk_gen
+        if(self.testbench_clk_gen_filename not in list_file_in_path):
+            print("%s not in directory - Creating it .." %(self.testbench_clk_gen_filename))
             
     def list_click_custom_mngt(self):
 
