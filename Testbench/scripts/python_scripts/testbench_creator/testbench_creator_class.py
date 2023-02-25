@@ -308,7 +308,8 @@ class testbench_creator_class(QtWidgets.QDialog):
         # ============
 
         # == CLK_GEN Configuration ==
-        clk_gen_str = self.tb_str_cst.clk_gen_str.format()
+        clk_gen_str = self.tb_str_cst.clk_gen_str.format(self.generic_module_info_list[0][0][1],
+                                                         self.generic_module_info_list[0][1][1])
         
         # ===========================
         
@@ -329,13 +330,17 @@ class testbench_creator_class(QtWidgets.QDialog):
         if(self.testbench_setup_filename not in list_file_in_path):
             print("%s not in directory - Creating it .." %(self.testbench_setup_filename))
 
-            file_cst = open(expected_path + "/testbench_setup.sv", "w")
+            file_cst = open(expected_path + "/" + self.testbench_setup_filename, "w")
             file_cst.writelines(file_setup_str)
             file_cst.close()
 
         # Create clk_gen
         if(self.testbench_clk_gen_filename not in list_file_in_path):
             print("%s not in directory - Creating it .." %(self.testbench_clk_gen_filename))
+
+            file_clk_gen = open(expected_path + "/" + self.testbench_clk_gen_filename, "w")
+            file_clk_gen.writelines(clk_gen_str)
+            file_clk_gen.close()
             
     def list_click_custom_mngt(self):
 
