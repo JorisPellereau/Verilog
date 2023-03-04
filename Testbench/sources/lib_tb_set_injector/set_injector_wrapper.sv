@@ -7,6 +7,7 @@
 // Last Modified On: Sat Nov 21 11:58:23 2020
 // Update Count    : 0
 // Status          : Unknown, Use with caution!
+/* -----\/----- EXCLUDED -----\/-----
 
 interface set_injector_intf #(
      parameter SET_SIZE  = 5,
@@ -19,6 +20,7 @@ interface set_injector_intf #(
    logic   [SET_WIDTH - 1 : 0] set_signals_synch              [SET_SIZE];
    
 endinterface // set_injector_intf
+ -----/\----- EXCLUDED -----/\----- */
 
 
 module set_injector_wrapper #(
