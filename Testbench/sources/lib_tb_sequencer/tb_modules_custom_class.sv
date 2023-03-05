@@ -21,7 +21,7 @@
 `include "/home/linux-jp/Documents/GitHub/Verilog/Testbench/sources/lib_tb_uart/tb_uart_class.sv"
 `include "/home/linux-jp/Documents/GitHub/Verilog/Testbench/sources/lib_tb_data_collector/tb_data_collector_class.sv"
 `include "/home/linux-jp/Documents/GitHub/Verilog/Testbench/sources/lib_tb_data_checker/tb_data_checker_class.sv"
-
+`include "/home/linux-jp/Documents/GitHub/Verilog/Testbench/sources/lib_tb_axi4/tb_master_axi4lite_class.sv"
 // ============================
 
 class tb_modules_custom_class #(// == SET INJECTOR PARAMETERS ==
@@ -48,7 +48,12 @@ class tb_modules_custom_class #(// == SET INJECTOR PARAMETERS ==
 
 				// == DATA CHECKER PARAMETERS ==
 				parameter G_NB_CHECKER         = 2,
-				parameter G_DATA_CHECKER_WIDTH = 32
+				parameter G_DATA_CHECKER_WIDTH = 32,
+
+				// == MASTER AXI4LITE PARAMETERS ==
+				parameter G_NB_MASTER_AXI4LITE  = 2,
+				parameter G_AXI4LITE_ADDR_WIDTH = 32,
+				parameter G_AXI4LITE_DATA_WIDTH = 32
 				);
    
 
@@ -215,6 +220,34 @@ class tb_modules_custom_class #(// == SET INJECTOR PARAMETERS ==
       
    endfunction // init_data_checker_custom_class         
    // ==================================
+
+
+   // == MASTER AXI4LITE TESTBENCH CLASS ==
+   tb_master_axi4lite_class #(
+			      .G_NB_MASTER_AXI4LITE  (G_NB_MASTER_AXI4LITE),
+			      .G_AXI4LITE_ADDR_WIDTH (G_AXI4LITE_ADDR_WIDTH),
+			      .G_AXI4LITE_DATA_WIDTH (G_AXI4LITE_DATA_WIDTH)
+			      )
+   tb_master_axi4lite_inst [*];
+   int 						       master_axi4lite_vif_ptr = 0; // Pointer of MASTER_AXI4LITE Instances
+
+   // INIT MASTER AXI4LITE TESTBENCH CLASS and Add Info
+   function void init_master_axi4lite_custom_class(virtual master_axi4lite_intf #(G_AXI4LITE_ADDR_WIDTH,
+										  G_AXI4LITE_DATA_WIDTH)
+						   master_axi4lite_nif,
+						   string MASTER_AXI4LITE_ALIAS
+						   );
+      
+      this.tb_master_axi4lite_inst[this.master_axi4lite_vif_ptr] = new(master_axi4lite_nif, MASTER_AXI4LITE_ALIAS);
+      ADD_INFO(this.tb_master_axi4lite_inst[this.master_axi4lite_vif_ptr].MASTER_AXI4LITE_COMMAND_TYPE,
+	       this.tb_master_axi4lite_inst[this.master_axi4lite_vif_ptr].MASTER_AXI4LITE_CMD_ARRAY,
+	       this.tb_master_axi4lite_inst[this.master_axi4lite_vif_ptr].MASTER_AXI4LITE_ALIAS);
+      this.master_axi4lite_vif_ptr += 1; // Inc. Pointer
+            
+   endfunction // init_master_axi4lite_custom_class
+   
+   
+   // =====================================
    
    
    /* =================

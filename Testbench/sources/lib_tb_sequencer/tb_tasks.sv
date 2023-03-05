@@ -37,7 +37,12 @@ class tb_class #(
 
 		 // == DATA CHECKER PARAMETERS ==
 		 parameter G_NB_CHECKER         = 2,
-		 parameter G_DATA_CHECKER_WIDTH = 32
+		 parameter G_DATA_CHECKER_WIDTH = 32,
+
+		 // == MASTER AXI4LITE PARAMETERS ==
+		 parameter G_NB_MASTER_AXI4LITE  = 2,
+		 parameter G_AXI4LITE_ADDR_WIDTH = 32,
+		 parameter G_AXI4LITE_DATA_WIDTH = 32
 		 );
 
 
@@ -55,7 +60,10 @@ class tb_class #(
 			     G_NB_COLLECTOR,
 			     G_DATA_COLLECTOR_WIDTH,
 			     G_NB_CHECKER,
-			     G_DATA_CHECKER_WIDTH
+			     G_DATA_CHECKER_WIDTH,
+			     G_NB_MASTER_AXI4LITE,
+			     G_AXI4LITE_ADDR_WIDTH,
+			     G_AXI4LITE_DATA_WIDTH 
 			     ) tb_modules_custom_inst;  // Create Handle
    // ====================================
 
