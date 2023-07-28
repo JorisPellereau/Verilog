@@ -39,4 +39,5 @@ Testbench/TB_WORK/lib_uart/
 
 *.bak
 
-Verilog/Testbench/docs/sphinx_doc/build/
+# Ignore all files in build folder and the folder itself
+build/
