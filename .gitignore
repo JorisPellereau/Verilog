@@ -39,4 +39,4 @@ Testbench/TB_WORK/lib_uart/
 
 *.bak
 
-Verilog/Testbench/docs/sphinx_doc/build
+Verilog/Testbench/docs/sphinx_doc/build/
