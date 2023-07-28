@@ -41,3 +41,4 @@ Testbench/TB_WORK/lib_uart/
 
 # Ignore all files in build folder and the folder itself
 build/
+*.bkp
