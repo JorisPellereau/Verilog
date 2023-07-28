@@ -103,6 +103,47 @@ module max7219_checker_wrapper #(
    // =============================================
 
 
+   wire [8*G_NB_MATRIX - 1 : 0] s_line_vector [0:7]; // Line [0] == TOP Line
+   
+
+   wire [7:0] 		       s_line_vector_matrix [0:G_NB_MATRIX-1][0:7];
+
+
+  
+   //
+   generate
+      for(i = 0 ; i < G_NB_MATRIX ; i++) begin : gen_ii
+
+	 // Loop on each line
+	 for(j = 0 ; j < 8 ; j++) begin : gen_jj
+	    assign s_line_vector_matrix[i][7-j] = {
+						   gen_max7219_checker[i].i_max7219_checker_0.max7219_reg.REG_DIGIT_7[j],
+						   gen_max7219_checker[i].i_max7219_checker_0.max7219_reg.REG_DIGIT_6[j],
+						   gen_max7219_checker[i].i_max7219_checker_0.max7219_reg.REG_DIGIT_5[j],
+						   gen_max7219_checker[i].i_max7219_checker_0.max7219_reg.REG_DIGIT_4[j],
+						   gen_max7219_checker[i].i_max7219_checker_0.max7219_reg.REG_DIGIT_3[j],
+						   gen_max7219_checker[i].i_max7219_checker_0.max7219_reg.REG_DIGIT_2[j],
+						   gen_max7219_checker[i].i_max7219_checker_0.max7219_reg.REG_DIGIT_1[j],
+						   gen_max7219_checker[i].i_max7219_checker_0.max7219_reg.REG_DIGIT_0[j]
+						   };
+
+	    
+	    
+	 end // block: gen_jj
+
+	 assign s_line_vector[0][8*(j + 1) - 1 : 8*j] = s_line_vector_matrix[i]; // TOP Line
+	 
+	 // Loop on each line
+	 /*for(j = 0 ; j < 8 ; j++) begin :
+	  assign s_line_vector[j] = gen_max7219_checker[i].i_max7219_checker_0.max7219_reg.REG_DIGIT_0[j]
+	end*/
+      end            
+   endgenerate
+   
+	     
+
+   // == OLD ==
+
    reg [8*8*G_NB_MATRIX - 1 : 0] line_char;
    
    reg [8*G_NB_MATRIX - 1 : 0] line;
