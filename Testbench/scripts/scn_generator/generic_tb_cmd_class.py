@@ -2,10 +2,11 @@
 # Description : Class of GENERIC TESTBENCH COMMAND
 #
 # Author  : J.P
-# Date    : 01/03/2021
-# Version : 1.0
+# Date    : 23/07/2023
+# Version : 1.1
 #
-#
+# Modifications :
+#  - 23/07/2023 : Ajout des commentaires pour doc sphinx
 
 import sys
 
@@ -16,22 +17,47 @@ import modelsim_tcl_class
 
 
 class generic_tb_cmd_class:
+    """
+    This class contains all the methods of generic command for the Generic Testbench
+    """
 
 
     # INIT of the class
     def __init__(self, scn_line_list):#, f):
+        """
+        Constructor of the class generic_tb_cmd_class
+        """
         self.scn_line_list = scn_line_list
         self.modelsim_tcl_class = modelsim_tcl_class.modelsim_tcl_class() # Add modelsim_tcl_class
 
     # Print the SET command with Data in HEXA
     # data : integer
     def SET(self, alias, data):
+        """
+        Append to the list self.scn_line_list the line to print with the command SET
+
+        :param alias: Alias of the SET command
+        :param data:  Data of the SET command
+        :param type alias: str
+        :param data: int
+        """
         line_to_print = "SET[{0}] ({1})".format(alias, hex(data))# + alias + " " + hex(data) + "\n"
         self.scn_line_list.append(line_to_print) # Add Line to List
 
     # Print WTR commands
     # Timeout is optionnal
     def WTR(self, alias, timeout = 'none', unity = 'none'):
+        """
+        Append to the list self.scn_line_list the line to print with the command WTR
+        If arguments timeout or unity is set to None, no timeout is applied
+
+        :param alias: Alias of the SET command
+        :param timeout: The timeout of the WTR command
+        :param unity: Unity of the timeout
+        :param type alias: str
+        :param timeout: int
+        :param unity: str - "ns" - "us" - "ms"
+        """
         if(timeout == 'none' and unity == 'none'):            
             line_to_print = "WTR[{0}]".format(alias)# + alias + "\n"
             self.scn_line_list.append(line_to_print)
@@ -43,6 +69,17 @@ class generic_tb_cmd_class:
     # Print WTF commands
     # Timeout is optionnal
     def WTF(self, alias, timeout = 'none', unity = 'none'):
+        """
+        Append to the list self.scn_line_list the line to print with the command WTF
+        If arguments timeout or unity is set to None, no timeout is applied
+
+        :param alias: Alias of the SET command
+        :param timeout: The timeout of the WTR command
+        :param unity: Unity of the timeout
+        :param type alias: str
+        :param timeout: int
+        :param unity: str - "ns" - "us" - "ms"
+        """
         if(timeout == 'none' and unity == 'none'):            
             line_to_print = "WTF[{0}]".format(alias)# + alias + "\n"
             self.scn_line_list.append(line_to_print)
@@ -54,6 +91,17 @@ class generic_tb_cmd_class:
     # Print WTRS commands
     # Timeout is optionnal
     def WTRS(self, alias, timeout = 'none', unity = 'none'):
+        """
+        Append to the list self.scn_line_list the line to print with the command WTRS
+        If arguments timeout or unity is set to None, no timeout is applied
+
+        :param alias: Alias of the SET command
+        :param timeout: The timeout of the WTR command
+        :param unity: Unity of the timeout
+        :param type alias: str
+        :param timeout: int
+        :param unity: str - "ns" - "us" - "ms"
+        """
         if(timeout == 'none' and unity == 'none'):            
             line_to_print = "WTRS[{0}]".format(alias)# + alias + "\n"
             self.scn_line_list.append(line_to_print)
@@ -65,6 +113,17 @@ class generic_tb_cmd_class:
     # Print WTFS commands
     # Timeout is optionnal
     def WTFS(self, alias, timeout = 'none', unity = 'none'):
+        """
+        Append to the list self.scn_line_list the line to print with the command WTFS
+        If arguments timeout or unity is set to None, no timeout is applied
+
+        :param alias: Alias of the SET command
+        :param timeout: The timeout of the WTR command
+        :param unity: Unity of the timeout
+        :param type alias: str
+        :param timeout: int
+        :param unity: str - "ns" - "us" - "ms"
+        """
         if(timeout == 'none' and unity == 'none'):            
             line_to_print = "WTFS[{0}]".format(alias)# + alias + "\n"
             self.scn_line_list.append(line_to_print)
@@ -76,6 +135,16 @@ class generic_tb_cmd_class:
     # data : int
     # test : "OK" or "ERROR"
     def CHK(self, alias, data, test):
+        """
+        Append to the list self.scn_line_list the line to print with the command CHK
+
+        :param alias: Alias of the CHK command
+        :param data: Expected data to check
+        :param test: Expected test
+        :param type alias: str
+        :param data: int
+        :param test: str - "OK" - "ERROR"
+        """
         line_to_print = "CHK[{0}] ({1} {2})".format(alias, hex(data), test)# + "] (" + hex(data) + " " + test + ")\n"
         self.scn_line_list.append(line_to_print)
         
@@ -83,16 +152,38 @@ class generic_tb_cmd_class:
     # duree : int
     # unity : "ps", "ns", "us", "ms"
     def WAIT(self, duree, unity):
+        """
+        Append to the list self.scn_line_list the line to print with the command WAIT
+
+        :param duree: Duration of the Wait
+        :param unity: Unity of the wait duration
+        :param type alias: str
+        :param unity: str : "ps" - "ns" - "us" - "ms"
+        """
         line_to_print = "WAIT[] ({0} {1})".format(str(duree), unity)# + str(duree) + " " + unity + "\n"
         self.scn_line_list.append(line_to_print)
 
     # Print Modelsim Command
     def MODELSIM_CMD(self, modelsim_cmd):
+        """
+        Append to the list self.scn_line_list the line to print. It contains a Modelsim Command
+
+        :param modelsim_cmd: The entire modelsim command to print
+        :type modelsim_cmd: str
+        """
         line_to_print = "MODELSIM_CMD[] (\"{0}\")".format(modelsim_cmd)# + " (\"" + modelsim_cmd + "\")" + "\n"
         self.scn_line_list.append(line_to_print)
 
     # Save Memory in a file from modelsim command
     def SAVE_MEMORY(self, memory_path, memory_file):
+        """
+        Append to the list self.scn_line_list the line to print. It contains a Modelsim Command for a memory save
+
+        :param memory_path: The RTL path of the Memory to Save
+        :param memory_file: The memory file
+        :type memory_path: str
+        :type memory_file: str
+        """
         modelsim_cmd = "mem save -o " + memory_file + " -f mti -noaddress -compress -data hex -addr hex -wordsperline 1 " + memory_path
         self.MODELSIM_CMD(modelsim_cmd)
         
@@ -101,6 +192,14 @@ class generic_tb_cmd_class:
     # signal_path : str - path of signal to checl
     # value_to_check : int - value to check
     def CHECK_SIGNAL_VALUE(self, signal_path, value_to_check):
+        """
+        Append to the list self.scn_line_list the line to print. It contains a Modelsim Command use in order to check a signal from TCL
+
+        :param signal_path: The RTL signal path to check
+        :param value_to_check: The expected value of the signal
+        :type signal_path: str
+        :type value_to_check: int
+        """
         
         # internal variables
         var_name       = "signal_to_check"
@@ -126,7 +225,16 @@ class generic_tb_cmd_class:
     # memory_to_check : list - a list with memory content - HEX FORMAT
     # digit_number : int - number of digit in memory data
     def CHECK_MEMORY(self, memory_rtl_path, memory_to_check, digit_number):
+        """
+        Append to the list self.scn_line_list the line to print. It contains a Modelsim Command use to check a memory content
 
+        :param memory_rtl_path: The RTL memory path
+        :param memoty_to_check: The content of the memory to check
+        :param digit_number: Number of digit in memory data
+        :type memory_rtl_path: str
+        :type memoty_to_check: list[int]
+        :type digit_number: int
+        """
         # internal variables
         var_name       = "memory_to_check"
 

@@ -6,12 +6,13 @@
 # Version : 1.0
 # Update : - 24/04/2021 - Add UART Testbench class
 #          - 27/11/2021 - Modif. class in order to inherites from Commands class
+#          - 26/04/2023 - Add commentary for sphinx documentation
 
 import sys
 import os
 import inspect
 
-# Import Class
+# Import Class
 import generic_tb_cmd_class
 import tb_uart_cmd_class
 import tb_data_collector_cmd_class
@@ -22,10 +23,17 @@ class scn_class(generic_tb_cmd_class.generic_tb_cmd_class,
                 tb_uart_cmd_class.tb_uart_cmd_class,
                 tb_data_collector_cmd_class.tb_data_collector_cmd_class,
                 tb_data_checker_cmd_class.tb_data_checker_cmd_class):
+
+    """
+    This class is the top level class for the utilisation of the testbench module commands.
+    """
     
     # INIT of the class
     def __init__(self):
 
+        """
+        Constructor of the class. It initializes variables for the scenario.
+        """
         # INIT Variables
         self.END_TEST_counter          = 0                           # Counter of END_TEST in file        
         self.scn_line_list             = []                          # List of line to write in file
@@ -38,16 +46,34 @@ class scn_class(generic_tb_cmd_class.generic_tb_cmd_class,
 
     # Print a Custom Line in SCN
     def print_line(self, line_2_print):
+        """
+        Add a line in the self.scn_line_list variable
+
+        :param line_2_print: The line to add in the scenario file
+        :type line_2_print: str
+        """
         self.scn_line_list.append(line_2_print)
 
 
     # Print a Comment Line in SCN
     def print_comment(self, line_2_print):
+        """
+        Add a comment line in the self.scn_line_list variable
+
+        :param line_2_print: The comment line to add in the scenario file
+        :type line_2_print: str
+        """
         self.scn_line_list.append("-- " + line_2_print)
 
 
     # Print Step
     def print_step(self, line_2_print):
+        """
+        Add a STEP number in commentary format in the self.scn_line_list variable
+
+        :param line_2_print: The STEP to add in the commentary
+        :type line_2_print: str
+        """
         self.scn_line_list.append("\n//================================")
         self.scn_line_list.append("//-- STEP {0} : ".format(self.step_counter) + line_2_print)
         self.scn_line_list.append("//================================\n")
@@ -55,7 +81,9 @@ class scn_class(generic_tb_cmd_class.generic_tb_cmd_class,
    
     # Close PY SCN file and print END_TEST
     def END_TEST(self):
-        
+        """
+        Add the END_TEST command in the self.scn_line_list variable. Finaly Closed the scenario file.
+        """
         # Add End test to list
         line_to_print = "END_TEST\n"
         self.scn_line_list.append(line_to_print)

@@ -5,14 +5,21 @@
 # Date    : 24/04/2021
 # Version : 1.0
 #
-#
+# Modifications :
+#                 - 26/07/2023 : Ajout des commentaires sphinx
 
 import sys
 
 class tb_uart_cmd_class:
+    """
+    This class contains all methods used for the utilization of the UART testbench module.
+    """
 
     # INIT of the class
     def __init__(self, scn_line_list):#output_file_path, f):
+        """
+        Constructor of the class
+        """
         self.scn_line_list = scn_line_list
 
 
@@ -20,6 +27,14 @@ class tb_uart_cmd_class:
     # alias : Alias of UART module - A string
     # data_list : a list of Hex data to write via UART
     def TX_START(self, alias, data_list):
+        """
+        Add the the self.scn_line_list variable the command for the utilization of the TX_START testbench command.
+
+        :param alias: The ALIAS of the UART module to use
+        :param data_list: the list of data to send on the UART module
+        :type alias: str
+        :type data_list: list[int]
+        """
         line_to_print = ""
         for i in range(0, len(data_list) - 1):
             line_to_print = line_to_print + str(data_list[i]) + " "
@@ -32,6 +47,14 @@ class tb_uart_cmd_class:
     # alias : Alias of UART module - A string
     # data_list : a list of Hex data to read from UART
     def RX_READ(self, alias, data_list):
+        """
+        Add the the self.scn_line_list variable the command for the utilization of the RX_READ testbench command.
+
+        :param alias: The ALIAS of the UART module to use
+        :param data_list: the list of data to READ on the UART module
+        :type alias: str
+        :type data_list: list[int]
+        """
         line_to_print = ""
         for i in range(0, len(data_list) - 1):
             line_to_print = line_to_print + str(data_list[i]) + " "
@@ -44,6 +67,14 @@ class tb_uart_cmd_class:
     # alias : Alias of UART module - A string
     # data list : a list of Hex data to read from UART
     def RX_WAIT_DATA(self, alias, data_list):
+        """
+        Add the the self.scn_line_list variable the command for the utilization of the RX_WAIT_DATA testbench command.
+
+        :param alias: The ALIAS of the UART module to use
+        :param data_list: the list of data to check after each wait on the RX interface of the AURT module.
+        :type alias: str
+        :type data_list: list[int]
+        """
         line_to_print = ""
         for i in range(0, len(data_list) - 1):
             line_to_print = line_to_print + str(data_list[i]) + " "
